@@ -298,6 +298,220 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		return $this->ok(['todo' => $todo]);
 	}
 
+	// ── uploads (direct + chunked) ──────────────────────────────────
+
+	private function orgFolder(int $orgId): \OCP\Files\Folder
+	{
+		$org = $this->org($orgId);
+		if (!$this->docs->rootHealthy()) {
+			throw new \OCA\PortalCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
+		}
+		$f = $this->docs->orgFolder((int)$org->getId(), (string)$org->getName(), $org->getFolderId(), $org->getFolderPath());
+		if ($f === null) {
+			throw new \OCA\PortalCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
+		}
+		// persist the binding once (folder created or rebound)
+		if ($f->getId() !== $org->getFolderId()) {
+			$org->setFolderId((int)$f->getId());
+			$this->orgs->update($org);
+		}
+		return $f;
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function upload(int $orgId): JSONResponse
+	{
+		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
+		$file = $_FILES['file'] ?? null;
+		if ($file === null || !is_uploaded_file($file['tmp_name'] ?? '')) {
+			throw new \OCA\PortalCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no file');
+		}
+		$uploadSvc = new \OCA\PortalCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
+		$uploadSvc->validateFile($file['tmp_name'], (string)$file['name'], $uploadSvc->maxBytes());
+		$note = $this->request->getParam('note') !== null ? (string)$this->request->getParam('note') : null;
+		$reqItemId = $this->strictId($this->request->getParam('reqItemId'));
+		$res = $uploadSvc->store($eingang, $orgId, $this->actor(), $file['tmp_name'], (string)$file['name'], 'portal', $note);
+		if ($reqItemId !== null && $this->request->getParam('reqId') !== null) {
+			$reqId = $this->strictId($this->request->getParam('reqId')) ?? 0;
+			$this->requests->deliverItem($this->actor(), $reqId, $reqItemId, (int)$res['upload']->getId());
+		}
+		$this->notifyService->clientMail($orgId, 'document');
+		return $this->ok(['id' => (int)$res['upload']->getId(), 'duplicate' => $res['duplicate'] !== null], 201);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function chunkStart(int $orgId): JSONResponse
+	{
+		$this->org($orgId);
+		$uploadId = (string)$this->request->getParam('uploadId', '');
+		$chunks = $this->chunkSvc();
+		$chunks->start($uploadId, $orgId, $this->actor(),
+			(string)$this->request->getParam('fileName', 'upload'),
+			(int)$this->request->getParam('totalBytes', 0));
+		return $this->ok(['uploadId' => $uploadId], 201);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function chunkPut(string $uploadId, int $index): JSONResponse
+	{
+		$row = $this->chunkSvc()->find($uploadId);
+		if ($row === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$row['org_id']);
+		$file = $_FILES['chunk'] ?? null;
+		if ($file === null || !is_uploaded_file($file['tmp_name'] ?? '')) {
+			throw new \OCA\PortalCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no chunk');
+		}
+		$this->chunkSvc()->putChunk($uploadId, (int)$row['org_id'], $this->actor(), $index, $file['tmp_name']);
+		return $this->ok(['received' => true]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function chunkFinish(string $uploadId): JSONResponse
+	{
+		$row = $this->chunkSvc()->find($uploadId);
+		if ($row === null) {
+			throw new NotFoundException();
+		}
+		$orgId = (int)$row['org_id'];
+		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
+		$res = $this->chunkSvc()->finish($uploadId, $orgId, $this->actor());
+		$uploadSvc = new \OCA\PortalCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
+		try {
+			$uploadSvc->validateFile($res['tmp'], (string)$row['file_name'], $uploadSvc->maxBytes());
+			$stored = $uploadSvc->store($eingang, $orgId, $this->actor(), $res['tmp'], (string)$row['file_name'], 'portal', null);
+		} finally {
+			@unlink($res['tmp']);
+		}
+		$this->chunkSvc()->complete($uploadId);
+		$this->notifyService->clientMail($orgId, 'document');
+		return $this->ok(['id' => (int)$stored['upload']->getId(), 'duplicate' => $stored['duplicate'] !== null], 201);
+	}
+
+	private function chunkSvc(): \OCA\PortalCheck\Service\ChunkUploadService
+	{
+		return \OCP\Server::get(\OCA\PortalCheck\Service\ChunkUploadService::class);
+	}
+
+	// ── devices (revoke own) ─────────────────────────────────────────
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function revokeDevice(int $id): JSONResponse
+	{
+		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\DeviceService::class);
+		if (!$svc->revoke($id, (int)$this->portalIdentity->getId())) {
+			throw new NotFoundException();
+		}
+		return new JSONResponse(null, 204);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function revokeAllDevices(): JSONResponse
+	{
+		$this->devices->revokeForIdentity((int)$this->portalIdentity->getId());
+		return new JSONResponse(null, 204);
+	}
+
+	// ── documents (Dokumente read surface) ───────────────────────────
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function documents(int $orgId): JSONResponse
+	{
+		$folder = $this->orgFolder($orgId);
+		$dir = $this->docs->subFolder($folder, \OCA\PortalCheck\Service\DocumentService::DIR_DOCS);
+		$files = [];
+		if ($dir !== null) {
+			foreach ($dir->getDirectoryListing() as $node) {
+				if ($node instanceof \OCP\Files\File) {
+					$files[] = ['id' => (int)$node->getId(), 'name' => $node->getName(), 'size' => $node->getSize(), 'mtime' => $node->getMTime(), 'mime' => $node->getMimeType()];
+				}
+			}
+		}
+		return $this->ok(['files' => $files]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function download(int $orgId, int $fileId): \OCP\AppFramework\Http\Response
+	{
+		$this->org($orgId);
+		$node = $this->docs->documentNodeForOrg($orgId, $fileId);
+		$resp = new \OCP\AppFramework\Http\StreamResponse($node->fopen('r'));
+		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\PortalCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
+		$resp->addHeader('X-Content-Type-Options', 'nosniff');
+		$resp->addHeader('Content-Type', 'application/octet-stream');
+		return $resp;
+	}
+
+	// ── request item delivery (non-upload kinds already covered) ─────
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function deliverItem(int $id, int $itemId): JSONResponse
+	{
+		$this->orgOfRequest($id);
+		$uploadId = $this->strictId($this->request->getParam('uploadId')) ?? 0;
+		$i = $this->requests->deliverItem($this->actor(), $id, $itemId, $uploadId);
+		return $this->ok(['itemState' => $i->getState()]);
+	}
+
+	// ── forms ────────────────────────────────────────────────────────
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function form(int $formId): JSONResponse
+	{
+		$form = $this->forms->find($formId);
+		if ($form === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$form->getOrgId());
+		$tplMapper = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class);
+		$tpl = $tplMapper->find((int)$form->getTplId());
+		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($formId);
+		return $this->ok(['form' => [
+			'id' => $formId, 'state' => $form->getState(),
+			'fields' => json_decode((string)($tpl?->getFieldsJson() ?? '[]'), true) ?: [],
+			'answers' => array_map(fn($k, $v) => ['key' => $k, 'value' => $v['value'], 'revision' => $v['revision'], 'author' => $v['updated_by']], array_keys($answers), $answers),
+		]]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function formAnswer(int $formId): JSONResponse
+	{
+		$form = $this->forms->find($formId);
+		if ($form === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$form->getOrgId());
+		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\FormService::class);
+		$r = $svc->saveAnswer($this->actor(), $formId, (int)$form->getOrgId(),
+			(string)$this->request->getParam('field', ''),
+			(string)$this->request->getParam('value', ''),
+			(int)$this->request->getParam('revision', 0));
+		return $this->ok($r);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function formSubmit(int $formId): JSONResponse
+	{
+		$form = $this->forms->find($formId);
+		if ($form === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$form->getOrgId());
+		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\FormService::class);
+		$svc->submit($this->actor(), $formId, (int)$form->getOrgId());
+		if ($form->getReqItemId() !== null) {
+			try {
+				$item = \OCP\Server::get(\OCA\PortalCheck\Db\ReqItemMapper::class)->find((int)$form->getReqItemId());
+				if ($item !== null) {
+					$this->requests->deliverItem($this->actor(), (int)$item->getReqId(), (int)$item->getId());
+				}
+			} catch (\Throwable) {
+			}
+		}
+		return new JSONResponse(null, 204);
+	}
+
 	private function orgOfRequest(int $reqId): int
 	{
 		$r = $this->requestMapper->find($reqId);

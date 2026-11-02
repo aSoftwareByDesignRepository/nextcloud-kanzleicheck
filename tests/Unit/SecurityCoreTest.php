@@ -1,0 +1,185 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\PortalCheck\Tests\Unit;
+
+use OCA\PortalCheck\Db\DocRequest;
+use OCA\PortalCheck\Db\DocRequestMapper;
+use OCA\PortalCheck\Db\ReqItemMapper;
+use OCA\PortalCheck\Db\ReqRemindMapper;
+use OCA\PortalCheck\Exception\ApiException;
+use OCA\PortalCheck\Exception\ConflictException;
+use OCA\PortalCheck\Exception\RateLimitException;
+use OCA\PortalCheck\Service\AuditService;
+use OCA\PortalCheck\Service\CsrfService;
+use OCA\PortalCheck\Service\IntakeService;
+use OCA\PortalCheck\Service\MailRenderer;
+use OCA\PortalCheck\Service\RequestService;
+use OCA\PortalCheck\Service\TokenService;
+use OCP\IDBConnection;
+use PHPUnit\Framework\TestCase;
+
+/** Pure-logic coverage: token/CSRF/intake/mail-renderer/request-state-machines. */
+class SecurityCoreTest extends TestCase
+{
+	// ── TokenService ──
+	public function testMintProducesUrlSafeTokenAndStableHash(): void
+	{
+		$s = new TokenService();
+		[$token, $hash] = $s->mint();
+		$this->assertMatchesRegularExpression('/^[A-Za-z0-9_-]{40,50}$/', $token);
+		$this->assertSame(64, strlen($hash));
+		$this->assertSame($hash, $s->hash($token));
+	}
+
+	public function testVerifyIsHashEquals(): void
+	{
+		$s = new TokenService();
+		[$t, $h] = $s->mint();
+		$this->assertTrue($s->verify($t, $h));
+		$this->assertFalse($s->verify($t . 'x', $h));
+		$this->assertFalse($s->verify('', $h));
+		[$t2] = $s->mint();
+		$this->assertFalse($s->verify($t2, $h));
+	}
+
+	public function testOtpIsSixDigitsRandom(): void
+	{
+		$s = new TokenService();
+		$seen = [];
+		for ($i = 0; $i < 50; $i++) {
+			$seen[] = $s->mintOtp();
+		}
+		foreach ($seen as $c) {
+			$this->assertMatchesRegularExpression('/^\d{6}$/', $c);
+		}
+		$this->assertGreaterThan(5, count(array_unique($seen))); // randomness sanity
+	}
+
+	public function testIntakeTokenIsDeterministicOrgBound(): void
+	{
+		$s = new TokenService();
+		$a = $s->intakeToken('secret', 7);
+		$this->assertSame($a, $s->intakeToken('secret', 7));
+		$this->assertNotSame($a, $s->intakeToken('secret', 8));
+		$this->assertNotSame($a, $s->intakeToken('other', 7));
+		$this->assertSame(16, strlen($a));
+	}
+
+	// ── CsrfService ──
+	public function testCsrfBoundToSessionToken(): void
+	{
+		$c = new CsrfService();
+		$t1 = $c->tokenFor('session-A');
+		$t2 = $c->tokenFor('session-B');
+		$this->assertNotSame($t1, $t2);
+		$this->assertTrue($c->validate('session-A', $t1));
+		$this->assertFalse($c->validate('session-A', $t2));
+		$this->assertFalse($c->validate('session-A', ''));
+		$this->assertFalse($c->validate('session-A', str_repeat('x', 200)));
+	}
+
+	// ── IntakeService::parseAddress ──
+	public function testIntakeAddressParsing(): void
+	{
+		$this->assertSame(['orgId' => 7, 'token' => 'abcdef0123456789'],
+			IntakeService::parseAddress('portal+in-7-abcdef0123456789@cloud.example.de'));
+		$this->assertNull(IntakeService::parseAddress('portal@cloud.example.de'));
+		$this->assertNull(IntakeService::parseAddress('portal+in-7-short@x.de'));
+		$this->assertNull(IntakeService::parseAddress('not-an-email'));
+	}
+
+	// ── MailRenderer: content-free (NN-P04) ──
+	public function testAllMailsHaveSubjectAndBody(): void
+	{
+		foreach (['otp', 'approve', 'invite', 'remind', 'device', 'notice'] as $kind) {
+			foreach (['de', 'en'] as $lang) {
+				$m = MailRenderer::render($kind, ['code' => '123456', 'provider' => 'TestCo', 'portalUrl' => 'https://x', 'deadline' => '01.02.2026', 'deviceName' => 'Pixel', 'platform' => 'android', 'what' => 'message'], $lang);
+				$this->assertNotEmpty($m['subject'], "$kind/$lang subject");
+				$this->assertNotEmpty($m['text'], "$kind/$lang text");
+				$this->assertStringContainsString('TestCo', $m['subject'] . $m['text']);
+			}
+		}
+	}
+
+	public function testOtpMailContainsCodeAndWarnings(): void
+	{
+		$m = MailRenderer::render('otp', ['code' => '998877', 'provider' => 'Co', 'portalUrl' => ''], 'de');
+		$this->assertStringContainsString('998877', $m['text']);
+		$this->assertStringContainsString('10 Minuten', $m['text']);
+		$this->assertStringContainsString('nicht weiter', $m['text']); // never-forward warning (NN-P13)
+	}
+
+	public function testNoticeMailIsContentFree(): void
+	{
+		// no file names, no message text, no org names — only provider + what-kind
+		$m = MailRenderer::render('notice', ['what' => 'document', 'provider' => 'Co'], 'de');
+		$this->assertStringNotContainsString('invoice.pdf', $m['text']);
+		$this->assertStringNotContainsString('Acme GmbH', $m['subject']);
+	}
+
+	// ── exceptions ──
+	public function testApiExceptionContract(): void
+	{
+		$e = new ApiException(402, 'NO_PORTAL_SLOT', 'no slot', ['f' => 'x'], 30);
+		$this->assertSame(402, $e->getStatus());
+		$this->assertSame('NO_PORTAL_SLOT', $e->getErrorCode());
+		$this->assertSame(30, $e->getRetryAfter());
+		$this->assertSame(['f' => 'x'], $e->getFields());
+	}
+
+	public function testRateLimitAndConflict(): void
+	{
+		$this->assertSame(45, (new RateLimitException(45))->getRetryAfter());
+		$c = new ConflictException('CONFLICT', ['rev' => 3]);
+		$this->assertSame(['rev' => 3], $c->getCurrent());
+	}
+
+	// ── RequestService state helpers (real entity, no DB) ──
+	public function testOverdueOnlyOpenWithPastDeadline(): void
+	{
+		$svc = new RequestService(
+			$this->createMock(DocRequestMapper::class),
+			$this->createMock(ReqItemMapper::class),
+			$this->createMock(ReqRemindMapper::class),
+			$this->createMock(AuditService::class),
+			$this->createMock(IDBConnection::class),
+		);
+		$r = new DocRequest();
+		$r->setState('open');
+		$r->setDeadline(new \DateTimeImmutable('yesterday'));
+		$this->assertTrue($svc->overdue($r));
+		$r->setState('complete');
+		$this->assertFalse($svc->overdue($r));
+		$r->setState('open');
+		$r->setDeadline(new \DateTimeImmutable('+3 days'));
+		$this->assertFalse($svc->overdue($r));
+		$r->setDeadline(null);
+		$this->assertFalse($svc->overdue($r));
+	}
+
+	public function testDueRemindersPolicyExpansion(): void
+	{
+		$svc = new RequestService(
+			$this->createMock(DocRequestMapper::class),
+			$this->createMock(ReqItemMapper::class),
+			$this->createMock(ReqRemindMapper::class),
+			$this->createMock(AuditService::class),
+			$this->createMock(IDBConnection::class),
+		);
+		$r = new DocRequest();
+		$r->setState('open');
+		$r->setDeadline(\DateTimeImmutable::createFromFormat('!Y-m-d', '2026-03-10'));
+		$r->setReminderPolicy('-3,0,+3x5');
+		// offsets -3,0 → 03-07, 03-10; then +3 step × remaining 3 → 03-13,16,19
+		$due = $svc->dueReminders($r, new \DateTimeImmutable('2026-03-19'));
+		$this->assertSame(['2026-03-07', '2026-03-10', '2026-03-13', '2026-03-16', '2026-03-19'], $due);
+		// earlier "today" cuts the tail
+		$due = $svc->dueReminders($r, new \DateTimeImmutable('2026-03-14'));
+		$this->assertSame(['2026-03-07', '2026-03-10', '2026-03-13'], $due);
+		// no deadline → no reminders
+		$r->setDeadline(null);
+		$this->assertSame([], $svc->dueReminders($r, new \DateTimeImmutable('2026-03-19')));
+	}
+}

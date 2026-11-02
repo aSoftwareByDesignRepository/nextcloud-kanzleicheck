@@ -104,7 +104,6 @@ class PortalAuthController extends Controller
 	{
 		[$token, $session] = $this->sessions->create($identityId, (string)($this->request->getHeader('User-Agent') ?? ''));
 		$resp = $this->ok(['redirect' => $redirect, 'csrf' => (new CsrfService())->tokenFor($token)]);
-		$secure = $this->request->getServerProtocol() === 'https';
 		// NC emits app cookies HttpOnly + Secure(on https) at render time.
 		$resp->addCookie(self::SESSION_COOKIE, $token, null, 'Lax');
 		$resp->addCookie(CsrfService::COOKIE_NAME, (new CsrfService())->tokenFor($token), null, 'Lax');

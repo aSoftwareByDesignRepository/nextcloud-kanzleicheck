@@ -69,13 +69,16 @@ class UploadMapper extends QBMapper
 	}
 
 	/** @return list<Upload> upload queue across orgs (staff inbox) */
-	public function findByState(string $state, int $limit = 200): array
+	public function findByState(string $state, int $limit = 200, ?int $orgId = null): array
 	{
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')->from($this->getTableName())
 			->where($qb->expr()->eq('state', $qb->createNamedParameter($state)))
 			->orderBy('id', 'DESC')
 			->setMaxResults(max(1, min(500, $limit)));
+		if ($orgId !== null) {
+			$qb->andWhere($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)));
+		}
 		return $this->findEntities($qb);
 	}
 

@@ -73,6 +73,7 @@ private readonly DocumentService $docs,
 		}
 		try {
 			$deadline = microtime(true) + self::BUDGET_SECONDS;
+			$this->runIntake($deadline);
 			$this->runRecurrences($deadline);
 			$this->runReminders($deadline);
 			$this->runApprovalVoid($deadline);
@@ -80,6 +81,15 @@ private readonly DocumentService $docs,
 			$this->cursors->set('scheduler', (string)time());
 		} finally {
 			$this->lock->releaseLock('portalcheck_scheduler', ILockingProvider::LOCK_EXCLUSIVE);
+		}
+	}
+
+	private function runIntake(float $deadline): void
+	{
+		try {
+			\OCP\Server::get(\OCA\PortalCheck\Service\IntakeMailService::class)->poll(50);
+		} catch (\Throwable $e) {
+			$this->logger->warning('portalcheck intake poll failed', ['e' => $e->getMessage()]);
 		}
 	}
 

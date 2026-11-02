@@ -420,7 +420,7 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 		if (!$schema->hasTable('ptl_mail_outbox')) {
 			$t = $schema->createTable('ptl_mail_outbox');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
-			$t->addColumn('idem_key', 'string', ['notnull' => true, 'length' => 64]);
+			$t->addColumn('idem_key', 'string', ['notnull' => true, 'length' => 255]);
 			$t->addColumn('kind', 'string', ['notnull' => true, 'length' => 32]);
 			$t->addColumn('to_hash', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('to_enc', 'text', ['notnull' => false]);

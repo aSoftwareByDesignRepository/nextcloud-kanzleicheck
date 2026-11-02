@@ -45,4 +45,22 @@ class PageController extends Controller implements \OCA\PortalCheck\Contracts\St
 	{
 		return $this->index();
 	}
+
+	/** Print-proof page (US-P23): hash-bound decision record, printable. */
+	#[NoAdminRequired]
+	#[NoCSRFRequired]
+	public function approvalProof(int $id): TemplateResponse
+	{
+		$a = \OCP\Server::get(\OCA\PortalCheck\Db\ApprovalMapper::class)->find($id);
+		if ($a === null) {
+			throw new \OCA\PortalCheck\Exception\NotFoundException();
+		}
+		return new TemplateResponse(Application::APP_ID, 'staff/approval-proof', [
+			'id' => (int)$a->getId(), 'fileName' => $a->getFileName(), 'sha' => $a->getFileSha256(),
+			'state' => $a->getState(), 'requestedBy' => $a->getRequestedBy(),
+			'requestedAt' => $a->getRequestedAt()->format('d.m.Y H:i'),
+			'decidedBy' => $a->getDecidedBy(), 'decidedAt' => $a->getDecidedAt()?->format('d.m.Y H:i'),
+			'method' => $a->getConfirmMethod(), 'reason' => $a->getReason(),
+		]);
+	}
 }
