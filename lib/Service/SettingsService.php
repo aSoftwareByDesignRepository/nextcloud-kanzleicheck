@@ -43,8 +43,10 @@ class SettingsService
 		'inbound_cursor' => '',
 	];
 
-	public function __construct(private readonly IConfig $config)
-	{
+	public function __construct(
+		private readonly IConfig $config,
+		private readonly ?\OCP\Security\ICrypto $crypto = null,
+	) {
 	}
 
 	public function get(string $key): string
@@ -86,5 +88,34 @@ class SettingsService
 	public function setList(string $key, array $values): void
 	{
 		$this->set($key, json_encode(array_values($values), JSON_UNESCAPED_SLASHES) ?: '[]');
+	}
+
+	/**
+	 * Secret settings (mailbox password, …): ICrypto-encrypted at rest.
+	 * Reading a legacy plaintext value returns it as-is (migration-safe);
+	 * writes always encrypt when ICrypto is available.
+	 */
+	public function setSecret(string $key, string $value): void
+	{
+		if ($value !== '' && $this->crypto !== null) {
+			try {
+				$value = 'v2:' . $this->crypto->encrypt($value);
+			} catch (\Throwable) {
+			}
+		}
+		$this->set($key, $value);
+	}
+
+	public function getSecret(string $key): string
+	{
+		$v = $this->get($key);
+		if ($v === '' || !str_starts_with($v, 'v2:') || $this->crypto === null) {
+			return $v;
+		}
+		try {
+			return $this->crypto->decrypt(substr($v, 3));
+		} catch (\Throwable) {
+			return '';
+		}
 	}
 }

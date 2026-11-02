@@ -397,7 +397,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 				$this->settings->set('inbound_port', (string)max(1, min(65535, (int)$in['port'])));
 			}
 			if (isset($in['pass']) && $in['pass'] !== '') {
-				$this->settings->set('inbound_pass_enc', (string)$in['pass']); // stored via crypto upstream
+				$this->settings->setSecret('inbound_pass_enc', (string)$in['pass']);
 			}
 		}
 		return $this->ok(['saved' => true]);

@@ -57,7 +57,7 @@ class IntakeMailService
 		}
 		$host = $this->settings->get('inbound_host');
 		$user = $this->settings->get('inbound_user');
-		$pass = $this->settings->get('inbound_pass_enc');
+		$pass = $this->settings->getSecret('inbound_pass_enc');
 		if ($host === '' || $user === '' || $pass === '') {
 			$stats['error'] = 'NOT_CONFIGURED';
 			return $stats;

@@ -165,6 +165,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		return $f;
 	}
 
+
 	/** Bootstrap always answers — role/capabilities/licence envelope (never gated). */
 	#[PublicPage] #[NoCSRFRequired]
 	public function bootstrap(): JSONResponse
@@ -406,7 +407,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		}
 		$this->companionOrg((int)$row['org_id']);
 		// raw request body → temp file (mobile sends bytes, not multipart)
-		$content = $this->request->getContent();
+		$content = fopen('php://input', 'rb');
 		$tmp = tempnam(sys_get_temp_dir(), 'ptl_chk_');
 		if (is_resource($content)) {
 			$out = fopen($tmp, 'wb');
@@ -574,6 +575,14 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$enabled = $this->request->getParam('mailsEnabled');
 		$this->notify->setMailsEnabled((int)$this->companionIdentity->getId(), $orgId, $enabled === true || $enabled === '1' || $enabled === 'true');
 		return new JSONResponse(null, 204);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function notifyGet(int $orgId): JSONResponse
+	{
+		$this->companionOrg($orgId);
+		$row = $this->notify->find((int)$this->companionIdentity->getId(), $orgId);
+		return $this->ok(['mailsEnabled' => $row === null || (int)$row['mails_enabled'] === 1]);
 	}
 
 	#[PublicPage] #[NoCSRFRequired]

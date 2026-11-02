@@ -34,7 +34,7 @@ class IntakeHoldService
 	private function bufferDir(int $holdId, bool $create): ?ISimpleFolder
 	{
 		try {
-			$root = $this->appData->getRootFolder();
+			$root = $this->appData;
 			if ($create) {
 				try {
 					$root->getFolder('holds');
@@ -70,7 +70,7 @@ class IntakeHoldService
 		$safe = SafeFilenameService::sanitize($name);
 		$f = $dir->newFile($safe);
 		$in = fopen($tmpPath, 'rb');
-		$out = $f->open('w');
+		$out = $f->write();
 		if ($in !== false && $out !== false) {
 			stream_copy_to_stream($in, $out);
 		}
@@ -104,7 +104,7 @@ class IntakeHoldService
 			foreach ($dir->getDirectoryListing() as $node) {
 				$tmp = tempnam(sys_get_temp_dir(), 'ptl_hold_');
 				$out = fopen($tmp, 'wb');
-				$in = $node->open('r');
+				$in = $node->read();
 				if ($in !== false && $out !== false) {
 					stream_copy_to_stream($in, $out);
 				}

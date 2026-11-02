@@ -43,16 +43,10 @@ class IntegrationService
 			return null;
 		}
 		try {
-			// resolve from the sibling app's container — never construct directly
-			return \OCP\Server::get(\OCP\IAppContainer::class)
-				->getAppContainer('invoicecheck')
-				->query(self::FACADE);
+			// siblings expose read-facades via registerPublicService (family pattern)
+			return \OCP\Server::get(self::FACADE);
 		} catch (\Throwable) {
-			try {
-				return \OCP\Server::get(self::FACADE);
-			} catch (\Throwable) {
-				return null;
-			}
+			return null;
 		}
 	}
 

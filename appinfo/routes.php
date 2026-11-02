@@ -135,6 +135,7 @@ return [
 		['name' => 'companion#devices', 'url' => '/api/companion/v1/devices', 'verb' => 'GET'],
 		['name' => 'companion#revokeDevice', 'url' => '/api/companion/v1/devices/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
 		['name' => 'companion#revokeAllDevices', 'url' => '/api/companion/v1/devices', 'verb' => 'DELETE'],
+		['name' => 'companion#notifyGet', 'url' => '/api/companion/v1/orgs/{orgId}/notify', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'companion#notifyPut', 'url' => '/api/companion/v1/orgs/{orgId}/notify', 'verb' => 'PUT', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'companion#intake', 'url' => '/api/companion/v1/orgs/{orgId}/intake', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'companion#invoices', 'url' => '/api/companion/v1/orgs/{orgId}/invoices', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
