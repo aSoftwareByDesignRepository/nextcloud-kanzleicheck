@@ -46,6 +46,8 @@ use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\StreamResponse;
 use OCP\IRequest;
+use OCP\IURLGenerator;
+use OCP\IUserManager;
 
 /** Staff API (/api/portal/**) — door enforced by StaffAccessMiddleware (->staffUid). */
 class StaffApiController extends Controller implements \OCA\PortalCheck\Contracts\StaffContextAware
@@ -96,6 +98,8 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		private readonly PresetCatalog $presets,
 		private readonly SettingsService $settings,
 		private readonly ActorResolver $actors,
+		private readonly IURLGenerator $urls,
+		private readonly IUserManager $userManager,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -135,6 +139,9 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	public function inbox(): JSONResponse
 	{
 		$orgIds = array_map(fn($o) => (int)$o->getId(), $this->orgs->findAllOrdered());
+		if ($this->request->getParam('mine') === '1') {
+			$orgIds = array_values(array_intersect($orgIds, $this->contactMapper()->orgsForUser($this->staffUid)));
+		}
 		$inbox = $this->chat->inboxForStaff($this->staffUid, $orgIds);
 		$names = [];
 		foreach ($this->orgs->findAllOrdered() as $o) {
@@ -241,6 +248,9 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$out = [];
 		$orgId = $this->strictId($this->request->getParam('orgId'));
 		$orgs = $orgId !== null ? [$orgId] : array_map(fn($o) => (int)$o->getId(), $this->orgs->findAllOrdered());
+		if ($this->request->getParam('mine') === '1') {
+			$orgs = array_values(array_intersect($orgs, $this->contactMapper()->orgsForUser($this->staffUid)));
+		}
 		$reqMapper = new \OCA\PortalCheck\Db\DocRequestMapper($this->db());
 		$itemMapper = new \OCA\PortalCheck\Db\ReqItemMapper($this->db());
 		foreach ($orgs as $oid) {
@@ -497,7 +507,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			(int)$this->request->getParam('maxBytes', 100 * 1024 * 1024),
 			$this->request->getParam('showOrg') === true || $this->request->getParam('showOrg') === '1',
 		);
-		return $this->ok(['link' => ['id' => (int)$res['link']->getId(), 'url' => '/apps/portalcheck/portal/u/' . $res['token']]], 201);
+		return $this->ok(['link' => ['id' => (int)$res['link']->getId(), 'url' => $this->urls->linkToRouteAbsolute('portalcheck.ulink.page', ['token' => $res['token']])]], 201);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]
@@ -529,12 +539,16 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			throw new NotFoundException();
 		}
 		$action = (string)$this->request->getParam('action', '');
-		if (!in_array($action, ['accept', 'reject'], true)) {
-			throw new ValidationException('VALIDATION_FAILED', ['action' => 'invalid']);
+		$holdSvc = \OCP\Server::get(\OCA\PortalCheck\Service\IntakeHoldService::class);
+		if ($action === 'accept') {
+			$res = $holdSvc->accept($this->staffUid, $id);
+			return $this->ok(['state' => 'accepted', 'stored' => $res['stored'], 'failed' => $res['failed']]);
 		}
-		$h->setState($action === 'accept' ? 'accepted' : 'rejected');
-		$this->intakeHolds->update($h);
-		return $this->ok(['state' => $h->getState()]);
+		if ($action === 'discard' || $action === 'reject') {
+			$holdSvc->discard($this->staffUid, $id);
+			return $this->ok(['state' => 'discarded']);
+		}
+		throw new ValidationException('VALIDATION_FAILED', ['action' => 'invalid']);
 	}
 
 	// ── approvals (staff side) ───────────────────────────────────────
@@ -758,11 +772,14 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			throw new ValidationException('VALIDATION_FAILED', ['userIds' => 'invalid']);
 		}
 		foreach ($uids as $uid) {
-			if (!$this->door->isStaff((string)$uid)) {
-				throw new ValidationException('VALIDATION_FAILED', ['userIds' => 'not_staff:' . $uid]);
+			if (!is_string($uid)
+				|| !$this->userManager->userExists($uid)
+				|| !$this->door->isStaff($uid)) {
+				throw new ValidationException('VALIDATION_FAILED', ['userIds' => 'not_staff:' . (is_string($uid) ? $uid : 'invalid')]);
 			}
 		}
-		$this->contactMapper()->setForOrg($orgId, array_map('strval', array_slice($uids, 0, 50)));
+		$contacts = array_map(static fn(string $uid) => ['userId' => $uid, 'roleLabel' => null, 'showPhone' => false, 'showEmail' => true], array_slice($uids, 0, 50));
+		$this->contactMapper()->setForOrg($orgId, $contacts);
 		return new JSONResponse(null, 204);
 	}
 
@@ -776,6 +793,232 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	private function tplOrgMapper(): \OCA\PortalCheck\Db\ReqTplOrgMapper
 	{
 		return \OCP\Server::get(\OCA\PortalCheck\Db\ReqTplOrgMapper::class);
+	}
+
+	// ── request detail (items + delivered files for staff review) ────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function requestDetail(int $id): JSONResponse
+	{
+		$r = $this->requests->mustGet($id);
+		$this->org((int)$r->getOrgId());
+		$itemMapper = new \OCA\PortalCheck\Db\ReqItemMapper($this->db());
+		$fileMapper = new \OCA\PortalCheck\Db\ReqFileMapper($this->db());
+		$items = array_map(function ($i) use ($fileMapper) {
+			return ['id' => (int)$i->getId(), 'label' => $i->getLabel(), 'hint' => $i->getHint(),
+				'kind' => $i->getKind(), 'formId' => $i->getFormId(), 'state' => $i->getState(),
+				'rejectReason' => $i->getRejectReason(), 'deliveredAt' => $i->getDeliveredAt()?->format('c'),
+				'files' => $fileMapper->uploadIdsForItem((int)$i->getId())];
+		}, $itemMapper->findByReq($id));
+		return $this->ok(['request' => [
+			'id' => $id, 'orgId' => (int)$r->getOrgId(), 'title' => $r->getTitle(), 'note' => $r->getNote(),
+			'state' => $r->getState(), 'deadline' => $r->getDeadline()?->format('Y-m-d'),
+			'overdue' => $this->requests->overdue($r), 'items' => $items]]);
+	}
+
+	// ── questionnaires (staff side, US-P28) ──────────────────────────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function formTemplates(): JSONResponse
+	{
+		$out = array_map(fn($t) => [
+			'id' => (int)$t->getId(), 'name' => $t->getName(),
+			'fields' => json_decode((string)$t->getFieldsJson(), true) ?: [],
+		], \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class)->findAllOrdered('name', 'ASC'));
+		return $this->ok(['templates' => $out]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function createFormTemplate(): JSONResponse
+	{
+		$this->requireAdmin();
+		$t = $this->formService->createTemplate($this->staffUid,
+			(string)$this->request->getParam('name', ''),
+			is_array($this->request->getParam('fields')) ? $this->request->getParam('fields') : []);
+		return $this->ok(['template' => ['id' => (int)$t->getId()]], 201);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function forms(): JSONResponse
+	{
+		$orgId = $this->strictId($this->request->getParam('orgId'));
+		if ($orgId !== null) {
+			$this->org($orgId);
+		}
+		$out = array_map(fn($f) => ['id' => (int)$f->getId(), 'orgId' => (int)$f->getOrgId(),
+			'tplId' => (int)$f->getTplId(), 'reqItemId' => $f->getReqItemId() !== null ? (int)$f->getReqItemId() : null,
+			'state' => $f->getState(), 'submittedAt' => $f->getSubmittedAt()?->format('c')],
+			$this->forms->findByOrg($orgId ?? 0, (string)$this->request->getParam('state', '')));
+		return $this->ok(['forms' => $out]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function sendForm(): JSONResponse
+	{
+		$orgId = $this->strictId($this->request->getParam('orgId')) ?? 0;
+		$this->org($orgId);
+		$f = $this->formService->instantiate($orgId,
+			$this->strictId($this->request->getParam('tplId')) ?? 0,
+			$this->strictId($this->request->getParam('reqItemId')));
+		return $this->ok(['form' => ['id' => (int)$f->getId()]], 201);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function formDetail(int $id): JSONResponse
+	{
+		$f = $this->forms->find($id);
+		if ($f === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$f->getOrgId());
+		$tpl = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class)->find((int)$f->getTplId());
+		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($id);
+		return $this->ok(['form' => [
+			'id' => $id, 'orgId' => (int)$f->getOrgId(), 'name' => $tpl?->getName() ?? '', 'state' => $f->getState(),
+			'fields' => json_decode((string)($tpl?->getFieldsJson() ?? '[]'), true) ?: [],
+			'answers' => array_map(fn($k, $v) => ['key' => $k, 'value' => $v['value'], 'author' => $v['updated_by'], 'updatedAt' => $v['updated_at']], array_keys($answers), $answers),
+		]]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function reopenForm(int $id): JSONResponse
+	{
+		$f = $this->forms->find($id);
+		if ($f === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$f->getOrgId());
+		$this->formService->reopen($id, $this->staffUid);
+		return $this->ok(['state' => 'open']);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function exportFormCsv(int $id): \OCP\AppFramework\Http\Response
+	{
+		$f = $this->forms->find($id);
+		if ($f === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$f->getOrgId());
+		$tpl = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class)->find((int)$f->getTplId());
+		$fields = json_decode((string)($tpl?->getFieldsJson() ?? '[]'), true) ?: [];
+		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($id);
+		$rows = [['field', 'label', 'answer', 'author', 'updated_at']];
+		foreach ($fields as $field) {
+			$a = $answers[$field['key']] ?? null;
+			$rows[] = [$field['key'], $field['label'], (string)($a['value'] ?? ''), (string)($a['updated_by'] ?? ''), (string)($a['updated_at'] ?? '')];
+		}
+		$csv = implode("\n", array_map(static fn(array $row): string =>
+			implode(',', array_map(static fn(string $c): string =>
+				'"' . str_replace('"', '""', \OCA\PortalCheck\Service\CsvFormulaGuard::escape($c)) . '"', $row)), $rows)) . "\n";
+		$resp = new \OCP\AppFramework\Http\DataDownloadResponse($csv, 'form-' . $id . '.csv', 'text/csv; charset=utf-8');
+		$resp->addHeader('X-Content-Type-Options', 'nosniff');
+		return $resp;
+	}
+
+	// ── identity status (US-P07 AC-4 / US-P03 AC-3) ──────────────────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function setIdentityStatus(int $id): JSONResponse
+	{
+		$this->requireAdmin();
+		$status = (string)$this->request->getParam('status', '');
+		if (!in_array($status, ['active', 'disabled'], true)) {
+			throw new ValidationException('VALIDATION_FAILED', ['status' => 'invalid']);
+		}
+		$identity = $this->identityMapper->find($id);
+		if ($identity === null || $identity->getStatus() === 'erased') {
+			throw new NotFoundException();
+		}
+		$identity->setStatus($status);
+		$this->identityMapper->update($identity);
+		if ($status === 'disabled') {
+			// disable ⇒ every web session + device token dies now (AC-4)
+			\OCP\Server::get(\OCA\PortalCheck\Service\PortalSessionService::class)->revokeAllForIdentity($id);
+			\OCP\Server::get(\OCA\PortalCheck\Db\DeviceMapper::class)->revokeForIdentity($id);
+		}
+		\OCP\Server::get(\OCA\PortalCheck\Service\AuditService::class)
+			->log($this->staffUid, 'identity.' . $status, 'identity', $id);
+		return $this->ok(['identity' => ['id' => $id, 'status' => $status]]);
+	}
+
+	// ── staff file access + publish (US-P12) ─────────────────────────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function uploadFile(int $id): \OCP\AppFramework\Http\Response
+	{
+		$u = $this->uploads->find($id);
+		if ($u === null) {
+			throw new NotFoundException();
+		}
+		$this->org((int)$u->getOrgId());
+		$node = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class)
+			->orgNodeForOrg((int)$u->getOrgId(), (int)$u->getFileId(), null);
+		$resp = new \OCP\AppFramework\Http\StreamResponse($node->fopen('r'));
+		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\PortalCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
+		$resp->addHeader('X-Content-Type-Options', 'nosniff');
+		$resp->addHeader('Content-Type', 'application/octet-stream');
+		return $resp;
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function orgDocuments(int $orgId): JSONResponse
+	{
+		$this->org($orgId);
+		$docs = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class);
+		$org = $this->orgs->find($orgId);
+		$files = [];
+		$folder = $org !== null ? $docs->orgFolder($orgId, (string)$org->getName(), $org->getFolderId(), $org->getFolderPath()) : null;
+		$dir = $folder !== null ? $docs->subFolder($folder, \OCA\PortalCheck\Service\DocumentService::DIR_DOCS) : null;
+		if ($dir !== null) {
+			foreach ($dir->getDirectoryListing() as $node) {
+				if ($node instanceof \OCP\Files\File) {
+					$files[] = ['id' => (int)$node->getId(), 'name' => $node->getName(), 'size' => $node->getSize()];
+				}
+			}
+		}
+		return $this->ok(['files' => $files]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function publishUpload(int $id): JSONResponse
+	{
+		$u = $this->uploads->find($id);
+		if ($u === null) {
+			throw new NotFoundException();
+		}
+		$orgId = (int)$u->getOrgId();
+		$this->org($orgId);
+		$docs = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class);
+		$node = $docs->orgNodeForOrg($orgId, (int)$u->getFileId(), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
+		$org = $this->orgs->find($orgId);
+		$folder = $docs->orgFolder($orgId, (string)$org->getName(), $org->getFolderId(), $org->getFolderPath());
+		$dokumente = $docs->ensureSubFolder($folder, \OCA\PortalCheck\Service\DocumentService::DIR_DOCS);
+		$target = $docs->uniqueName($dokumente, $node->getName());
+		$node->move(rtrim($dokumente->getPath(), '/') . '/' . $target);
+		$u->setFileId((int)$node->getId());
+		$u->setState('abgelegt');
+		$u->setReviewedBy($this->staffUid);
+		$u->setReviewedAt(new \DateTimeImmutable());
+		$this->uploads->update($u);
+		return $this->ok(['upload' => ['id' => $id, 'state' => 'abgelegt']]);
+	}
+
+	// ── setup coach status (US-P05) ──────────────────────────────────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function setup(): JSONResponse
+	{
+		$this->requireAdmin();
+		$docs = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class);
+		return $this->ok(['setup' => [
+			'preset' => $this->settings->get('preset'),
+			'docsRoot' => $docs->rootHealthy(),
+			'orgs' => count($this->orgs->findAllOrdered()),
+			'identities' => count($this->identityMapper->search('')),
+			'mailConfigured' => $this->settings->get('provider_label') !== '',
+			'done' => $this->settings->get('preset') !== '' && $docs->rootHealthy() && count($this->orgs->findAllOrdered()) > 0,
+		]]);
 	}
 
 	private function contactMapper(): \OCA\PortalCheck\Db\ContactMapper

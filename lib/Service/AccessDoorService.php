@@ -89,6 +89,40 @@ class AccessDoorService
 		return in_array($uid, $this->settings->getList('app_admins'), true);
 	}
 
+	/**
+	 * Every door-admitted staff uid (platform groups ∪ allowed groups ∪
+	 * allowed users ∪ app admins; Open door → all NC users). Used only for
+	 * notification fan-out — never for the access decision itself.
+	 * @return list<string>
+	 */
+	public function staffUids(): array
+	{
+		$uids = [];
+		foreach ($this->settings->getList('allowed_users') as $u) {
+			$uids[$u] = true;
+		}
+		foreach ($this->settings->getList('app_admins') as $u) {
+			$uids[$u] = true;
+		}
+		$gids = array_merge($this->platformRestrictedGroups(), $this->settings->getList('allowed_groups'));
+		foreach (array_unique($gids) as $gid) {
+			try {
+				$group = $this->groupManager->get($gid);
+				foreach ($group?->getUsers() ?? [] as $u) {
+					$uids[$u->getUID()] = true;
+				}
+			} catch (\Throwable) {
+			}
+		}
+		if ($uids === [] && !$this->isRestricted()) {
+			// Open door: every NC user is staff — enumerate
+			foreach ($this->userManager->search('', 5000) as $u) {
+				$uids[$u->getUID()] = true;
+			}
+		}
+		return array_keys($uids);
+	}
+
 	/** Client-management right = app admin for v1 (no finer ACL — US-P04 out of scope). */
 	public function canManageClients(string $uid): bool
 	{

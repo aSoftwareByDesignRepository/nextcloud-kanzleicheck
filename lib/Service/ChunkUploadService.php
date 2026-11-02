@@ -75,7 +75,7 @@ class ChunkUploadService
 		if ($row === null || (int)$row['org_id'] !== $orgId || $row['actor'] !== $actor) {
 			throw new NotFoundException();
 		}
-		if ($row['state'] !== 'open') {
+		if ($row['state'] !== 'receiving') {
 			throw new ApiException(409, 'VALIDATION_FAILED', 'upload finished');
 		}
 		if ($index < 0 || $index >= self::MAX_CHUNKS) {
@@ -121,7 +121,7 @@ class ChunkUploadService
 			throw new ApiException(409, 'VALIDATION_FAILED', 'assembly in progress');
 		}
 		if ((int)$row['received_bytes'] !== (int)$row['total_bytes']) {
-			$this->chunks->setState($uploadId, 'open');
+			$this->chunks->setState($uploadId, 'receiving');
 			throw new ApiException(400, 'VALIDATION_FAILED', 'incomplete upload');
 		}
 		$dir = $this->dir();
@@ -139,7 +139,7 @@ class ChunkUploadService
 		fclose($out);
 		if (filesize($tmp) !== (int)$row['total_bytes']) {
 			@unlink($tmp);
-			$this->chunks->setState($uploadId, 'open');
+			$this->chunks->setState($uploadId, 'receiving');
 			throw new ApiException(400, 'VALIDATION_FAILED', 'chunk set incomplete');
 		}
 		return ['tmp' => $tmp, 'row' => $row];

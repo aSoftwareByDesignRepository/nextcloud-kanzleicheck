@@ -37,16 +37,23 @@ class DeviceAuthMiddleware extends Middleware
 		if ($rest === null || !str_starts_with($rest, '/api/companion/')) {
 			return;
 		}
-		if (in_array($rest, self::OPEN, true)) {
+		$open = in_array($rest, self::OPEN, true);
+		$token = $this->request->getHeader(self::HEADER);
+		if ($open && $token === '') {
 			return;
 		}
-		$token = $this->request->getHeader(self::HEADER);
 		$device = $token !== '' ? $this->devices->resolve($token) : null;
 		if ($device === null) {
+			if ($open) {
+				return; // soft-auth: bogus/absent token on open routes → anonymous bootstrap
+			}
 			throw new DeviceRevokedException();
 		}
 		$identity = $this->identities->activeById((int)$device->getIdentityId());
 		if ($identity === null) {
+			if ($open) {
+				return;
+			}
 			throw new DeviceRevokedException();
 		}
 		if ($controller instanceof \OCA\PortalCheck\Contracts\CompanionContextAware) {

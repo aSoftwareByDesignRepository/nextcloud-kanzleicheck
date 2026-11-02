@@ -78,7 +78,7 @@ class UploadLinkService
 			->set('used_files', $qb->createFunction('used_files + 1'))
 			->set('used_bytes', $qb->createFunction('used_bytes + ' . max(0, $bytes)))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($linkId)))
-			->andWhere($qb->expr()->lt('used_files', $qb->createNamedParameter($this->db->getQueryBuilder()->createFunction('max_files'))))
+			->andWhere($qb->expr()->lt('used_files', 'max_files'))
 			->andWhere($qb->expr()->lte($qb->createFunction('used_bytes + ' . max(0, $bytes)), 'max_bytes'));
 		if ($qb->executeStatement() !== 1) {
 			throw new ApiException(410, 'LINK_EXHAUSTED', 'link exhausted');

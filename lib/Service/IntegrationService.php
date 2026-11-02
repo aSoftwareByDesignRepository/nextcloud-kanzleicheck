@@ -5,49 +5,83 @@ declare(strict_types=1);
 namespace OCA\PortalCheck\Service;
 
 use OCP\App\IAppManager;
-use OCP\IDBConnection;
 
 /**
- * Sibling integrations — facade-only, read-only, fail-safe (NN-P05).
- * InvoiceCheck: invoice list + PDF link via its service if the app is
- * enabled; BookingCheck: org booking-URL display (already validated
- * same-instance /pub/o/{slug} by OrgService::validateBookingUrl).
+ * Sibling integrations — facade-only, read-only, fail-safe (NN-P05/NN-P21).
+ *
+ * InvoiceCheck is consumed exclusively through its owned facade
+ * `OCA\InvoiceCheck\Facade\CrmInvoiceReadFacade::listByPcCustomer()`
+ * (FC-IC-READ, the only sanctioned sibling import per G-18). The class is
+ * resolved lazily from the sibling's own DI container — never by touching
+ * its tables. BookingCheck integration is a validated same-instance URL
+ * (OrgService::validateBookingUrl), no code import at all.
+ *
  * Any failure → empty list / hidden panel, never a route-breaking error.
  */
 class IntegrationService
 {
+	private const FACADE = 'OCA\\InvoiceCheck\\Facade\\CrmInvoiceReadFacade';
+
 	public function __construct(
 		private readonly IAppManager $appManager,
-		private readonly IDBConnection $db,
 	) {
 	}
 
 	public function invoiceAvailable(): bool
 	{
 		try {
-			return $this->appManager->isEnabledForUser('invoicecheck');
+			return $this->appManager->isEnabledForUser('invoicecheck')
+				&& class_exists(self::FACADE);
 		} catch (\Throwable) {
 			return false;
 		}
 	}
 
-	/** Read-only invoice list for an org's linked customer (pc_cust_id). */
+	private function invoiceFacade(): ?object
+	{
+		if (!$this->invoiceAvailable()) {
+			return null;
+		}
+		try {
+			// resolve from the sibling app's container — never construct directly
+			return \OCP\Server::get(\OCP\IAppContainer::class)
+				->getAppContainer('invoicecheck')
+				->query(self::FACADE);
+		} catch (\Throwable) {
+			try {
+				return \OCP\Server::get(self::FACADE);
+			} catch (\Throwable) {
+				return null;
+			}
+		}
+	}
+
+	/**
+	 * Read-only invoice list for an org's linked customer (pc_cust_id).
+	 * @return list<array{id:int,ref:?string,status:string,issuedAt:?string,dueAt:?string,totalMinor:int,currency:string,overdue:bool}>
+	 */
 	public function invoicesForOrg(int $pcCustId): array
 	{
-		if ($pcCustId <= 0 || !$this->invoiceAvailable()) {
+		$facade = $this->invoiceFacade();
+		if ($pcCustId <= 0 || $facade === null) {
 			return [];
 		}
 		try {
-			// read the sibling's own table read-only — never write (NN-P05)
-			$qb = $this->db->getQueryBuilder();
-			$qb->select('id', 'invoice_no', 'amount_minor', 'currency', 'state', 'issued_at', 'due_at')
-				->from('iv_invoice')
-				->where($qb->expr()->eq('cust_id', $qb->createNamedParameter($pcCustId)))
-				->orderBy('issued_at', 'DESC')
-				->setMaxResults(50);
-			return $qb->executeQuery()->fetchAll() ?: [];
+			$rows = $facade->listByPcCustomer($pcCustId, 50);
+			return array_values(array_map(static function (array $r): array {
+				return [
+					'id' => (int)($r['icInvoiceId'] ?? $r['id'] ?? 0),
+					'ref' => isset($r['invoiceRef']) ? (string)$r['invoiceRef'] : null,
+					'status' => (string)($r['status'] ?? 'open'),
+					'issuedAt' => isset($r['issueDate']) ? (string)$r['issueDate'] : null,
+					'dueAt' => isset($r['dueDate']) ? (string)$r['dueDate'] : null,
+					'totalMinor' => (int)($r['grossTotalCents'] ?? 0),
+					'currency' => 'EUR',
+					'overdue' => !empty($r['overdue']),
+				];
+			}, is_array($rows) ? $rows : []));
 		} catch (\Throwable) {
-			return []; // sibling table shape differs or app absent → hide panel
+			return []; // facade threw → degrade silently per contract
 		}
 	}
 

@@ -129,6 +129,16 @@ class DocumentService
 	 */
 	public function documentNodeForOrg(int $orgId, int $fileId): File
 	{
+		return $this->orgNodeForOrg($orgId, $fileId, self::DIR_DOCS);
+	}
+
+	/**
+	 * Confined resolve inside <org>/<subdir>/ (or either managed subdir when
+	 * $subdir is null): file id must live inside the org folder under the
+	 * root — foreign ids and outside-root ids are uniformly NOT_FOUND.
+	 */
+	public function orgNodeForOrg(int $orgId, int $fileId, ?string $subdir): File
+	{
 		$node = $this->findNodeById($fileId);
 		if (!$node instanceof File) {
 			throw new NotFoundException();
@@ -137,11 +147,11 @@ class DocumentService
 		if ($root === null || !$this->inside($root, $node)) {
 			throw new NotFoundException();
 		}
-		// must live inside <org>/Dokumente
 		$parts = explode('/', trim($node->getPath(), '/'));
 		$rootParts = explode('/', trim($root->getPath(), '/'));
 		$rel = array_slice($parts, count($rootParts));
-		if (count($rel) < 3 || !str_ends_with($rel[0], '-' . $orgId) || $rel[1] !== self::DIR_DOCS) {
+		$dirs = $subdir !== null ? [$subdir] : [self::DIR_DOCS, self::DIR_INBOX];
+		if (count($rel) < 3 || !str_ends_with($rel[0], '-' . $orgId) || !in_array($rel[1], $dirs, true)) {
 			throw new NotFoundException();
 		}
 		return $node;

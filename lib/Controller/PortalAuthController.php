@@ -65,7 +65,7 @@ class PortalAuthController extends Controller
 		$underCap = $email !== '' && $this->otpMapper->countRecentForEmail($email, (new \DateTimeImmutable())->modify('-1 hour')) < 5;
 		if ($deliver && $underCap) {
 			[$code, $magic, ] = $this->otp->issue($email, OtpService::PURPOSE_LOGIN, $ip, true);
-			$portalUrl = $this->urls->linkToRouteAbsolute('portalcheck.portal.magicGet', ['token' => $magic]);
+			$portalUrl = $this->urls->linkToRouteAbsolute('portalcheck.portalAuth.magicGet', ['token' => $magic]);
 			$this->outbox->enqueue($email, 'otp', 'otp:' . $email . ':' . hash('sha256', $code),
 				['code' => $code, 'portalUrl' => $portalUrl, 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->drainAsync();
@@ -97,7 +97,7 @@ class PortalAuthController extends Controller
 
 	private function invalidCode(): JSONResponse
 	{
-		return new JSONResponse(['success' => false, 'error' => 'INVALID_CODE', 'message' => 'Der Code stimmt nicht oder ist abgelaufen.', 'fields' => (object)[]], 400);
+		return new JSONResponse(['success' => false, 'error' => 'INVALID_CODE', 'message' => 'The code is incorrect or has expired.', 'fields' => (object)[]], 400);
 	}
 
 	private function issueSessionResponse(int $identityId, string $redirect): JSONResponse

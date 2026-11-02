@@ -27,6 +27,7 @@ class IntakeMailService
 		private readonly OrgMapper $orgs,
 		private readonly SettingsService $settings,
 		private readonly UploadService $uploads,
+		private readonly IntakeHoldService $holdService,
 		private readonly ChatService $chat,
 		private readonly DocumentService $docs,
 		private readonly \OCP\IDBConnection $db,
@@ -77,6 +78,7 @@ class IntakeMailService
 				try {
 					$this->processMessage($conn, $uid, $maxAttachmentBytes, $stats);
 				} catch (\Throwable $e) {
+					// best-effort: one poison message must not kill the poll batch
 					$stats['skipped']++;
 					$this->logger->warning('portalcheck intake message failed', ['uid' => $uid, 'e' => $e->getMessage()]);
 				}
@@ -111,10 +113,10 @@ class IntakeMailService
 			return; // not an intake-addressed mail — ignore entirely
 		}
 		$orgId = $parsed['orgId'];
-		// token check against the org's live address token
-		if (!hash_equals($this->intake->currentToken($orgId), $parsed['token'])) {
-			$this->holdMail($orgId, 'bad_token', $headers);
-			$stats['held']++;
+		// invalid/rotated token → dropped silently (G-14: no oracle by mail)
+		if (!$this->intake->isEnabled($orgId)
+			|| !hash_equals($this->intake->currentToken($orgId), $parsed['token'])) {
+			$stats['skipped']++;
 			return;
 		}
 		$msgHash = hash('sha256', ($headers->message_id ?? '') . '|' . ($headers->date ?? '') . '|' . $uid);
@@ -124,7 +126,14 @@ class IntakeMailService
 		$from = strtolower((string)($headers->from[0]->mailbox ?? '') . '@' . ($headers->from[0]->host ?? ''));
 		$senderHash = hash('sha256', $from);
 		if (!$this->isMemberSender($orgId, $from)) {
-			$this->intake->hold($orgId, $msgHash, $senderHash);
+			// non-member: hold for staff review, attachments quarantined
+			$hold = $this->intake->hold($orgId, $msgHash, $senderHash);
+			if ($hold !== null) {
+				foreach ($this->extractParts($conn, $uid, $maxAttachmentBytes) as [$name, $tmp]) {
+					$this->holdService->bufferFile((int)$hold->getId(), $name, $tmp);
+					@unlink($tmp);
+				}
+			}
 			$stats['held']++;
 			return;
 		}
@@ -147,17 +156,16 @@ class IntakeMailService
 		return $qb->executeQuery()->fetchOne() !== false;
 	}
 
-	private function holdMail(int $orgId, string $reason, object $headers): void
+	/** @return list<array{0:string,1:string}> [filename, tmpPath] extracted parts (caller unlinks) */
+	private function extractParts($conn, int $uid, int $maxBytes): array
 	{
-		$from = strtolower((string)($headers->from[0]->mailbox ?? '') . '@' . ($headers->from[0]->host ?? ''));
-		$this->intake->hold($orgId, hash('sha256', $reason . '|' . ($headers->message_id ?? uniqid())), hash('sha256', $from));
-	}
-
-	private function storeAttachments($conn, int $uid, int $orgId, string $actor, int $maxBytes): int
-	{
-		$stored = 0;
+		$out = [];
 		$structure = imap_fetchstructure($conn, $uid, FT_UID);
+		$count = 0;
 		foreach (($structure->parts ?? []) as $idx => $part) {
+			if ($count >= 25) {
+				break;
+			}
 			$name = $this->partFilename($part) ?? 'attachment-' . ($idx + 1);
 			$partNo = $idx + 1;
 			if (($part->bytes ?? 0) > $maxBytes) {
@@ -174,18 +182,23 @@ class IntakeMailService
 			}
 			$tmp = tempnam(sys_get_temp_dir(), 'ptl_in_');
 			file_put_contents($tmp, $data);
+			$out[] = [$name, $tmp];
+			$count++;
+		}
+		return $out;
+	}
+
+	private function storeAttachments($conn, int $uid, int $orgId, string $actor, int $maxBytes): int
+	{
+		$stored = 0;
+		foreach ($this->extractParts($conn, $uid, $maxBytes) as [$name, $tmp]) {
 			$org = $this->orgOf($orgId);
-			if ($org === null) {
-				@unlink($tmp);
-				continue;
-			}
-			$folder = $this->docs->orgFolder($orgId, $org->getName(), $org->getFolderId(), $org->getFolderPath());
-			if ($folder === null) {
-				@unlink($tmp);
-				continue;
-			}
-			$eingang = $this->docs->ensureSubFolder($folder, DocumentService::DIR_INBOX);
+			$folder = $org !== null ? $this->docs->orgFolder($orgId, $org->getName(), $org->getFolderId(), $org->getFolderPath()) : null;
+			$eingang = $folder !== null ? $this->docs->ensureSubFolder($folder, DocumentService::DIR_INBOX) : null;
 			try {
+				if ($eingang === null) {
+					throw new \RuntimeException('no eingang');
+				}
 				$this->uploads->validateFile($tmp, $name, $maxBytes);
 				$this->uploads->store($eingang, $orgId, $actor, $tmp, $name, 'intake', 'per E-Mail');
 				$stored++;

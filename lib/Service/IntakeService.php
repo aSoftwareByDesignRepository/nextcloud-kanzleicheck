@@ -50,24 +50,46 @@ class IntakeService
 		return $local . '+in-' . $orgId . '-' . $this->currentToken($orgId) . '@' . $domain;
 	}
 
+	/**
+	 * The live address token: HMAC(install secret, orgId | per-org nonce).
+	 * The nonce lives in token_hash (it is entropy, not a credential);
+	 * rotation replaces the nonce so the old token dies immediately (AC-6).
+	 */
 	public function currentToken(int $orgId): string
 	{
-		return $this->tokens->intakeToken($this->secret(), $orgId);
+		$row = $this->intake->find($orgId);
+		$nonce = is_array($row) ? (string)($row['token_hash'] ?? '') : '';
+		if ($nonce === '') {
+			$nonce = $this->freshNonce();
+			$this->intake->upsert($orgId, (int)($row['enabled'] ?? 0) === 1, $nonce);
+		}
+		return $this->tokens->intakeToken($this->secret() . ':' . $nonce, $orgId);
+	}
+
+	private function freshNonce(): string
+	{
+		return bin2hex(random_bytes(16));
 	}
 
 	public function setEnabled(string $actor, int $orgId, bool $enabled): void
 	{
 		$existing = $this->intake->find($orgId);
-		$this->intake->upsert($orgId, $enabled, $existing['token_hash'] ?? $this->tokens->hash($this->currentToken($orgId)));
+		$nonce = (string)($existing['token_hash'] ?? '') !== '' ? (string)$existing['token_hash'] : $this->freshNonce();
+		$this->intake->upsert($orgId, $enabled, $nonce);
 		$this->audit->log($actor, 'intake.' . ($enabled ? 'enable' : 'disable'), 'org', $orgId);
 	}
 
 	public function rotate(string $actor, int $orgId): void
 	{
-		// re-secret per org: hash a fresh random token bound to the row
-		$new = bin2hex(random_bytes(8));
-		$this->intake->upsert($orgId, true, $this->tokens->hash($new . ':' . $orgId));
+		// new nonce → new address token; the old address is dead from now on
+		$this->intake->upsert($orgId, true, $this->freshNonce());
 		$this->audit->log($actor, 'intake.rotate', 'org', $orgId);
+	}
+
+	public function isEnabled(int $orgId): bool
+	{
+		$row = $this->intake->find($orgId);
+		return $row !== null && (int)$row['enabled'] === 1;
 	}
 
 	/** Parse "+in-<orgId>-<token>" recipients → orgId or null. */
@@ -79,10 +101,10 @@ class IntakeService
 		return null;
 	}
 
-	public function hold(int $orgId, string $msgHash, string $senderHash): void
+	public function hold(int $orgId, string $msgHash, string $senderHash): ?IntakeHold
 	{
 		if ($this->holds->existsByMsgHash($msgHash)) {
-			return;
+			return null;
 		}
 		$h = new IntakeHold();
 		$h->setOrgId($orgId);
@@ -90,6 +112,6 @@ class IntakeService
 		$h->setSenderHash($senderHash);
 		$h->setReceivedAt(new \DateTimeImmutable());
 		$h->setState('held');
-		$this->holds->insert($h);
+		return $this->holds->insert($h);
 	}
 }

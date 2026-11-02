@@ -1,0 +1,135 @@
+/* PortalCheck shared tokens + control baseline + button-variant armor.
+   Loaded on every app surface (staff shell + guest portal pages). */
+
+:root {
+	--ptl-form-border: var(--color-border-maxcontrast, var(--color-border));
+	--ptl-border-strong: var(--color-border-maxcontrast, var(--color-border));
+	--portalcheck-color-form-border: var(--ptl-form-border);
+	--portalcheck-color-form-border-error: var(--color-element-error, var(--color-error));
+	--portalcheck-color-form-border-focus: var(--color-primary-element);
+	--ptl-danger-fill: var(--color-element-error, #c90000);
+	--ptl-danger-ink: var(--color-error-text, var(--color-element-error, #8a0000));
+	--ptl-danger-border: var(--color-border-error, var(--color-element-error, #c90000));
+}
+
+/* #app-content control-border baseline (DESIGN-SYSTEM §3.6.0): NC core
+ * paints every input/select/textarea with a faint border that fails
+ * non-text contrast on theme-sensitive surfaces. Pin the strong family
+ * token on every control the app ships inside the NC shell. */
+#app-content .ptl-app input:not([type="checkbox"]):not([type="radio"]),
+#app-content .ptl-app select,
+#app-content .ptl-app textarea,
+#app-content .ptl-app .ptl-input,
+#app-content-wrapper .ptl-app input:not([type="checkbox"]):not([type="radio"]),
+#app-content-wrapper .ptl-app select,
+#app-content-wrapper .ptl-app textarea,
+#app-content-wrapper .ptl-app .ptl-input {
+	border: 1px solid var(--ptl-form-border);
+}
+#app-content .ptl-app input:focus-visible,
+#app-content .ptl-app select:focus-visible,
+#app-content .ptl-app textarea:focus-visible,
+#app-content .ptl-app .ptl-input:focus-visible {
+	border-color: var(--portalcheck-color-form-border-focus);
+}
+
+/* ── Button-variant armor ────────────────────────────────────────────
+ * Why !important everywhere: NC core inputs.scss repaints every
+ * <button>:not(.button-vue,[class^=vs__]) at specificity 0-1-1 with the
+ * pale --color-primary-element-light fill + light-text ink — stronger than
+ * a lone .ptl-btn--{variant} class (0-1-0). On <button> elements the
+ * variant collapses to the pale core skin; anchors/<summary> keep working,
+ * which is why the defect looks asymmetric
+ * (button_variant_specificity_collapse; canonical fix shape ported from
+ * arbeitszeitcheck css/app.css).
+ *
+ * ONE overlay scope list — app scopes + every body-mounted overlay scope —
+ * applying !important background/border/color for EVERY fill variant incl.
+ * :hover/:focus-visible/:active. A new overlay is armored by landing on the
+ * scope list, never by a per-dialog-class rule.
+ */
+.ptl-app .ptl-btn,
+.ptl-portal .ptl-btn,
+.ptl-dialog .ptl-btn,
+dialog .ptl-btn,
+[role="dialog"] .ptl-btn,
+[role="alertdialog"] .ptl-btn {
+	background: transparent !important;
+	border-color: var(--ptl-form-border) !important;
+	color: var(--color-main-text) !important;
+}
+.ptl-app .ptl-btn:hover,
+.ptl-portal .ptl-btn:hover,
+.ptl-dialog .ptl-btn:hover,
+dialog .ptl-btn:hover,
+[role="dialog"] .ptl-btn:hover,
+[role="alertdialog"] .ptl-btn:hover {
+	background: color-mix(in srgb, var(--color-main-text) 8%, transparent) !important;
+	border-color: var(--ptl-form-border) !important;
+	color: var(--color-main-text) !important;
+}
+.ptl-app .ptl-btn:active,
+.ptl-portal .ptl-btn:active,
+.ptl-dialog .ptl-btn:active,
+dialog .ptl-btn:active,
+[role="dialog"] .ptl-btn:active,
+[role="alertdialog"] .ptl-btn:active {
+	background: color-mix(in srgb, var(--color-main-text) 14%, transparent) !important;
+	border-color: var(--ptl-form-border) !important;
+	color: var(--color-main-text) !important;
+}
+.ptl-app .ptl-btn:focus-visible,
+.ptl-portal .ptl-btn:focus-visible,
+.ptl-dialog .ptl-btn:focus-visible,
+dialog .ptl-btn:focus-visible,
+[role="dialog"] .ptl-btn:focus-visible,
+[role="alertdialog"] .ptl-btn:focus-visible {
+	background: transparent !important;
+	border-color: var(--ptl-form-border) !important;
+	color: var(--color-main-text) !important;
+	outline: 3px solid color-mix(in srgb, var(--color-primary-element, #0082c9) 55%, transparent);
+	outline-offset: 2px;
+}
+
+.ptl-app .ptl-btn--primary,
+.ptl-portal .ptl-btn--primary,
+.ptl-dialog .ptl-btn--primary,
+dialog .ptl-btn--primary,
+[role="dialog"] .ptl-btn--primary,
+[role="alertdialog"] .ptl-btn--primary {
+	background: var(--color-primary-element, #0082c9) !important;
+	border-color: var(--color-primary-element, #0082c9) !important;
+	color: var(--color-primary-element-text, #fff) !important;
+}
+.ptl-app .ptl-btn--primary:hover,
+.ptl-portal .ptl-btn--primary:hover,
+.ptl-dialog .ptl-btn--primary:hover,
+dialog .ptl-btn--primary:hover,
+[role="dialog"] .ptl-btn--primary:hover,
+[role="alertdialog"] .ptl-btn--primary:hover {
+	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	color: var(--color-primary-element-text, #fff) !important;
+}
+.ptl-app .ptl-btn--primary:focus-visible,
+.ptl-portal .ptl-btn--primary:focus-visible,
+.ptl-dialog .ptl-btn--primary:focus-visible,
+dialog .ptl-btn--primary:focus-visible,
+[role="dialog"] .ptl-btn--primary:focus-visible,
+[role="alertdialog"] .ptl-btn--primary:focus-visible {
+	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	color: var(--color-primary-element-text, #fff) !important;
+	outline: 3px solid color-mix(in srgb, var(--color-primary-element, #0082c9) 55%, transparent);
+	outline-offset: 2px;
+}
+.ptl-app .ptl-btn--primary:active,
+.ptl-portal .ptl-btn--primary:active,
+.ptl-dialog .ptl-btn--primary:active,
+dialog .ptl-btn--primary:active,
+[role="dialog"] .ptl-btn--primary:active,
+[role="alertdialog"] .ptl-btn--primary:active {
+	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
+	color: var(--color-primary-element-text, #fff) !important;
+}

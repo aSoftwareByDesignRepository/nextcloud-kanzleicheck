@@ -37,6 +37,7 @@ use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
+use OCP\IURLGenerator;
 
 /**
  * Client portal API (/portal/api/**) — session-gated via
@@ -84,6 +85,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		private readonly NotifyService $notifyService,
 		private readonly \OCA\PortalCheck\Service\FormService $formService,
 		private readonly MailOutboxService $mailOutbox,
+		private readonly IURLGenerator $urls,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -260,7 +262,39 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	public function intake(int $orgId): JSONResponse
 	{
 		$this->org($orgId);
-		return $this->ok(['enabled' => true, 'address' => $this->intake->addressFor($orgId)]);
+		$address = $this->intake->addressFor($orgId);
+		return $this->ok(['enabled' => $address !== null, 'address' => $address]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function invoices(int $orgId): JSONResponse
+	{
+		$org = $this->org($orgId);
+		$integrations = \OCP\Server::get(\OCA\PortalCheck\Service\IntegrationService::class);
+		if (!$integrations->invoiceAvailable() || $org->getPcCustId() === null) {
+			throw new NotFoundException();
+		}
+		return $this->ok(['invoices' => $integrations->invoicesForOrg((int)$org->getPcCustId())]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function contact(int $orgId): JSONResponse
+	{
+		$this->org($orgId);
+		$out = [];
+		foreach (\OCP\Server::get(\OCA\PortalCheck\Db\ContactMapper::class)->findForOrg($orgId) as $c) {
+			$user = \OCP\Server::get(\OCP\IUserManager::class)->get((string)$c['user_id']);
+			if ($user === null || !$user->isEnabled()) {
+				continue;
+			}
+			$out[] = [
+				'name' => $user->getDisplayName(),
+				'role' => $c['role_label'],
+				'email' => !empty($c['show_email']) ? $user->getEMailAddress() : null,
+				'avatarUrl' => $this->urls->linkToRouteAbsolute('core.avatar.getAvatar', ['userId' => $user->getUID(), 'size' => 128]),
+			];
+		}
+		return $this->ok(['contacts' => $out]);
 	}
 
 	#[PublicPage] #[NoCSRFRequired]
@@ -281,7 +315,8 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			$open = array_filter($this->items->findByReq((int)$r->getId()), fn($i) => $i->getState() !== 'accepted');
 			foreach ($open as $i) {
 				$todo[] = ['kind' => 'request', 'id' => (int)$r->getId(), 'itemId' => (int)$i->getId(),
-					'title' => $i->getLabel(), 'deadline' => $r->getDeadline()?->format('Y-m-d'), 'overdue' => $this->requests->overdue($r)];
+					'title' => $i->getLabel(), 'state' => $i->getState(), 'rejectReason' => $i->getRejectReason(),
+					'deadline' => $r->getDeadline()?->format('Y-m-d'), 'overdue' => $this->requests->overdue($r)];
 			}
 		}
 		foreach ($this->approvalMapper->findByOrg($orgId, 'pending') as $a) {
@@ -296,6 +331,16 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		}
 		usort($todo, fn($a, $b) => (($a['overdue'] ?? false) ? 0 : 1) <=> (($b['overdue'] ?? false) ? 0 : 1) ?: strcmp($a['deadline'] ?? '9999', $b['deadline'] ?? '9999'));
 		return $this->ok(['todo' => $todo]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function session(): JSONResponse
+	{
+		$raw = (string)$this->request->getCookie(\OCA\PortalCheck\Middleware\PortalSessionMiddleware::SESSION_COOKIE);
+		return $this->ok([
+			'csrf' => (new \OCA\PortalCheck\Service\CsrfService())->tokenFor($raw),
+			'identity' => ['id' => (int)$this->portalIdentity->getId(), 'displayName' => $this->portalIdentity->getDisplayName()],
+		]);
 	}
 
 	// ── uploads (direct + chunked) ──────────────────────────────────
@@ -333,6 +378,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		$res = $uploadSvc->store($eingang, $orgId, $this->actor(), $file['tmp_name'], (string)$file['name'], 'portal', $note);
 		if ($reqItemId !== null && $this->request->getParam('reqId') !== null) {
 			$reqId = $this->strictId($this->request->getParam('reqId')) ?? 0;
+			// request must belong to THIS org — a foreign-org request id can
+			// never silently mark delivery against an unrelated checklist
+			$this->requests->mustGetInOrg($reqId, $orgId);
 			$this->requests->deliverItem($this->actor(), $reqId, $reqItemId, (int)$res['upload']->getId());
 		}
 		$this->notifyService->clientMail($orgId, 'document');
@@ -352,9 +400,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	}
 
 	#[PublicPage] #[NoCSRFRequired]
-	public function chunkPut(string $uploadId, int $index): JSONResponse
+	public function chunkPut(string $uploadKey, int $index): JSONResponse
 	{
-		$row = $this->chunkSvc()->find($uploadId);
+		$row = $this->chunkSvc()->find($uploadKey);
 		if ($row === null) {
 			throw new NotFoundException();
 		}
@@ -363,20 +411,20 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		if ($file === null || !is_uploaded_file($file['tmp_name'] ?? '')) {
 			throw new \OCA\PortalCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no chunk');
 		}
-		$this->chunkSvc()->putChunk($uploadId, (int)$row['org_id'], $this->actor(), $index, $file['tmp_name']);
+		$this->chunkSvc()->putChunk($uploadKey, (int)$row['org_id'], $this->actor(), $index, $file['tmp_name']);
 		return $this->ok(['received' => true]);
 	}
 
 	#[PublicPage] #[NoCSRFRequired]
-	public function chunkFinish(string $uploadId): JSONResponse
+	public function chunkFinish(string $uploadKey): JSONResponse
 	{
-		$row = $this->chunkSvc()->find($uploadId);
+		$row = $this->chunkSvc()->find($uploadKey);
 		if ($row === null) {
 			throw new NotFoundException();
 		}
 		$orgId = (int)$row['org_id'];
 		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
-		$res = $this->chunkSvc()->finish($uploadId, $orgId, $this->actor());
+		$res = $this->chunkSvc()->finish($uploadKey, $orgId, $this->actor());
 		$uploadSvc = new \OCA\PortalCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
 		try {
 			$uploadSvc->validateFile($res['tmp'], (string)$row['file_name'], $uploadSvc->maxBytes());
@@ -384,7 +432,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		} finally {
 			@unlink($res['tmp']);
 		}
-		$this->chunkSvc()->complete($uploadId);
+		$this->chunkSvc()->complete($uploadKey);
 		$this->notifyService->clientMail($orgId, 'document');
 		return $this->ok(['id' => (int)$stored['upload']->getId(), 'duplicate' => $stored['duplicate'] !== null], 201);
 	}
@@ -535,7 +583,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	private function notifyStaffNewMessage(int $orgId): void
 	{
 		foreach ($this->notifyService->staffRecipients($orgId) as $uid) {
-			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, '/apps/' . Application::APP_ID . '/inbox?org=' . $orgId);
+			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRoute('portalcheck.page.index') . '?view=inbox&org=' . $orgId);
 		}
 		$this->notifyService->clientMail($orgId, 'message');
 	}

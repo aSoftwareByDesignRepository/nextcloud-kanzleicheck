@@ -86,6 +86,8 @@ private readonly DocumentService $docs,
 
 	private function runIntake(float $deadline): void
 	{
+		// best-effort: intake poll is one scheduler stage; its failure must not
+		// block recurrences/reminders/outbox flush in the same run.
 		try {
 			\OCP\Server::get(\OCA\PortalCheck\Service\IntakeMailService::class)->poll(50);
 		} catch (\Throwable $e) {
@@ -131,7 +133,10 @@ private readonly DocumentService $docs,
 						'reminderPolicy' => $tpl->getReminderPolicy(),
 					]);
 				} catch (\Throwable $e) {
-					$this->logger->info('portalcheck recurrence skipped', ['tpl' => (int)$tpl->getId(), 'org' => $orgId]);
+					// best-effort: a single org's failed recurrence must not abort the
+					// batch; the next period run re-attempts (periodKey dedups).
+					$this->logger->warning('portalcheck recurrence skipped', ['tpl' => (int)$tpl->getId(), 'org' => $orgId, 'e' => $e->getMessage()]);
+					continue;
 				}
 			}
 		}

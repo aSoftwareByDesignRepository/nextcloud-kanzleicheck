@@ -48,18 +48,20 @@ class NotifyService
 				->setLink($link);
 			$this->notifications->notify($n);
 		} catch (\Throwable $e) {
+			// best-effort: notification fan-out must never fail the triggering mutation
 			$this->logger->warning('portalcheck staff notify failed', ['e' => $e->getMessage()]);
 		}
 	}
 
-	/** Staff recipients for an org event: responsible staff, else all staff. */
+	/**
+	 * Staff recipients for an org event: responsible staff when configured,
+	 * else every door-admitted staff user (US-P27 AC-3 — an org without
+	 * responsible staff must never produce a silent notification dead end).
+	 */
 	public function staffRecipients(int $orgId): array
 	{
 		$responsible = array_map(static fn($c) => $c['user_id'], $this->contacts->findForOrg($orgId));
-		if ($responsible !== []) {
-			return $responsible;
-		}
-		return []; // empty → caller may broadcast to door-admitted staff
+		return $responsible !== [] ? $responsible : $this->door->staffUids();
 	}
 
 	/** Client mail for an event kind — throttled per identity+org. */
