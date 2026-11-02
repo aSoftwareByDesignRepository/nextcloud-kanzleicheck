@@ -8,11 +8,12 @@ use OCA\PortalCheck\Db\UploadChunkMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\Files\AppData\IAppDataFactory;
+use Psr\Log\LoggerInterface;
 
 /** Chunk temp cleanup — sessions idle >24h (ZF-05). */
 class ChunkCleanupJob extends TimedJob
 {
-	public function __construct(ITimeFactory $time, private readonly UploadChunkMapper $chunks, private readonly IAppDataFactory $appData)
+	public function __construct(ITimeFactory $time, private readonly UploadChunkMapper $chunks, private readonly IAppDataFactory $appData, private readonly LoggerInterface $logger)
 	{
 		parent::__construct($time);
 		$this->setInterval(3600);
@@ -29,7 +30,9 @@ class ChunkCleanupJob extends TimedJob
 				if ($dir->fileExists($name)) {
 					$dir->getFile($name)->delete();
 				}
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				// best-effort: row still deleted — log so orphaned part files stay observable
+				$this->logger->warning('portalcheck chunk part cleanup failed', ['upload' => (string)$row['upload_id'], 'e' => $e->getMessage()]);
 			}
 			$this->chunks->delete((string)$row['upload_id']);
 		}

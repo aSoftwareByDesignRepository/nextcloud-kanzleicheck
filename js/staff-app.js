@@ -3,7 +3,7 @@
    Clients · Uploads · Settings. esc() for all user data — no innerHTML. */
 const el=document.getElementById('ptl-staff-view'),base=location.pathname.split('/apps/portalcheck')[0]+'/apps/portalcheck';
 const t=s=>(window.OC&&OC.L10N&&OC.L10N.translate)?OC.L10N.translate('portalcheck',s):s;
-const api=async(u,o)=>{const r=await fetch(base+u,Object.assign({headers:{'Content-Type':'application/json'}},o||{}));return r.json().catch(()=>({success:false}));};
+const api=async(u,o)=>{const r=await fetch(base+u,Object.assign({headers:{'Content-Type':'application/json'}},o||{}));if(r.status===204)return{success:true};return r.json().catch(()=>({success:false}));};
 const get=u=>api(u),post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})}),put=(u,b)=>api(u,{method:'PUT',body:JSON.stringify(b||{})}),del=u=>api(u,{method:'DELETE'});
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
 const h=html=>{const t=document.createElement('template');t.innerHTML=html;return t.content.cloneNode(true);};
@@ -40,7 +40,7 @@ function confirmDlg(title,text){return new Promise(res=>{
   dlg.addEventListener('close',()=>{res(dlg.returnValue==='ok');dlg.remove();});
   document.body.appendChild(dlg);dlg.showModal();});}
 
-const NAV=[['overview',t('Overview')],['inbox',t('Messages')],['board',t('Tasks')],['requests',t('Requests')],['orgs',t('Clients')],['uploads',t('Uploads')],['settings',t('Settings')]];
+const NAV=[['overview',t('Overview')],['inbox',t('Messages')],['board',t('Tasks')],['requests',t('Requests')],['orgs',t('Clients')],['uploads',t('Uploads')],['holds',t('Mail review')],['forms',t('Questionnaires')],['people',t('People')],['settings',t('Settings')]];
 function chrome(active,title){
   el.innerHTML='<nav class="ptl-nav" aria-label="'+esc(t('Sections'))+'">'+NAV.map(([k,l])=>'<button class="ptl-navbtn'+(k===active?' ptl-navbtn--active':'')+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</nav><h1>'+esc(title)+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div><div id="ptl-body"></div>';
   el.querySelectorAll('.ptl-navbtn').forEach(b=>b.onclick=()=>VIEWS[b.dataset.v]());
@@ -52,6 +52,15 @@ async function vOverview(){
   const r=await get('/api/portal/overview');
   const body=chrome('overview',t('What needs attention?'));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
+  const su=await get('/api/portal/setup');
+  if(su.success&&su.data&&su.data.setup&&!su.data.setup.done){
+    const coach=h('<div class="ptl-card ptl-coach"><h2>'+esc(t('Initial setup'))+'</h2><ul></ul></div>');
+    const ul=coach.querySelector('ul');
+    if(!su.data.setup.preset)ul.appendChild(h('<li>'+esc(t('Choose an industry preset in Settings.'))+'</li>'));
+    if(!su.data.setup.docsRoot)ul.appendChild(h('<li>'+esc(t('Set the documents root folder in Settings (create a folder in Files first).'))+'</li>'));
+    if(!su.data.setup.orgs)ul.appendChild(h('<li>'+esc(t('Create your first client under Clients, or import a CSV.'))+'</li>'));
+    body.appendChild(coach);
+  }
   const s=r.data.stats;
   body.appendChild(h('<div class="ptl-stats">'+[
     [s.unread,t('Unread messages'),'inbox'],
@@ -74,9 +83,13 @@ async function vOverview(){
 }
 
 /* ── Messages (inbox + thread) ── */
-async function vInbox(){
+async function vInbox(mine){
   const body=chrome('inbox',t('Messages'));
-  const r=await get('/api/portal/inbox');
+  const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
+  body.appendChild(mineCb);
+  mineCb.querySelector('#ptl-mine').checked=!!mine;
+  mineCb.querySelector('#ptl-mine').onchange=e=>vInbox(e.target.checked);
+  const r=await get('/api/portal/inbox'+(mine?'?mine=1':''));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   const convs=r.data.conversations||[];
   if(!convs.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No conversations.'))+'</p>'));return;}
@@ -172,7 +185,7 @@ function taskCard(it){
 }
 
 /* ── Requests ── */
-async function vRequests(){
+async function vRequests(mine){
   const body=chrome('requests',t('Document requests'));
   body.appendChild(btn(t('+ New request'),async()=>{
     const orgs=(await get('/api/portal/orgs')).data.orgs;
@@ -188,7 +201,11 @@ async function vRequests(){
     const r=await post('/api/portal/requests',{orgId:+f.orgId,title:f.title,deadline:f.deadline||null,items});
     status(r.success?t('Created.'):(r.message||t('Error')));if(r.success)vRequests();
   },true));
-  const r=await get('/api/portal/requests');
+  const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
+  body.appendChild(mineCb);
+  mineCb.querySelector('#ptl-mine').checked=!!mine;
+  mineCb.querySelector('#ptl-mine').onchange=e=>vRequests(e.target.checked);
+  const r=await get('/api/portal/requests'+(mine?'?mine=1':''));
   const reqs=(r.data&&r.data.requests)||[];
   const list=h('<div class="ptl-list"></div>');
   reqs.forEach(rq=>{
@@ -203,6 +220,37 @@ async function vRequests(){
       ev.target.dataset.loaded='1';
       const itemsList=h('<div class="ptl-itemlist"></div>');
       detail.appendChild(itemsList);
+      const dr=await get('/api/portal/requests/'+rq.id);
+      if(!dr.success){itemsList.appendChild(h('<p class="ptl-muted">'+esc(t('Error'))+'</p>'));return;}
+      const d=dr.data.request;
+      if(d.state==='open'){
+        const closeB=btn(t('Close request'),async()=>{
+          if(!(await confirmDlg(t('Close request'),t('Marks the request as done even if items are missing. Continue?'))))return;
+          const cr=await post('/api/portal/requests/'+d.id+'/close');if(cr.status===204||cr.success){vRequests(mine);}
+        });
+        closeB.className='ptl-btn ptl-btn--sm';itemsList.appendChild(closeB);
+      }
+      (d.items||[]).forEach(it=>{
+        const ir=h('<div class="ptl-itemrow"><div><b></b><div class="ptl-muted"></div><div class="ptl-itemfiles"></div></div><div class="ptl-itemact"></div></div>');
+        ir.querySelector('b').textContent=it.label;
+        ir.querySelector('.ptl-muted').textContent=it.state+(it.hint?' · '+it.hint:'')+(it.rejectReason?' — '+t('Rejected')+': '+it.rejectReason:'');
+        (it.files||[]).forEach(fid=>{
+          const a=h('<a class="ptl-file"></a>');
+          a.textContent='📎 '+t('file')+' #'+fid;a.href=base+'/api/portal/uploads/'+fid+'/file';
+          ir.querySelector('.ptl-itemfiles').appendChild(a);
+        });
+        const act=ir.querySelector('.ptl-itemact');
+        if(it.state==='delivered'){
+          act.appendChild(btn(t('Accept'),async()=>{await put('/api/portal/requests/'+d.id+'/items/'+it.id+'/review',{accept:true});vRequests(mine);},true));
+          act.appendChild(btn(t('Reject'),async()=>{
+            const f=await ask(t('Reject item'),t('Reason (shown to the client):'),t('Reject'));
+            if(f===null)return;
+            await put('/api/portal/requests/'+d.id+'/items/'+it.id+'/review',{accept:false,reason:f.v});
+            vRequests(mine);
+          }));
+        }
+        itemsList.appendChild(ir);
+      });
     });
     list.appendChild(row);
   });
@@ -223,6 +271,18 @@ async function vOrgs(){
     const r=await post('/api/portal/orgs',{name:f.name,ref:f.ref||null,kind:f.kind});
     status(r.success?t('Created.'):(r.message||t('Error')));if(r.success)vOrgs();
   },true));
+  body.appendChild(btn(t('Import CSV'),async()=>{
+    const f=await ask(t('Import clients'),null,t('Check'),[{name:'csv',label:t('CSV (email;name;org;kind;ref)'),type:'textarea',required:true},{name:'invite',label:t('Send invitations? (yes/no)')}]);
+    if(!f)return;
+    const invite=/^y(es)?$/i.test(f.invite||'');
+    const p=await post('/api/portal/import',{csv:f.csv,dryRun:'1'});
+    if(!p.success){status(p.message||t('Invalid CSV'));return;}
+    const rows=(p.data&&p.data.rows)||[];
+    if(!(await confirmDlg(t('Import plan'),rows.length+' '+t('rows')+'. '+t('Apply?'))))return;
+    const c=await post('/api/portal/import',{csv:f.csv,dryRun:'0',sendInvitations:invite?'1':'0'});
+    status(c.success?t('Imported.')+' '+(c.data&&c.data.applied||0)+' '+t('new'):(c.message||t('Error')));
+    vOrgs();
+  }));
   const q=new URLSearchParams(location.search).get('q')||'';
   body.appendChild(h('<input id="ptl-q" class="ptl-input" placeholder="'+esc(t('Search…'))+'" value="'+esc(q)+'">'));
   body.querySelector('#ptl-q').oninput=async e=>{const rr=await get('/api/portal/orgs?q='+encodeURIComponent(e.target.value));renderOrgs(rr.data&&rr.data.orgs||[]);};
@@ -258,12 +318,44 @@ async function openOrg(id){
     if(!(await confirmDlg(t('Offboard'),t('Chat will be archived and members lose access. Continue?'))))return;
     await post('/api/portal/orgs/'+id+'/offboard');openOrg(id);
   }));
+  act.appendChild(btn(t('Edit details'),async()=>{
+    const f=await ask(t('Client details'),null,t('Save'),[
+      {name:'name',label:t('Name'),required:true,value:o.name},
+      {name:'ref',label:t('Reference'),value:o.ref||''},
+      {name:'bookUrl',label:t('Booking link (/pub/o/slug, optional)'),value:o.bookUrl||''},
+      {name:'pcCustId',label:t('InvoiceCheck customer id (optional)'),value:o.pcCustId||''},
+    ]);
+    if(!f)return;
+    const rr=await put('/api/portal/orgs/'+id,{name:f.name,ref:f.ref||null,bookUrl:f.bookUrl||null,pcCustId:f.pcCustId!==''?+f.pcCustId:null});
+    if(!rr.success){status(rr.message||t('Invalid input'));return;}
+    openOrg(id);
+  }));
   body.appendChild(info);
+  // responsible staff contacts (US-P25)
+  body.appendChild(h('<h2>'+esc(t('Responsible staff'))+'</h2><div id="ptl-resp"></div>'));
+  const resp=document.getElementById('ptl-resp');
+  (r.data.contacts||[]).forEach(c=>{
+    resp.appendChild(h('<div class="ptl-dev"><span>'+esc(c.user_id||c.userId)+'</span></div>'));
+  });
+  body.appendChild(btn(t('Set responsible staff'),async()=>{
+    const f=await ask(t('Responsible staff'),t('NC user ids (comma-separated, max 5)'),t('Save'));
+    if(f===null)return;
+    const uids=f.v.split(',').map(x=>x.trim()).filter(Boolean).slice(0,5);
+    const rr=await put('/api/portal/orgs/'+id+'/contacts',{userIds:uids});
+    status(rr.success||rr.status===204?t('Saved.'):(rr.message||t('Error')));openOrg(id);
+  }));
   body.appendChild(h('<h2>'+esc(t('Contacts'))+'</h2><div id="ptl-members"></div>'));
   const ml=document.getElementById('ptl-members');
   (r.data.members||[]).forEach(m=>{
     const row=h('<div class="ptl-dev"><span></span></div>');
     row.querySelector('span').textContent=(m.displayName||m.email)+(m.status!=='active'?' ('+m.status+')':'');
+    if(ME_ADMIN&&m.status==='active'){
+      const dis=btn(t('Disable'),async()=>{await put('/api/portal/identities/'+m.identityId+'/status',{status:'disabled'});openOrg(id);},false);
+      dis.className='ptl-btn ptl-btn--sm';row.appendChild(dis);
+    }else if(ME_ADMIN&&m.status==='disabled'){
+      const en=btn(t('Enable'),async()=>{await put('/api/portal/identities/'+m.identityId+'/status',{status:'active'});openOrg(id);},false);
+      en.className='ptl-btn ptl-btn--sm';row.appendChild(en);
+    }
     const rm=btn(t('Remove'),async()=>{await del('/api/portal/orgs/'+id+'/members/'+m.identityId);openOrg(id);},false);
     rm.className='ptl-btn ptl-btn--sm';row.appendChild(rm);ml.appendChild(row);
   });
@@ -292,6 +384,62 @@ async function openOrg(id){
     if(rr.success){await ask(t('Link created'),t('URL (visible once):')+' '+rr.data.link.url,t('OK'));}else status(rr.message||t('Error'));
     openOrg(id);
   }));
+  // intake address (US-P24)
+  body.appendChild(h('<h2>'+esc(t('E-mail intake'))+'</h2>'));
+  const inRow=h('<div class="ptl-card"><div class="ptl-kvrow"><span>'+esc(t('Address'))+'</span><b id="ptl-ina"></b></div><div class="ptl-actions"></div></div>');
+  inRow.querySelector('#ptl-ina').textContent=(r.data.intake&&r.data.intake.address)||t('disabled');
+  inRow.querySelector('.ptl-actions').appendChild(btn(r.data.intake&&r.data.intake.address?t('Disable'):t('Enable'),async()=>{
+    const rr=await put('/api/portal/orgs/'+id+'/intake',{enabled:!(r.data.intake&&r.data.intake.address)});
+    if(rr.success)openOrg(id);else status(rr.message||t('Error'));
+  }));
+  inRow.querySelector('.ptl-actions').appendChild(btn(t('Rotate address'),async()=>{
+    if(!(await confirmDlg(t('Rotate'),t('The old address stops working immediately. Continue?'))))return;
+    await post('/api/portal/orgs/'+id+'/intake/rotate');openOrg(id);
+  }));
+  body.appendChild(inRow);
+  // approvals on documents (US-P23)
+  body.appendChild(h('<h2>'+esc(t('Approvals'))+'</h2><div id="ptl-appr"></div>'));
+  const ap=document.getElementById('ptl-appr');
+  const ar=await get('/api/portal/orgs/'+id+'/approvals');
+  if(ar.success&&ar.data){
+    (ar.data.approvals||[]).forEach(a=>{
+      const row=h('<div class="ptl-dev"><span></span></div>');
+      row.querySelector('span').textContent=a.fileName+' · '+a.state+(a.deadline?' · '+a.deadline:'');
+      if(a.state==='pending'){const w=btn(t('Withdraw'),async()=>{await post('/api/portal/approvals/'+a.id+'/withdraw');openOrg(id);},false);w.className='ptl-btn ptl-btn--sm';row.appendChild(w);}
+      const pf=h('<a class="ptl-btn ptl-btn--sm"></a>');pf.textContent=t('Proof');pf.href=base+'/api/portal/approvals/'+a.id+'/proof';row.appendChild(pf);
+      ap.appendChild(row);
+    });
+  }
+  body.appendChild(btn(t('+ Request approval'),async()=>{
+    const docs=await get('/api/portal/orgs/'+id+'/documents');
+    const files=(docs.data&&docs.data.files)||[];
+    if(!files.length){status(t('No documents in this client\'s Dokumente folder yet.'));return;}
+    const f=await ask(t('Request approval'),null,t('Send'),[
+      {name:'fileId',label:t('Document'),type:'select',options:files.map(fl=>[fl.id,fl.name])},
+      {name:'deadline',label:t('Deadline'),type:'date'},
+      {name:'note',label:t('Note'),type:'textarea'},
+    ]);
+    if(!f)return;
+    const rr=await post('/api/portal/orgs/'+id+'/approvals',{fileId:+f.fileId,deadline:f.deadline||null,note:f.note||null});
+    status(rr.success?t('Sent.'):(rr.message||t('Error')));if(rr.success)openOrg(id);
+  },true));
+  // send questionnaire
+  body.appendChild(btn(t('+ Send questionnaire'),async()=>{
+    const tpls=await get('/api/portal/form-templates');
+    const tt=(tpls.data&&tpls.data.templates)||[];
+    if(!tt.length){status(t('No form templates yet — create one under Questionnaires.'));return;}
+    const f=await ask(t('Send questionnaire'),null,t('Send'),[{name:'tplId',label:t('Template'),type:'select',options:tt.map(tp=>[tp.id,tp.name])}]);
+    if(!f)return;
+    const rr=await post('/api/portal/forms',{orgId:id,tplId:+f.tplId});
+    status(rr.success?t('Sent.'):(rr.message||t('Error')));
+  }));
+  // invoices (InvoiceCheck facade)
+  if(r.data.invoiceAvailable){
+    body.appendChild(h('<h2>'+esc(t('Invoices'))+'</h2>'));
+    const inv=(r.data.invoices)||[];
+    if(!inv.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No invoices.'))+'</p>'));
+    else body.appendChild(h('<div class="ptl-card">'+inv.map(i=>'<div class="ptl-kvrow"><span>'+esc(i.ref||('#'+i.id))+(i.overdue?' ⚠':'')+'</span><b>'+esc(i.status)+'</b></div>').join('')+'</div>'));
+  }
 }
 
 /* ── Uploads ── */
@@ -306,8 +454,13 @@ async function vUploads(){
     row.querySelector('b').textContent=u.fileName;
     row.querySelector('.ptl-muted').textContent=u.orgName+' · '+u.uploader+' · '+u.source+' · '+new Date(u.createdAt).toLocaleString()+(u.duplicate?' · '+t('DUPLICATE'):'')+(u.note?' · '+u.note:'');
     const act=row.querySelector('.ptl-actions');
+    const dl=h('<a class="ptl-btn"></a>');dl.textContent=t('Download');dl.href=base+'/api/portal/uploads/'+u.id+'/file';act.appendChild(dl);
     act.appendChild(btn(t('Seen'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'eingesehen'});vUploads();}));
     act.appendChild(btn(t('Filed'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'abgelegt'});vUploads();},true));
+    act.appendChild(btn(t('Publish to client'),async()=>{
+      const rr=await post('/api/portal/uploads/'+u.id+'/publish');
+      status(rr.success?t('Published to Dokumente.'):(rr.message||t('Error')));if(rr.success)vUploads();
+    }));
     list.appendChild(row);
   });
   body.appendChild(list);
@@ -358,6 +511,119 @@ async function vSettings(){
   }
 }
 
-const VIEWS={overview:vOverview,inbox:vInbox,board:vBoard,requests:vRequests,orgs:vOrgs,uploads:vUploads,settings:vSettings};
-vOverview();
+/* ── Mail intake holds (US-P24) ── */
+async function vHolds(){
+  const body=chrome('holds',t('Mail review'));
+  const r=await get('/api/portal/intake-holds');
+  const holds=(r.data&&r.data.holds)||[];
+  if(!holds.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No held e-mails.'))+'</p>'));return;}
+  const list=h('<div class="ptl-list"></div>');
+  holds.forEach(hh=>{
+    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
+    row.querySelector('b').textContent=t('Hold')+' #'+hh.id+' · '+t('org')+' '+hh.orgId;
+    row.querySelector('.ptl-muted').textContent=new Date(hh.receivedAt).toLocaleString()+' · '+hh.state;
+    const act=row.querySelector('.ptl-actions');
+    if(hh.state==='held'){
+      act.appendChild(btn(t('Accept'),async()=>{
+        const rr=await post('/api/portal/intake-holds/'+hh.id+'/decide',{action:'accept'});
+        status(rr.success?t('Filed to Eingang.')+' '+(rr.data&&rr.data.stored||0)+' '+t('files'):(rr.message||t('Error')));if(rr.success)vHolds();
+      },true));
+      act.appendChild(btn(t('Discard'),async()=>{
+        if(!(await confirmDlg(t('Discard'),t('Attachments are deleted permanently. Continue?'))))return;
+        await post('/api/portal/intake-holds/'+hh.id+'/decide',{action:'discard'});vHolds();
+      }));
+    }
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+}
+
+/* ── Questionnaires (staff side, US-P28) ── */
+async function vForms(){
+  const body=chrome('forms',t('Questionnaires'));
+  body.appendChild(btn(t('+ New template'),async()=>{
+    const f=await ask(t('New form template'),null,t('Create'),[
+      {name:'name',label:t('Name'),required:true},
+      {name:'fields',label:t('Fields (one per line: key|label|type|required)',),type:'textarea',required:true},
+    ]);
+    if(!f)return;
+    const fields=f.fields.split('\n').map(x=>x.trim()).filter(Boolean).map(line=>{
+      const p=line.split('|').map(x=>x.trim());
+      return {key:p[0]||'',label:p[1]||p[0]||'',type:p[2]||'text',required:/^(1|true|yes)$/i.test(p[3]||'')};
+    });
+    const rr=await post('/api/portal/form-templates',{name:f.name,fields});
+    status(rr.success?t('Created.'):(rr.message||t('Error')));if(rr.success)vForms();
+  },true));
+  const tr=await get('/api/portal/form-templates');
+  const tpls=(tr.data&&tr.data.templates)||[];
+  body.appendChild(h('<h2>'+esc(t('Templates'))+'</h2>'));
+  if(!tpls.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No templates.'))+'</p>'));
+  tpls.forEach(tp=>{
+    body.appendChild(h('<div class="ptl-card"><b>'+esc(tp.name)+'</b><div class="ptl-muted">'+esc((tp.fields||[]).length)+' '+esc(t('fields'))+'</div></div>'));
+  });
+  body.appendChild(h('<h2>'+esc(t('Forms sent'))+'</h2>'));
+  const fr=await get('/api/portal/forms');
+  const forms=(fr.data&&fr.data.forms)||[];
+  const orgs=await get('/api/portal/orgs');
+  const orgNames={};(orgs.data&&orgs.data.orgs||[]).forEach(o=>orgNames[o.id]=o.name);
+  if(!forms.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No forms sent yet.'))+'</p>'));
+  const list=h('<div class="ptl-list"></div>');
+  forms.forEach(f=>{
+    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
+    row.querySelector('b').textContent=(orgNames[f.orgId]||'#'+f.orgId)+' · '+t('Form')+' #'+f.id;
+    row.querySelector('.ptl-muted').textContent=f.state+(f.submittedAt?' · '+new Date(f.submittedAt).toLocaleString():'');
+    const act=row.querySelector('.ptl-actions');
+    act.appendChild(btn(t('Answers'),()=>openForm(f.id),true));
+    if(f.state==='submitted')act.appendChild(btn(t('Reopen'),async()=>{await post('/api/portal/forms/'+f.id+'/reopen');vForms();}));
+    const csv=h('<a class="ptl-btn ptl-btn--sm"></a>');csv.textContent='CSV';csv.href=base+'/api/portal/forms/'+f.id+'/export.csv';act.appendChild(csv);
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+}
+async function openForm(id){
+  const r=await get('/api/portal/forms/'+id);
+  if(!r.success){status(t('Not found.'));return;}
+  const f=r.data.form,body=chrome('forms',t('Form')+' #'+id+' — '+f.name);
+  const card=h('<div class="ptl-card"></div>');
+  (f.fields||[]).forEach(fd=>{
+    const ans=(f.answers||[]).find(a=>a.key===fd.key);
+    card.appendChild(h('<div class="ptl-kvrow"><span>'+esc(fd.label)+'</span><b>'+esc(ans?String(ans.value):'—')+'</b></div>'));
+  });
+  body.appendChild(card);
+  if(f.state==='submitted')body.appendChild(btn(t('Reopen for the client'),async()=>{await post('/api/portal/forms/'+f.id+'/reopen');openForm(id);}));
+}
+
+/* ── People (identities admin, US-P07) ── */
+async function vPeople(){
+  const body=chrome('people',t('People'));
+  if(!ME_ADMIN){body.appendChild(h('<p class="ptl-muted">'+esc(t('App admins only'))+'</p>'));return;}
+  body.appendChild(h('<input id="ptl-pq" class="ptl-input" placeholder="'+esc(t('Search e-mail or name…'))+'">'));
+  body.appendChild(h('<div id="ptl-plist" class="ptl-list"></div>'));
+  const render=async q=>{
+    const r=await get('/api/portal/identities?q='+encodeURIComponent(q));
+    const list=document.getElementById('ptl-plist');list.innerHTML='';
+    (r.data&&r.data.identities||[]).forEach(i=>{
+      const row=h('<div class="ptl-dev"><span></span></div>');
+      row.querySelector('span').textContent=(i.displayName||'')+' <'+i.email+'>'+(i.status!=='active'?' ('+i.status+')':'');
+      const st=btn(i.status==='disabled'?t('Enable'):t('Disable'),async()=>{
+        await put('/api/portal/identities/'+i.id+'/status',{status:i.status==='disabled'?'active':'disabled'});render(document.getElementById('ptl-pq').value);
+      },false);st.className='ptl-btn ptl-btn--sm';row.appendChild(st);
+      const ex=btn(t('Export'),async()=>{
+        const rj=await get('/api/portal/identities/'+i.id+'/export');
+        const blob=new Blob([JSON.stringify(rj.data??rj,null,2)],{type:'application/json'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='identity-'+i.id+'.json';a.click();
+      },false);ex.className='ptl-btn ptl-btn--sm';row.appendChild(ex);
+      const er=btn(t('Erase'),async()=>{
+        if(!(await confirmDlg(t('Erase person'),t('All personal data is erased permanently. Continue?'))))return;
+        await del('/api/portal/identities/'+i.id);render(document.getElementById('ptl-pq').value);
+      },false);er.className='ptl-btn ptl-btn--sm';row.appendChild(er);
+      list.appendChild(row);
+    });
+  };
+  body.querySelector('#ptl-pq').oninput=e=>render(e.target.value);
+  render('');
+}
+
+const VIEWS={overview:vOverview,inbox:vInbox,board:vBoard,requests:vRequests,orgs:vOrgs,uploads:vUploads,holds:vHolds,forms:vForms,people:vPeople,settings:vSettings};
+(async()=>{const d=await get('/api/portal/settings');ME_ADMIN=d.success===true;vOverview();})();
 })();

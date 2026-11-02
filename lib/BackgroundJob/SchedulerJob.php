@@ -201,7 +201,9 @@ private readonly DocumentService $docs,
 			$count++;
 			try {
 				$this->voidCheck($a);
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				// best-effort: cursor already advanced — log so a persistently-failing approval stays observable
+				$this->logger->warning('portalcheck approval void failed', ['approval' => (int)$a->getId(), 'e' => $e->getMessage()]);
 			}
 		}
 		if ($count < self::BATCH) {

@@ -94,6 +94,7 @@ return [
 		['name' => 'portalApi#intake', 'url' => '/portal/api/orgs/{orgId}/intake', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'portalApi#invoices', 'url' => '/portal/api/orgs/{orgId}/invoices', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'portalApi#contact', 'url' => '/portal/api/orgs/{orgId}/contact', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
+		['name' => 'portalApi#notifyGet', 'url' => '/portal/api/orgs/{orgId}/notify', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'portalApi#notifyPut', 'url' => '/portal/api/orgs/{orgId}/notify', 'verb' => 'PUT', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'portalApi#session', 'url' => '/portal/api/session', 'verb' => 'GET'],
 		['name' => 'portalApi#upload', 'url' => '/portal/api/orgs/{orgId}/uploads', 'verb' => 'POST', 'requirements' => ['orgId' => '\d+']],

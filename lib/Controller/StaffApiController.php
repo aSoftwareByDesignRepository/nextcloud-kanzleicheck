@@ -296,10 +296,13 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		if ($dry) {
 			return $this->ok(['rows' => $this->import->plan($rows, $this->orgService, $this->identities), 'dryRun' => true]);
 		}
+		$sendInvites = $this->request->getParam('sendInvitations');
+		$sendInvites = $sendInvites === true || $sendInvites === '1' || $sendInvites === 'true';
+		$outbox = \OCP\Server::get(\OCA\PortalCheck\Service\MailOutboxService::class);
 		$applied = 0;
 		foreach ($rows as $r) {
 			$orgName = trim((string)($r['org_name'] ?? ''));
-			$email = IdentityService::normalizeEmail((string)($r['email'] ?? ''));
+			$email = IdentityService::normalizeEmail((string)$r['email'] ?? '');
 			if ($orgName === '' || !IdentityService::isValidEmail($email)) {
 				continue;
 			}
@@ -310,7 +313,16 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			}
 			$identity = $this->identities->upsert($email, (string)($r['display_name'] ?? $email));
 			$this->identities->addMembership((int)$identity->getId(), (int)$org->getId(), $this->staffUid);
+			if ($sendInvites) {
+				$outbox->enqueue($email, 'invite',
+					'invite:' . $email . ':' . $org->getId(),
+					['provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')],
+					'de');
+			}
 			$applied++;
+		}
+		if ($sendInvites) {
+			$outbox->drain(20);
 		}
 		return $this->ok(['applied' => $applied]);
 	}
@@ -433,7 +445,9 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		], 'members' => $members, 'intake' => ['enabled' => true, 'address' => $this->intake->addressFor($id)],
 		'ulinks' => array_values(array_filter(array_map(fn($l) => (int)$l->getOrgId() === $id ? ['id' => (int)$l->getId(), 'label' => $l->getLabel(), 'expiresAt' => $l->getExpiresAt()->format('c'), 'usedFiles' => (int)$l->getUsedFiles(), 'maxFiles' => (int)$l->getMaxFiles(), 'revoked' => $l->getRevokedAt() !== null] : null, $this->ulinkMapper->findAllOrdered('id', 'DESC')))),
 		'invoices' => $o->getPcCustId() !== null ? $this->integrations->invoicesForOrg((int)$o->getPcCustId()) : [],
-		'invoiceAvailable' => $this->integrations->invoiceAvailable() && $o->getPcCustId() !== null]);
+		'invoiceAvailable' => $this->integrations->invoiceAvailable() && $o->getPcCustId() !== null,
+		'pcCustId' => $o->getPcCustId(),
+		'contacts' => $this->contactMapper()->findForOrg($id)]);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]
@@ -842,13 +856,20 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	public function forms(): JSONResponse
 	{
 		$orgId = $this->strictId($this->request->getParam('orgId'));
+		$state = (string)$this->request->getParam('state', '');
 		if ($orgId !== null) {
 			$this->org($orgId);
+			$rows = $this->forms->findByOrg($orgId, $state);
+		} else {
+			$rows = [];
+			foreach ($this->orgs->findAllOrdered() as $o) {
+				$rows = array_merge($rows, $this->forms->findByOrg((int)$o->getId(), $state));
+			}
 		}
 		$out = array_map(fn($f) => ['id' => (int)$f->getId(), 'orgId' => (int)$f->getOrgId(),
 			'tplId' => (int)$f->getTplId(), 'reqItemId' => $f->getReqItemId() !== null ? (int)$f->getReqItemId() : null,
 			'state' => $f->getState(), 'submittedAt' => $f->getSubmittedAt()?->format('c')],
-			$this->forms->findByOrg($orgId ?? 0, (string)$this->request->getParam('state', '')));
+			$rows);
 		return $this->ok(['forms' => $out]);
 	}
 

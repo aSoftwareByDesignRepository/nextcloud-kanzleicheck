@@ -1,0 +1,38 @@
+Escaped mutants:
+================
+
+1) /var/www/html/custom_apps/portalcheck/lib/Service/CsvFormulaGuard.php:17    [M] CastString
+
+@@ @@
+ {
+     public static function escape(?string $value): string
+     {
+-        $v = (string) $value;
++        $v = $value;
+         if ($v === '') {
+             return $v;
+         }
+
+
+2) /var/www/html/custom_apps/portalcheck/lib/Service/CsvFormulaGuard.php:23    [M] ConcatOperandRemoval
+
+@@ @@
+         }
+         $first = $v[0];
+         if (in_array($first, ['=', '+', '-', '@', "\t", "\r", "\v"], true)) {
+-            return "'" . $v;
++            return "'";
+         }
+         return $v;
+     }
+ }
+
+
+Timed Out mutants:
+==================
+
+Skipped mutants:
+================
+
+Not Covered mutants:
+====================

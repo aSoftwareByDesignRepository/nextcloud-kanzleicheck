@@ -65,6 +65,18 @@ class SecurityCoreTest extends TestCase
 		$this->assertNotSame($a, $s->intakeToken('secret', 8));
 		$this->assertNotSame($a, $s->intakeToken('other', 7));
 		$this->assertSame(16, strlen($a));
+		// exact value pins the HMAC salt + truncation (kills concat/substr mutants)
+		$this->assertSame(substr(hash_hmac('sha256', 'ptl-intake:7', 'secret'), 0, 16), $a);
+	}
+
+	public function testMintEntropyIsExactly32Bytes(): void
+	{
+		$s = new TokenService();
+		[$token] = $s->mint();
+		$decoded = base64_decode(strtr($token, '-_', '+/'), true);
+		$this->assertNotFalse($decoded);
+		$this->assertSame(32, strlen($decoded));
+		$this->assertSame(43, strlen($token)); // 32B → 43 url-safe chars
 	}
 
 	// ── CsrfService ──

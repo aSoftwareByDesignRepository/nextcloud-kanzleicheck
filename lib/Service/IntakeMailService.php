@@ -138,7 +138,7 @@ class IntakeMailService
 			return;
 		}
 		// member sender → ingest body + bounded attachments
-		$stored = $this->storeAttachments($conn, $uid, $orgId, 'intake:' . $from, $maxAttachmentBytes);
+		$stored = $this->storeAttachments($conn, $uid, $orgId, 'intake:' . $from, $maxAttachmentBytes, $stats);
 		$body = $this->extractBody($conn, $uid);
 		if ($body !== '') {
 			$this->chat->post($orgId, 'intake:' . $senderHash, 'client', mb_substr($body, 0, ChatService::MAX_BODY), 'imap-' . $msgHash, null);
@@ -188,7 +188,7 @@ class IntakeMailService
 		return $out;
 	}
 
-	private function storeAttachments($conn, int $uid, int $orgId, string $actor, int $maxBytes): int
+	private function storeAttachments($conn, int $uid, int $orgId, string $actor, int $maxBytes, array &$stats): int
 	{
 		$stored = 0;
 		foreach ($this->extractParts($conn, $uid, $maxBytes) as [$name, $tmp]) {
@@ -202,7 +202,10 @@ class IntakeMailService
 				$this->uploads->validateFile($tmp, $name, $maxBytes);
 				$this->uploads->store($eingang, $orgId, $actor, $tmp, $name, 'intake', 'per E-Mail');
 				$stored++;
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				// best-effort: count + log the dropped attachment — silent inbound data loss otherwise
+				$stats['skipped']++;
+				$this->logger->warning('portalcheck intake attachment dropped', ['uid' => $uid, 'name' => (string)$name, 'e' => $e->getMessage()]);
 			}
 			@unlink($tmp);
 		}

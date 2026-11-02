@@ -118,7 +118,8 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			}
 			$conv = $this->convs->findByOrg($oid);
 			$unread = $conv !== null ? $this->chat->unreadCount((int)$conv->getId(), $this->actor()) : 0;
-			$out[] = ['id' => $oid, 'name' => $org->getName(), 'unread' => $unread];
+			$out[] = ['id' => $oid, 'name' => $org->getName(), 'unread' => $unread,
+				'bookingUrl' => \OCP\Server::get(\OCA\PortalCheck\Service\IntegrationService::class)->bookingUrlFor($org)];
 		}
 		return $this->ok(['orgs' => $out, 'me' => ['id' => (int)$this->portalIdentity->getId(), 'displayName' => $this->portalIdentity->getDisplayName()]]);
 	}
@@ -275,6 +276,14 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new NotFoundException();
 		}
 		return $this->ok(['invoices' => $integrations->invoicesForOrg((int)$org->getPcCustId())]);
+	}
+
+	#[PublicPage] #[NoCSRFRequired]
+	public function notifyGet(int $orgId): JSONResponse
+	{
+		$this->org($orgId);
+		$row = $this->notify->find((int)$this->portalIdentity->getId(), $orgId);
+		return $this->ok(['mailsEnabled' => $row === null || (int)$row['mails_enabled'] === 1]);
 	}
 
 	#[PublicPage] #[NoCSRFRequired]

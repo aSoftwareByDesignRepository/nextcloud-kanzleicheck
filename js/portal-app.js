@@ -10,7 +10,7 @@ const post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})});
 const put=(u,b)=>api(u,{method:'PUT',body:JSON.stringify(b||{})});
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
 const h=html=>{const t=document.createElement('template');t.innerHTML=html;return t.content.cloneNode(true);};
-let ORG=null,ME=null,POLL=null;
+let ORG=null,ME=null,POLL=null,ORGS=[];
 const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t;};
 
 async function init(){
@@ -20,6 +20,7 @@ async function init(){
   if(!r.success||!r.data){el.appendChild(h('<p class="ptl-muted">'+esc(t('No access granted.'))+'</p>'));return;}
   ME=r.data.me;
   const orgs=r.data.orgs;
+  ORGS=orgs;
   if(!orgs.length){el.appendChild(h('<p class="ptl-muted">'+esc(t('No portal section has been opened for your e-mail yet.'))+'</p>'));return;}
   if(orgs.length>1){
     const sel=h('<div class="ptl-orgpick"></div>');
@@ -30,6 +31,13 @@ async function init(){
   route('start');
 }
 let READY=false;
+async function pollBadges(){
+  if(!ORG)return;
+  const r=await api('/portal/api/orgs/'+ORG+'/unread');
+  if(!r.success||!r.data)return;
+  const chat=document.querySelector('.ptl-tab[data-view="chat"] .ptl-badge');
+  if(chat){chat.hidden=!(r.data.messages>0);chat.textContent=r.data.messages>0?String(r.data.messages):'';}
+}
 function route(v){
   if(!READY)return;
   document.querySelectorAll('.ptl-tab').forEach(it=>it.removeAttribute('aria-current'));
@@ -40,11 +48,27 @@ function route(v){
 
 /* ── Home: consolidated to-do stack ── */
 async function viewStart(){
+  pollBadges();
+  const cr=await api('/portal/api/orgs/'+ORG+'/contact');
+  const contacts=(cr.data&&cr.data.contacts)||[];
+  const orgRow=ORGS.find(o=>o.id===ORG);
   const r=await api('/portal/api/orgs/'+ORG+'/todo');
   el.innerHTML='<h1>'+esc(t('To do'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   const items=(r.data&&r.data.todo)||[];
   if(!items.length){el.appendChild(h('<div class="ptl-card"><h2>'+esc(t('All done'))+'</h2><p class="ptl-muted">'+esc(t('We will let you know when we need something.'))+'</p></div>'));return;}
   const list=h('<div class="ptl-stack"></div>');
+  if(contacts.length){
+    const cc=h('<div class="ptl-card ptl-contact"><h2>'+esc(t('Your contact person'))+'</h2></div>');
+    contacts.forEach(c=>{
+      cc.appendChild(h('<div class="ptl-kvrow"><span>'+esc(c.name)+(c.role?' · '+esc(c.role):'')+'</span>'+(c.email?'<b>'+esc(c.email)+'</b>':'')+'</div>'));
+    });
+    el.appendChild(cc);
+  }
+  if(orgRow&&orgRow.bookingUrl){
+    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>');
+    bk.href=orgRow.bookingUrl;bk.querySelector('b').textContent='📅 '+t('Book an appointment');
+    el.appendChild(bk);
+  }
   items.forEach(it=>list.appendChild(todoCard(it)));
   el.appendChild(list);
 }
@@ -198,7 +222,28 @@ async function viewDocs(){
 async function viewMore(){
   const r=await api('/portal/api/orgs/'+ORG+'/tasks');
   const d=await api('/portal/api/devices');
+  const ir=await api('/portal/api/orgs/'+ORG+'/intake');
+  const nr=await api('/portal/api/orgs/'+ORG+'/invoices').catch(()=>({success:false}));
   el.innerHTML='<h1>'+esc(t('More'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
+  if(ir.success&&ir.data&&ir.data.address){
+    el.appendChild(h('<h2>'+esc(t('Send documents by e-mail'))+'</h2>'));
+    el.appendChild(h('<div class="ptl-card"><p>'+esc(t('Attachments to this address land in your inbox for review:'))+'</p><p><b>'+esc(ir.data.address)+'</b></p></div>'));
+  }
+  const orgRow=ORGS.find(o=>o.id===ORG);
+  if(orgRow&&orgRow.bookingUrl){
+    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>');
+    bk.href=orgRow.bookingUrl;bk.querySelector('b').textContent='📅 '+t('Book an appointment');el.appendChild(bk);
+  }
+  if(nr.success&&nr.data&&nr.data.invoices&&nr.data.invoices.length){
+    el.appendChild(h('<h2>'+esc(t('Invoices'))+'</h2>'));
+    el.appendChild(h('<div class="ptl-card">'+nr.data.invoices.map(i=>'<div class="ptl-kvrow"><span>'+esc(i.ref||('#'+i.id))+(i.overdue?' ⚠':'')+'</span><b>'+esc(i.status)+'</b></div>').join('')+'</div>'));
+  }
+  el.appendChild(h('<h2>'+esc(t('E-mail notifications'))+'</h2>'));
+  const notifyRow=h('<div class="ptl-card"><label class="ptl-check"><input type="checkbox" id="ptl-notify"> '+esc(t('Notify me by e-mail when something new arrives'))+'</label></div>');
+  el.appendChild(notifyRow);
+  const nq=await api('/portal/api/orgs/'+ORG+'/notify');
+  if(nq.success&&nq.data){notifyRow.querySelector('#ptl-notify').checked=!!nq.data.mailsEnabled;}
+  notifyRow.querySelector('#ptl-notify').onchange=async e=>{await put('/portal/api/orgs/'+ORG+'/notify',{mailsEnabled:e.target.checked});status(t('Saved.'));};
   el.appendChild(h('<h2>'+esc(t('Tasks'))+'</h2>'));
   const tasks=(r.data&&r.data.tasks)||[];
   el.appendChild(h(tasks.length?'<div class="ptl-card">'+tasks.map(it=>'<p>'+esc(it.title)+' — <b>'+esc(it.statusLabel)+'</b>'+(it.dueDate?' · '+it.dueDate:'')+'</p>').join('')+'</div>':'<p class="ptl-muted">'+esc(t('No tasks visible.'))+'</p>'));

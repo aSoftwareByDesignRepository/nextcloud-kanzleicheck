@@ -31,6 +31,7 @@ class ChunkUploadService
 	public function __construct(
 		private readonly UploadChunkMapper $chunks,
 		private readonly IAppDataFactory $appData,
+		private readonly \Psr\Log\LoggerInterface $logger,
 	) {
 	}
 
@@ -155,7 +156,9 @@ class ChunkUploadService
 				if ($dir->fileExists($part)) {
 					$dir->getFile($part)->delete();
 				}
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				// best-effort: leaked part files are reaped by ChunkCleanupJob — log for observability
+				$this->logger->warning('portalcheck chunk part cleanup failed', ['upload' => $uploadId, 'part' => $part, 'e' => $e->getMessage()]);
 			}
 		}
 		$this->chunks->setState($uploadId, 'done');
