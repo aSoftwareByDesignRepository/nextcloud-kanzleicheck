@@ -93,4 +93,55 @@ test.describe('craft web', () => {
 		await page.waitForTimeout(1200);
 		await shot(page, 'ptl-staff-overview-light-375');
 	});
+
+	/* v7 coverage: dialog + filter + field-error + deny surfaces */
+	test('staff requests new-request dialog 1280', async ({ page }) => {
+		test.skip(!authed, 'no creds');
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await login(page, creds());
+		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-navbtn[data-v="requests"]').click();
+		await page.locator('#ptl-mine').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-btn--primary').first().click();
+		await page.locator('dialog.ptl-dialog[open]').waitFor({ state: 'visible', timeout: 10000 });
+		await shot(page, 'ptl-staff-requests-dialog-light-1280');
+	});
+	test('staff requests mine-filter on 1280', async ({ page }) => {
+		test.skip(!authed, 'no creds');
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await login(page, creds());
+		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-navbtn[data-v="requests"]').click();
+		const mine = page.locator('#ptl-mine');
+		await mine.waitFor({ state: 'visible', timeout: 20000 });
+		await mine.check();
+		await page.waitForTimeout(1200);
+		await shot(page, 'ptl-staff-requests-filter-light-1280');
+	});
+	test('guest login invalid-code field-error 1280', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-send-form').waitFor({ state: 'visible', timeout: 15000 });
+		await page.locator('#ptl-email').fill('ptl-craft-invalid@test.invalid');
+		await page.locator('#ptl-send-form button[type="submit"], #ptl-send-form .ptl-btn--primary').first().click();
+		const verify = page.locator('#ptl-verify-form');
+		await verify.waitFor({ state: 'visible', timeout: 15000 });
+		await page.locator('#ptl-code').fill('000000');
+		await verify.locator('button[type="submit"], .ptl-btn--primary').first().click();
+		await page.locator('.ptl-field-error:not([hidden])').first().waitFor({ state: 'visible', timeout: 15000 });
+		await shot(page, 'ptl-portal-login-fielderror-light-1280');
+	});
+	test('staff settings deny nonstaff 1280', async ({ page }) => {
+		const u = process.env.NC_NONSTAFF_USER, p = process.env.NC_NONSTAFF_PASS;
+		test.skip(!(u && p), 'no nonstaff creds');
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await login(page, { username: u, password: p });
+		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-navbtn[data-v="settings"]').click();
+		await page.waitForTimeout(1500);
+		await shot(page, 'ptl-staff-settings-deny-light-1280');
+	});
 });

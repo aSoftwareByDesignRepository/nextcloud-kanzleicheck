@@ -20,6 +20,7 @@
 
 /* App shell canvas: paint the flat family slate + canvas-local ink so staff
  * surfaces never float on the NC theming wallpaper/photo gradient. */
+#content.app-portalcheck,
 #content.app-portalcheck #app-content,
 .ptl-app {
 	background: var(--ptl-bg-soft);
@@ -27,6 +28,8 @@
 }
 .ptl-app {
 	min-height: 100%;
+	min-width: 0;
+	width: 100%;
 	box-sizing: border-box;
 }
 
