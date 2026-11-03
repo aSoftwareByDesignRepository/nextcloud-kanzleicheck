@@ -103,6 +103,8 @@ test.describe('craft web', () => {
 		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
 		await page.locator('.ptl-navbtn[data-v="requests"]').click();
 		await page.locator('#ptl-mine').waitFor({ state: 'visible', timeout: 20000 });
+		// fragment-crash regression: .ptl-list only exists if vRequests ran to completion
+		await page.locator('#ptl-body .ptl-list').waitFor({ state: 'attached', timeout: 15000 });
 		await page.locator('.ptl-btn--primary').first().click();
 		await page.locator('dialog.ptl-dialog[open]').waitFor({ state: 'visible', timeout: 10000 });
 		await shot(page, 'ptl-staff-requests-dialog-light-1280');
@@ -116,9 +118,24 @@ test.describe('craft web', () => {
 		await page.locator('.ptl-navbtn[data-v="requests"]').click();
 		const mine = page.locator('#ptl-mine');
 		await mine.waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#ptl-body .ptl-list').waitFor({ state: 'attached', timeout: 15000 });
 		await mine.check();
-		await page.waitForTimeout(1200);
+		// toggle must complete a re-render — the list container is re-appended
+		await page.locator('#ptl-body .ptl-list').waitFor({ state: 'attached', timeout: 15000 });
+		await page.waitForTimeout(600);
 		await shot(page, 'ptl-staff-requests-filter-light-1280');
+	});
+	test('staff inbox list renders 1280', async ({ page }) => {
+		test.skip(!authed, 'no creds');
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await login(page, creds());
+		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-navbtn[data-v="inbox"]').click();
+		// vInbox completes only when a list or a muted empty/error line lands
+		await page.locator('#ptl-body .ptl-list, #ptl-body .ptl-muted, #ptl-body p').first().waitFor({ state: 'attached', timeout: 15000 });
+		await page.waitForTimeout(600);
+		await shot(page, 'ptl-staff-inbox-light-1280');
 	});
 	test('guest login invalid-code field-error 1280', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 800 });
