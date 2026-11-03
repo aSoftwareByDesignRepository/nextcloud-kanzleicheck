@@ -18,12 +18,13 @@ const VIEWS_VP = [
   const b = await chromium.launch();
 
   // 1) axe per view on desktop (light) + one dark pass on overview
-  for (const [scheme] of [['light'], ['dark']]) {
+  for (const [scheme] of [['light'], ['dark'], ['hc']]) {
     const ctx = await b.newContext({ viewport: { width: 1280, height: 800 }, baseURL: 'http://127.0.0.1:8081' });
     const p = await ctx.newPage();
     if (scheme === 'dark') await p.emulateMedia({ colorScheme: 'dark' });
+    if (scheme === 'hc') await p.emulateMedia({ forcedColors: 'active' });
     await login(p, creds());
-    for (const v of scheme === 'light' ? VIEWS : [null]) {
+    for (const v of scheme === 'light' ? VIEWS : scheme === 'hc' ? ['orgs','settings'] : [null]) {
       await p.goto(`${APP}/${v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
       await p.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
       await p.waitForTimeout(900);

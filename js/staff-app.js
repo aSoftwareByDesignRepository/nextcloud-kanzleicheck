@@ -82,7 +82,8 @@ async function vOverview(){
     const list=h('<div class="ptl-list"></div>');
     q.slice(0,8).forEach(c=>{
       const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>');
-      row.querySelector('b').textContent=c.orgName;row.querySelector('.ptl-muted').textContent=c.lastPreview||'';
+      row.setAttribute('aria-label',c.orgName||t('Client'));
+      row.querySelector('b').textContent=c.orgName||t('Client');row.querySelector('.ptl-muted').textContent=c.lastPreview||'';
       row.onclick=()=>openConv(c.orgId,c.orgName);list.appendChild(row);
     });
     body.appendChild(list);
@@ -93,9 +94,9 @@ async function vOverview(){
 async function vInbox(mine){
   const body=chrome('inbox',t('Messages'));
   const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
-  body.appendChild(mineCb);
   mineCb.querySelector('#ptl-mine').checked=!!mine;
   mineCb.querySelector('#ptl-mine').onchange=e=>vInbox(e.target.checked);
+  body.appendChild(mineCb);
   const r=await get('/api/portal/inbox'+(mine?'?mine=1':''));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   const convs=r.data.conversations||[];
@@ -209,9 +210,9 @@ async function vRequests(mine){
     status(r.success?t('Created.'):(r.message||t('Error')));if(r.success)vRequests();
   },true));
   const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
-  body.appendChild(mineCb);
   mineCb.querySelector('#ptl-mine').checked=!!mine;
   mineCb.querySelector('#ptl-mine').onchange=e=>vRequests(e.target.checked);
+  body.appendChild(mineCb);
   const r=await get('/api/portal/requests'+(mine?'?mine=1':''));
   const reqs=(r.data&&r.data.requests)||[];
   const list=h('<div class="ptl-list"></div>');
