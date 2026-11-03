@@ -306,6 +306,9 @@ OC.L10N.register(
 	"Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list." : "Inställningar är endast synliga för PortalCheck-appadministratörer. Ditt konto finns inte på administratörslistan.",
 	"Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role." : "Nästa steg: be en Nextcloud-administratör att lägga till ditt konto under Inställningar → Åtkomst (dörr), eller att ge dig rollen app-administratör.",
 	"No access granted" : "Ingen åtkomst beviljad",
-	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "Det här kontot är inte kopplat till någon portal. Om du förväntade dig åtkomst, kontakta organisationen som bjöd in dig — de kan skicka din inloggningslänk igen."
+	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "Det här kontot är inte kopplat till någon portal. Om du förväntade dig åtkomst, kontakta organisationen som bjöd in dig — de kan skicka din inloggningslänk igen.",
+	"Choose organisation" : "Välj organisation",
+	"Switch organisation" : "Byt organisation",
+	"Your sign-in is linked to more than one organisation." : "Din inloggning är kopplad till fler än en organisation."
 	}
 );

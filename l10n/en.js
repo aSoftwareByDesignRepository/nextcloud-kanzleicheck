@@ -306,6 +306,9 @@ OC.L10N.register(
 	"Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list." : "Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list.",
 	"Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role." : "Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.",
 	"No access granted" : "No access granted",
-	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link."
+	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.",
+	"Choose organisation" : "Choose organisation",
+	"Switch organisation" : "Switch organisation",
+	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation."
 	}
 );

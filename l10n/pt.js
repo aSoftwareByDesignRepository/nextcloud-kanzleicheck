@@ -306,6 +306,9 @@ OC.L10N.register(
 	"Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list." : "As definições só são visíveis para os administradores da aplicação PortalCheck. A sua conta não está na lista de administradores.",
 	"Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role." : "Passo seguinte: peça a um administrador Nextcloud para adicionar a sua conta em Definições → Acesso (porta), ou para lhe atribuir o papel de administrador da aplicação.",
 	"No access granted" : "Acesso não concedido",
-	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "Esta conta não está ligada a nenhum portal. Se esperava acesso, contacte a organização que o convidou — podem reenviar a sua ligação de início de sessão."
+	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "Esta conta não está ligada a nenhum portal. Se esperava acesso, contacte a organização que o convidou — podem reenviar a sua ligação de início de sessão.",
+	"Choose organisation" : "Escolher organização",
+	"Switch organisation" : "Mudar de organização",
+	"Your sign-in is linked to more than one organisation." : "O seu início de sessão está associado a mais de uma organização."
 	}
 );

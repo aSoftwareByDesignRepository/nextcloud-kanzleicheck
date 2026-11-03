@@ -22,12 +22,9 @@ async function init(){
   const orgs=r.data.orgs;
   ORGS=orgs;
   if(!orgs.length){el.appendChild(h('<p class="ptl-muted">'+esc(t('No portal section has been opened for your e-mail yet.'))+'</p>'));return;}
-  if(orgs.length>1){
-    const sel=h('<div class="ptl-orgpick"></div>');
-    orgs.forEach(o=>{const b=document.createElement('button');b.className='ptl-btn';b.textContent=o.name;b.onclick=()=>{ORG=o.id;route('start');};sel.appendChild(b);});
-    if(!ORG){ORG=orgs[0].id;}
-  } else {ORG=orgs[0].id;}
   READY=true;
+  if(orgs.length>1&&!ORG){route('pick');return;}
+  if(!ORG)ORG=orgs[0].id;
   route('start');
 }
 let READY=false;
@@ -40,12 +37,27 @@ async function pollBadges(){
 }
 function route(v){
   if(!READY)return;
+  if(v!=='pick'&&!ORG&&ORGS.length>1)v='pick';
   document.querySelectorAll('.ptl-tab').forEach(it=>it.removeAttribute('aria-current'));
   const tab=document.querySelector('.ptl-tab[data-view="'+v+'"]');tab&&tab.setAttribute('aria-current','page');
   if(POLL){clearTimeout(POLL);POLL=null;}
-  ({start:viewStart,chat:viewChat,docs:viewDocs,more:viewMore})[v]();
+  ({start:viewStart,chat:viewChat,docs:viewDocs,more:viewMore,pick:viewOrgPick})[v]();
 }
 
+/* ── Org picker: multi-mandate accounts choose their portal section first
+   * (companion parity: App.tsx orgs.pick). Re-entered via the switch on Home. ── */
+function viewOrgPick(){
+  el.innerHTML='<h1>'+esc(t('Choose organisation'))+'</h1><p class="ptl-muted">'+esc(t('Your sign-in is linked to more than one organisation.'))+'</p><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
+  const sel=h('<div class="ptl-orgpick"></div>').firstElementChild;
+  ORGS.forEach(o=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='ptl-card ptl-orgpick__btn';
+    b.textContent=o.name;
+    b.onclick=()=>{ORG=o.id;route('start');};
+    sel.appendChild(b);
+  });
+  el.appendChild(sel);
+}
 /* ── Home: consolidated to-do stack ── */
 async function viewStart(){
   pollBadges();
@@ -54,6 +66,12 @@ async function viewStart(){
   const orgRow=ORGS.find(o=>o.id===ORG);
   const r=await api('/portal/api/orgs/'+ORG+'/todo');
   el.innerHTML='<h1>'+esc(t('To do'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
+  if(ORGS.length>1){
+    const ctx=h('<p class="ptl-orgctx"><span class="ptl-muted"></span></p>').firstElementChild;
+    ctx.querySelector('.ptl-muted').textContent=orgRow?orgRow.name:'';
+    ctx.appendChild(btn(t('Switch organisation'),()=>route('pick'),true));
+    el.insertBefore(ctx,el.children[1]);
+  }
   const items=(r.data&&r.data.todo)||[];
   if(!items.length){el.appendChild(h('<div class="ptl-card"><h2>'+esc(t('All done'))+'</h2><p class="ptl-muted">'+esc(t('We will let you know when we need something.'))+'</p></div>'));return;}
   const list=h('<div class="ptl-stack"></div>').firstElementChild;
