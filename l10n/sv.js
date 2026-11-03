@@ -53,7 +53,7 @@ OC.L10N.register(
 	"Create upload link" : "Skapa uppladdningslänk",
 	"Created." : "Skapad.",
 	"Cron:" : "Cron:",
-	"DUPLICATE" : "DUBLETT",
+	"DUPLICATE" : "dubblett",
 	"Deactivate app" : "Inaktivera app",
 	"Deadline" : "Deadline",
 	"Decided" : "Beslutad",
