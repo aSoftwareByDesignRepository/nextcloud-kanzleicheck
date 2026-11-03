@@ -8,7 +8,7 @@ const get=u=>api(u),post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})}
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
 const h=html=>{const t=document.createElement('template');t.innerHTML=html;return t.content.cloneNode(true);};
 const btn=(label,fn,primary)=>{const b=document.createElement('button');b.className='ptl-btn'+(primary?' ptl-btn--primary':'');b.textContent=label;b.onclick=fn;return b;};
-const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t||'';};
+const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t||'';document.getElementById('ptl-loading')?.remove();};
 let ME_ADMIN=false;
 
 /* native dialog helpers (never window.prompt/confirm) */
@@ -42,9 +42,16 @@ function confirmDlg(title,text){return new Promise(res=>{
 
 const NAV=[['overview',t('Overview')],['inbox',t('Messages')],['board',t('Tasks')],['requests',t('Requests')],['orgs',t('Clients')],['uploads',t('Uploads')],['holds',t('Mail review')],['forms',t('Questionnaires')],['people',t('People')],['settings',t('Settings')]];
 function chrome(active,title){
-  el.innerHTML='<nav class="ptl-nav" aria-label="'+esc(t('Sections'))+'">'+NAV.map(([k,l])=>'<button class="ptl-navbtn'+(k===active?' ptl-navbtn--active':'')+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</nav><h1>'+esc(title)+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div><div id="ptl-body"></div>';
-  el.querySelectorAll('.ptl-navbtn').forEach(b=>b.onclick=()=>VIEWS[b.dataset.v]());
-  return document.getElementById('ptl-body');
+  el.innerHTML='<nav class="ptl-nav" aria-label="'+esc(t('Sections'))+'">'+NAV.map(([k,l])=>'<button class="ptl-navbtn'+(k===active?' ptl-navbtn--active':'')+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</nav><h1>'+esc(title)+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div><div id="ptl-body"><p class="ptl-muted" id="ptl-loading" role="status"></p></div>';
+  const ld=document.getElementById('ptl-loading');ld.textContent=t('Loading…');
+  el.querySelectorAll('.ptl-navbtn').forEach(b=>b.onclick=()=>{status(t('Loading…'));VIEWS[b.dataset.v]();});
+  const body=document.getElementById('ptl-body');
+  // instant feedback on every view switch: clear the loading placeholder on
+  // the first real insert (covers success, error and early-return paths).
+  const orig=body.appendChild.bind(body);
+  let cleared=false;
+  body.appendChild=n=>{if(!cleared){cleared=true;ld.remove();}return orig(n);};
+  return body;
 }
 
 /* ── Overview ── */
