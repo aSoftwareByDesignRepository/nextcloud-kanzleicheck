@@ -17,9 +17,9 @@ function ask(title,label,okLabel,fields){return new Promise(res=>{
   let inner='<form method="dialog" class="ptl-card"><h2></h2>';
   (fields||[{name:'v',label}]).forEach(f=>{
     inner+='<label class="ptl-label" for="fd-'+esc(f.name)+'"></label>';
-    inner+=f.type==='select'?'<select class="ptl-input" name="'+esc(f.name)+'">'+(f.options||[]).map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>'
-      :f.type==='textarea'?'<textarea class="ptl-input" name="'+esc(f.name)+'" rows="3"></textarea>'
-      :'<input class="ptl-input" name="'+esc(f.name)+'" type="'+(f.type||'text')+'" '+(f.required?'required':'')+'>';
+    inner+=f.type==='select'?'<select id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'">'+(f.options||[]).map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>'
+      :f.type==='textarea'?'<textarea id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" rows="3"></textarea>'
+      :'<input id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" type="'+(f.type||'text')+'" '+(f.required?'required':'')+'>';
   });
   inner+='<div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary"></button></div></form>';
   dlg.innerHTML=inner;dlg.querySelector('h2').textContent=title;
@@ -475,7 +475,7 @@ async function vSettings(){
     return;
   }
   const s=r.data.settings,d=r.data.door;
-  const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>');
+  const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label" for="s-preset">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label" for="s-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label" for="s-max">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label" for="s-ttl">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>');
   const sel=form.querySelector('#s-preset');
   r.data.presets.forEach(p=>sel.appendChild(new Option(p,p)));
   sel.value=s.preset;form.querySelector('#s-label').value=s.providerLabel;form.querySelector('#s-max').value=s.uploadMaxMb;form.querySelector('#s-ttl').value=s.otpTtlMin;
@@ -485,7 +485,7 @@ async function vSettings(){
   },true));
   body.appendChild(form);
   // door
-  const door=h('<div class="ptl-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="ptl-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="ptl-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="ptl-label">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="ptl-input"><label class="ptl-label">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="ptl-input"><div class="ptl-actions"></div></div>');
+  const door=h('<div class="ptl-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="ptl-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="ptl-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="ptl-label" for="d-users">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="ptl-input"><label class="ptl-label" for="d-admins">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="ptl-input"><div class="ptl-actions"></div></div>');
   door.querySelector('#d-restr').checked=d.restricted;
   door.querySelector('#d-users').value=(d.allowedUsers||[]).join(', ');
   door.querySelector('#d-admins').value=(d.appAdmins||[]).join(', ');
