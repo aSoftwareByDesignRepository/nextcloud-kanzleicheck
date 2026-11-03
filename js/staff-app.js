@@ -19,7 +19,7 @@ function ask(title,label,okLabel,fields){return new Promise(res=>{
     inner+='<label class="ptl-label" for="fd-'+esc(f.name)+'"></label>';
     inner+=f.type==='select'?'<select id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'">'+(f.options||[]).map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>'
       :f.type==='textarea'?'<textarea id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" rows="3"></textarea>'
-      :'<input id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" type="'+(f.type||'text')+'" '+(f.required?'required':'')+'>';
+      :'<input id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" type="'+esc(f.type||'text')+'" '+(f.required?'required':'')+'>';
   });
   inner+='<div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary"></button></div></form>';
   dlg.innerHTML=inner;dlg.querySelector('h2').textContent=title;
