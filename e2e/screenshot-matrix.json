@@ -1,0 +1,92 @@
+{
+ "prefix": "ptl",
+ "outDir": "craft/web",
+ "viewports": [
+  {
+   "name": "mobile",
+   "width": 320,
+   "height": 800
+  },
+  {
+   "name": "tablet",
+   "width": 768,
+   "height": 800
+  },
+  {
+   "name": "desktop",
+   "width": 1280,
+   "height": 800
+  }
+ ],
+ "surfaces": [
+  {
+   "id": "portal-login",
+   "path": "/portal/login",
+   "states": [
+    "current"
+   ],
+   "dark": true
+  },
+  {
+   "id": "portal-notfound",
+   "path": "/portal/u/does-not-exist",
+   "states": [
+    "current"
+   ]
+  },
+  {
+   "id": "staff-overview",
+   "path": "/",
+   "staff": true,
+   "states": [
+    "populated"
+   ],
+   "dark": true
+  },
+  {
+   "id": "staff-board",
+   "path": "/",
+   "staff": true,
+   "nav": "board",
+   "states": [
+    "populated"
+   ]
+  },
+  {
+   "id": "staff-requests",
+   "path": "/",
+   "staff": true,
+   "nav": "requests",
+   "states": [
+    "populated"
+   ]
+  },
+  {
+   "id": "staff-orgs",
+   "path": "/",
+   "staff": true,
+   "nav": "orgs",
+   "states": [
+    "populated"
+   ]
+  },
+  {
+   "id": "staff-uploads",
+   "path": "/",
+   "staff": true,
+   "nav": "uploads",
+   "states": [
+    "populated"
+   ]
+  },
+  {
+   "id": "staff-settings",
+   "path": "/",
+   "staff": true,
+   "nav": "settings",
+   "states": [
+    "current"
+   ]
+  }
+ ]
+}
