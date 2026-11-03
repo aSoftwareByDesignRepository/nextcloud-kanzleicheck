@@ -82,11 +82,17 @@ class UploadService
 	public function store(Folder $eingang, int $orgId, string $actor, string $tmpPath, string $fileName, string $source, ?string $note): array
 	{
 		$sha = hash_file('sha256', $tmpPath);
+		if ($sha === false) {
+			throw new ApiException(500, 'UPLOAD_FAILED', 'cannot hash upload');
+		}
 		$safe = SafeFilenameService::sanitize($fileName);
 		$name = $this->docs->uniqueName($eingang, $safe);
 		$node = $eingang->newFile($name);
 		$in = fopen($tmpPath, 'r');
 		$out = $node->fopen('w');
+		if (!is_resource($in) || !is_resource($out)) {
+			throw new ApiException(500, 'UPLOAD_FAILED', 'cannot write upload');
+		}
 		stream_copy_to_stream($in, $out);
 		fclose($in);
 		fclose($out);

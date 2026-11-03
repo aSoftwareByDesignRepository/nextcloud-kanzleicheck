@@ -47,6 +47,10 @@ class LicenseStateMapper extends QBMapper
 	}
 
 	/** @return list<LicenseState> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<LicenseState>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

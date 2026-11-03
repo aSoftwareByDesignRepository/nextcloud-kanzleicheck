@@ -47,6 +47,10 @@ class ConversationMapper extends QBMapper
 	}
 
 	/** @return list<Conversation> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Conversation>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

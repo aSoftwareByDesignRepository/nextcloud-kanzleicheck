@@ -47,6 +47,10 @@ class IntakeHoldMapper extends QBMapper
 	}
 
 	/** @return list<IntakeHold> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<IntakeHold>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

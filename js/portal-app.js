@@ -17,7 +17,7 @@ async function init(){
   const s=await api('/portal/api/session');
   if(s.success&&s.data)CSRF=s.data.csrf;
   const r=await api('/portal/api/orgs');
-  if(!r.success||!r.data){el.appendChild(h('<p class="ptl-muted">'+esc(t('No access granted.'))+'</p>'));return;}
+  if(!r.success||!r.data){el.appendChild(h('<div class="ptl-card"><h2>'+esc(t('No access granted'))+'</h2><p class="ptl-muted">'+esc(t('This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.'))+'</p></div>'));return;}
   ME=r.data.me;
   const orgs=r.data.orgs;
   ORGS=orgs;

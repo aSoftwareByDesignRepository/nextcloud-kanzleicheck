@@ -47,6 +47,10 @@ class AuditMapper extends QBMapper
 	}
 
 	/** @return list<Audit> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Audit>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();
@@ -61,7 +65,7 @@ class AuditMapper extends QBMapper
 		$a->setAction($action);
 		$a->setTargetType($targetType);
 		$a->setTargetId($targetId);
-		$a->setDetail($detail === null ? null : json_encode($detail, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+		$a->setDetail($detail === null ? null : (json_encode($detail, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: null));
 		$a->setCreatedAt(new \DateTimeImmutable());
 		return $this->insert($a);
 	}

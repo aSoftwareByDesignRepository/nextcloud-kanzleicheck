@@ -47,6 +47,10 @@ class ApprovalMapper extends QBMapper
 	}
 
 	/** @return list<Approval> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Approval>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

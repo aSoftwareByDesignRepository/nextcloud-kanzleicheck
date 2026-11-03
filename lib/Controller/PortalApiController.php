@@ -15,6 +15,7 @@ use OCA\PortalCheck\Db\PortalFormMapper;
 use OCA\PortalCheck\Db\ReqItemMapper;
 use OCA\PortalCheck\Db\TaskMapper;
 use OCA\PortalCheck\Db\UploadMapper;
+use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Service\ActorResolver;
 use OCA\PortalCheck\Service\ApprovalService;
@@ -493,7 +494,11 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	{
 		$this->org($orgId);
 		$node = $this->docs->documentNodeForOrg($orgId, $fileId);
-		$resp = new \OCP\AppFramework\Http\StreamResponse($node->fopen('r'));
+		$stream = $node->fopen('r');
+		if (!is_resource($stream)) {
+			throw new ApiException(500, 'READ_FAILED', 'cannot read file');
+		}
+		$resp = new \OCP\AppFramework\Http\StreamResponse($stream);
 		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\PortalCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
 		$resp->addHeader('X-Content-Type-Options', 'nosniff');
 		$resp->addHeader('Content-Type', 'application/octet-stream');
@@ -563,7 +568,8 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 				if ($item !== null) {
 					$this->requests->deliverItem($this->actor(), (int)$item->getReqId(), (int)$item->getId());
 				}
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
 			}
 		}
 		return new JSONResponse(null, 204);
@@ -604,7 +610,8 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 				'approve:' . $approvalId . ':' . hash('sha256', $code),
 				['code' => $code, 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->mailOutbox->drain(3);
-		} catch (\Throwable) {
+		} catch (\Throwable $e) {
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck approval OTP mail enqueue failed', ['approval' => $approvalId, 'e' => $e->getMessage()]);
 		}
 	}
 }

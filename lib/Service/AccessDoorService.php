@@ -111,7 +111,8 @@ class AccessDoorService
 				foreach ($group?->getUsers() ?? [] as $u) {
 					$uids[$u->getUID()] = true;
 				}
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck group enumeration failed', ['gid' => $gid, 'e' => $e->getMessage()]);
 			}
 		}
 		if ($uids === [] && !$this->isRestricted()) {

@@ -47,6 +47,10 @@ class OrgMapper extends QBMapper
 	}
 
 	/** @return list<Org> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Org>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

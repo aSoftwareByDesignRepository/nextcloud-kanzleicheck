@@ -13,7 +13,7 @@ class CsvFormulaGuardTest extends TestCase
 	public function testDangerousLeadsEscaped(): void
 	{
 		foreach (['=cmd', '+1', '-1', "@SUM", "\tfoo", "\rbar", "\x0Bbaz"] as $in) {
-			$this->assertStringStartsWith("'", CsvFormulaGuard::escape($in), $in);
+			$this->assertSame("'" . $in, CsvFormulaGuard::escape($in), $in);
 		}
 	}
 
@@ -21,6 +21,7 @@ class CsvFormulaGuardTest extends TestCase
 	{
 		$this->assertSame('Müller', CsvFormulaGuard::escape('Müller'));
 		$this->assertSame('', CsvFormulaGuard::escape(''));
+		$this->assertSame('', CsvFormulaGuard::escape(null));
 		$this->assertSame('a=b', CsvFormulaGuard::escape('a=b'));
 	}
 }

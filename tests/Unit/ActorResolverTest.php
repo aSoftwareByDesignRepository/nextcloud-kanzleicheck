@@ -23,6 +23,8 @@ class ActorResolverTest extends TestCase
 		$this->assertNull(ActorResolver::portalId('alice'));
 		$this->assertNull(ActorResolver::portalId('portal:'));
 		$this->assertNull(ActorResolver::portalId('portal:x12'));
+		$this->assertNull(ActorResolver::portalId('portal:12x'));
+		$this->assertNull(ActorResolver::portalId('portal:42 evil'));
 	}
 
 	public function testSystemAndUlink(): void

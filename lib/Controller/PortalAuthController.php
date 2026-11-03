@@ -150,7 +150,8 @@ class PortalAuthController extends Controller
 	{
 		try {
 			$this->outbox->drain(5);
-		} catch (\Throwable) {
+		} catch (\Throwable $e) {
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck auth OTP drain failed', ['e' => $e->getMessage()]);
 		}
 	}
 }

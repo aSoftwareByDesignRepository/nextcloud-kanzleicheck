@@ -47,6 +47,10 @@ class UploadMapper extends QBMapper
 	}
 
 	/** @return list<Upload> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Upload>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

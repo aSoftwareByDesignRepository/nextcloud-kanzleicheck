@@ -47,6 +47,10 @@ class ReqItemMapper extends QBMapper
 	}
 
 	/** @return list<ReqItem> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<ReqItem>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();
@@ -78,8 +82,9 @@ class ReqItemMapper extends QBMapper
 		foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
 			$rid = (int)$row['req_id'];
 			$out[$rid]['total'] = ($out[$rid]['total'] ?? 0) + (int)$row['n'];
+			$out[$rid]['accepted'] = $out[$rid]['accepted'] ?? 0;
 			if ($row['state'] === 'accepted') {
-				$out[$rid]['accepted'] = ($out[$rid]['accepted'] ?? 0) + (int)$row['n'];
+				$out[$rid]['accepted'] += (int)$row['n'];
 			}
 		}
 		return $out;

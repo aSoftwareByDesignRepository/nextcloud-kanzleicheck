@@ -79,6 +79,19 @@ class SecurityCoreTest extends TestCase
 		$this->assertSame(43, strlen($token)); // 32B → 43 url-safe chars
 	}
 
+	public function testMintFloorIsOneByte(): void
+	{
+		$s = new TokenService();
+		[$t0] = $s->mint(0);
+		$this->assertNotSame('', $t0); // zero bytes must still mint a usable token
+		[$t1] = $s->mint(1);
+		$decoded = base64_decode(strtr($t1, '-_', '+/'), true);
+		$this->assertNotFalse($decoded);
+		$this->assertSame(1, strlen($decoded));
+		[$t2] = $s->mint(2);
+		$this->assertSame(2, strlen(base64_decode(strtr($t2, '-_', '+/'), true)));
+	}
+
 	// ── CsrfService ──
 	public function testCsrfBoundToSessionToken(): void
 	{

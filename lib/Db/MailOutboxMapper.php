@@ -47,6 +47,10 @@ class MailOutboxMapper extends QBMapper
 	}
 
 	/** @return list<MailOutbox> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<MailOutbox>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

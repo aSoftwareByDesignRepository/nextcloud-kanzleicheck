@@ -47,6 +47,10 @@ class TaskMapper extends QBMapper
 	}
 
 	/** @return list<Task> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Task>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

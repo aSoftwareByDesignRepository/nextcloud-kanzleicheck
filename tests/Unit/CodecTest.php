@@ -110,4 +110,157 @@ class CodecTest extends TestCase
 		$spaced = substr($k, 0, 10) . " \n" . substr($k, 10);
 		$this->assertNotNull(Ptl2Codec::parseAndVerify($spaced));
 	}
+
+	public function testPartCountPinnedToThree(): void
+	{
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT, Ptl2Codec::classifyError('PTL2.abc'));
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT, Ptl2Codec::classifyError('PTL2.a.b.c.d'));
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT, Ptl2Codec::classifyError(''));
+	}
+
+	public function testUndecodableSegmentsRejected(): void
+	{
+		$k = $this->sign($this->validPayload());
+		$parts = explode('.', $k);
+		// valid-length signature but payload segment that base64url cannot decode
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT,
+			Ptl2Codec::classifyError('PTL2.***.' . $parts[2]));
+		// decodable payload but signature segment undecodable
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT,
+			Ptl2Codec::classifyError('PTL2.' . $parts[1] . '.***'));
+		// wrong-length signature (decodable but ≠ 64 bytes)
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_FORMAT,
+			Ptl2Codec::classifyError('PTL2.' . $parts[1] . '.' . VendorPublicKey::base64urlEncode('short')));
+	}
+
+	public function testNonCanonicalSignedPayloadRejected(): void
+	{
+		// a correctly-signed payload whose JSON is NOT the canonical encoding
+		// (extra key + different order) must fail the canonicality check.
+		$reordered = json_encode([
+			'customerId' => 'demo-cust', 'v' => 2, 'product' => 'portalcheck',
+			'issuedAt' => '2026-01-01', 'validUntil' => '2027-01-01',
+			'portalClients' => 25, 'mobileSeats' => 5,
+		], JSON_UNESCAPED_SLASHES);
+		$sig = sodium_crypto_sign_detached($reordered, self::$secretKey);
+		$k = 'PTL2.' . VendorPublicKey::base64urlEncode($reordered) . '.' . VendorPublicKey::base64urlEncode($sig);
+		$this->assertSame(Ptl2Codec::ERROR_INVALID_PAYLOAD, Ptl2Codec::classifyError($k));
+	}
+
+	public function testVersionAndProductPinned(): void
+	{
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['v' => 1])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['v' => 3])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['product' => 'other'])));
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload()));
+	}
+
+	public function testCustomerIdAnchorsAndLength(): void
+	{
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => '!!abc-def'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => 'abc-def!!'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => 'ab'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => 'ABC-DEF'])));
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => str_repeat('a', 64)])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => str_repeat('a', 65)])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['customerId' => 12345])));
+	}
+
+	public function testSeatBoundsExact(): void
+	{
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['portalClients' => 100000])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['portalClients' => 100001])));
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['mobileSeats' => 10000, 'portalClients' => 1])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['mobileSeats' => 10001, 'portalClients' => 25])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['mobileSeats' => '5'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['portalClients' => -1])));
+	}
+
+	public function testBundleMustBeLiteralTrue(): void
+	{
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['bundle' => false])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['bundle' => 'true'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['bundle' => 1])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['bundle' => true, 'mobileSeats' => 0])));
+	}
+
+	public function testDateAnchorsAndRealCalendar(): void
+	{
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => 'x2026-01-01'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2026-01-01x'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2026-13-01'])));
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2026-02-30'])));
+		// prefix junk that sorts BEFORE validUntil — the ordering check must
+		// not mask a missing ^ anchor in the date validator
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '12026-01-01'])));
+		// validUntil junk sorts after issuedAt — no ordering mask either way
+		$this->assertFalse(Ptl2Codec::validatePayloadFields($this->validPayload(['validUntil' => 'x2027-01-01'])));
+		// 2000-02-29 is a real leap day; in year 2 it is not — distinguishes
+		// the year/month/day argument order in checkdate()
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2000-02-29'])));
+		// same-day boundary is allowed
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2026-01-01', 'validUntil' => '2026-01-01'])));
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['issuedAt' => '2026-01-20', 'validUntil' => '2026-01-20'])));
+	}
+
+	public function testZeroInOneSeatPoolIsValid(): void
+	{
+		// seats are bounded individually (0..100000); only the SUM must be ≥1
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['mobileSeats' => 0, 'portalClients' => 25])));
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['portalClients' => 0, 'mobileSeats' => 5])));
+	}
+
+	public function testSeatSumExactlyOneIsValid(): void
+	{
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['mobileSeats' => 0, 'portalClients' => 1])));
+	}
+
+	public function testBundleBoundaryExactlyOneEach(): void
+	{
+		$this->assertTrue(Ptl2Codec::validatePayloadFields($this->validPayload(['bundle' => true, 'mobileSeats' => 1, 'portalClients' => 1])));
+	}
+
+	public function testCanonicalJsonOmitsBundleWhenAbsent(): void
+	{
+		$json = Ptl2Codec::canonicalJson($this->validPayload());
+		$this->assertStringNotContainsString('bundle', $json);
+		$withBundle = Ptl2Codec::canonicalJson($this->validPayload(['bundle' => true]));
+		$this->assertStringContainsString('"bundle":true', $withBundle);
+	}
+
+	public function testCanonicalJsonCoercesScalarTypes(): void
+	{
+		$json = Ptl2Codec::canonicalJson([
+			'v' => '2', 'product' => 456, 'customerId' => 123,
+			'issuedAt' => 20260101, 'validUntil' => 20270101,
+			'mobileSeats' => '5', 'portalClients' => '25',
+		]);
+		$this->assertStringContainsString('"v":2', $json);
+		$this->assertStringContainsString('"product":"456"', $json);
+		$this->assertStringContainsString('"customerId":"123"', $json);
+		$this->assertStringContainsString('"issuedAt":"20260101"', $json);
+		$this->assertStringContainsString('"validUntil":"20270101"', $json);
+		$this->assertStringContainsString('"mobileSeats":5', $json);
+		$this->assertStringContainsString('"portalClients":25', $json);
+	}
+
+	public function testCanonicalJsonLeavesSlashesAndUnicodeBare(): void
+	{
+		$json = Ptl2Codec::canonicalJson($this->validPayload([
+			'customerId' => 'müller-x',
+			'issuedAt' => '2026/01/01',
+		]));
+		$this->assertStringContainsString('müller-x', $json);
+		$this->assertStringContainsString('2026/01/01', $json);
+	}
+
+	public function testParseReturnsWireSegments(): void
+	{
+		$k = $this->sign($this->validPayload());
+		$parts = explode('.', $k);
+		$parsed = Ptl2Codec::parseAndVerify($k);
+		$this->assertNotNull($parsed);
+		$this->assertSame($parts[1], $parsed['payloadB64']);
+		$this->assertSame($parts[2], $parsed['signatureB64']);
+	}
 }

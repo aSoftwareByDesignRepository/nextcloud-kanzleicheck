@@ -83,6 +83,10 @@ class ApprovalService
 			$this->void($a, 'deleted');
 			return 'void';
 		}
+		if (!$node instanceof \OCP\Files\File) {
+			$this->void($a, 'deleted');
+			return 'void';
+		}
 		if ((string)$node->getEtag() !== $a->getFileEtag()) {
 			$sha = $this->docs->hashFile($node);
 			if (!hash_equals($a->getFileSha256(), $sha)) {
@@ -159,7 +163,7 @@ class ApprovalService
 				}
 				// final integrity check inside the transaction
 				$node = $this->docs->findNodeById($a->getFileId());
-				if ($node === null || !hash_equals($a->getFileSha256(), $this->docs->hashFile($node))) {
+				if (!$node instanceof \OCP\Files\File || !hash_equals($a->getFileSha256(), $this->docs->hashFile($node))) {
 					$this->void($a, 'changed');
 					throw new ApiException(410, 'APPROVAL_VOID', 'document changed');
 				}

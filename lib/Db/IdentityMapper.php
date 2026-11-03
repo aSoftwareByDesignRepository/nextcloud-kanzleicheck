@@ -47,6 +47,10 @@ class IdentityMapper extends QBMapper
 	}
 
 	/** @return list<Identity> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Identity>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

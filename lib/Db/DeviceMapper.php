@@ -47,6 +47,10 @@ class DeviceMapper extends QBMapper
 	}
 
 	/** @return list<Device> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Device>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

@@ -47,6 +47,10 @@ class PortalFormMapper extends QBMapper
 	}
 
 	/** @return list<PortalForm> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<PortalForm>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

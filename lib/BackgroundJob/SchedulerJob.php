@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\PortalCheck\BackgroundJob;
 
+use OCA\PortalCheck\Db\Approval;
 use OCA\PortalCheck\Db\ApprovalMapper;
 use OCA\PortalCheck\Db\DocRequestMapper;
 use OCA\PortalCheck\Db\IdentityMapper;
@@ -212,11 +213,15 @@ private readonly DocumentService $docs,
 		$this->cursors->set('void_appr', (string)$max);
 	}
 
-	private function voidCheck($a): void
+	private function voidCheck(Approval $a): void
 	{
 		$docs = $this->docs;
 		$node = $docs->findNodeById((int)$a->getFileId());
 		if ($node === null) {
+			$this->void($a, 'deleted');
+			return;
+		}
+		if (!$node instanceof \OCP\Files\File) {
 			$this->void($a, 'deleted');
 			return;
 		}
@@ -226,7 +231,7 @@ private readonly DocumentService $docs,
 		}
 	}
 
-	private function void($a, string $reason): void
+	private function void(Approval $a, string $reason): void
 	{
 		$qb = $this->db->getQueryBuilder();
 		$qb->update('ptl_approval')

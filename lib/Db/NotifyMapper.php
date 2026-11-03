@@ -28,7 +28,11 @@ class NotifyMapper
 			->where($qb->expr()->eq('identity_id', $qb->createNamedParameter($identityId)))
 			->andWhere($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)));
 		$row = $qb->executeQuery()->fetch();
-		return $row === false ? null : $row;
+		return $row === false ? null : [
+			'mails_enabled' => (int)$row['mails_enabled'],
+			'last_mail_at' => $row['last_mail_at'] === null ? null : (string)$row['last_mail_at'],
+			'pending_kinds' => $row['pending_kinds'] === null ? null : (string)$row['pending_kinds'],
+		];
 	}
 
 	/** Insert row if missing (mails_enabled default true), else no-op. */
@@ -49,8 +53,10 @@ class NotifyMapper
 		]);
 		try {
 			$ins->executeStatement();
-		} catch (\Throwable) {
-			// concurrent insert won — fine
+		} catch (\Throwable $e) {
+			// concurrent insert won — fine, but keep observable
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('portalcheck notify-pref insert skipped', ['identity' => $identityId, 'org' => $orgId, 'e' => $e->getMessage()]);
+			return;
 		}
 	}
 
@@ -122,7 +128,15 @@ class NotifyMapper
 				)
 			)
 			->setMaxResults($limit);
-		return $qb->executeQuery()->fetchAll() ?: [];
+		$out = [];
+		foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
+			$out[] = [
+				'identity_id' => (int)$row['identity_id'],
+				'org_id' => (int)$row['org_id'],
+				'pending_kinds' => (string)$row['pending_kinds'],
+			];
+		}
+		return $out;
 	}
 
 	public function deleteForIdentity(int $identityId): void

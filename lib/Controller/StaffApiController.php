@@ -18,6 +18,7 @@ use OCA\PortalCheck\Db\ReqTemplateMapper;
 use OCA\PortalCheck\Db\TaskMapper;
 use OCA\PortalCheck\Db\UploadLinkMapper;
 use OCA\PortalCheck\Db\UploadMapper;
+use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Exception\ValidationException;
 use OCA\PortalCheck\Service\AccessDoorService;
@@ -556,7 +557,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$holdSvc = \OCP\Server::get(\OCA\PortalCheck\Service\IntakeHoldService::class);
 		if ($action === 'accept') {
 			$res = $holdSvc->accept($this->staffUid, $id);
-			return $this->ok(['state' => 'accepted', 'stored' => $res['stored'], 'failed' => $res['failed']]);
+			return $this->ok(['state' => 'accepted', 'stored' => $res['stored'], 'failed' => $res['failed'], 'errors' => $res['errors'] ?? []]);
 		}
 		if ($action === 'discard' || $action === 'reject') {
 			$holdSvc->discard($this->staffUid, $id);
@@ -735,7 +736,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$tpl->setCreatedAt(new \DateTimeImmutable());
 		$tpl = $this->tplMapper->insert($tpl);
 		if (isset($p['orgIds']) && is_array($p['orgIds'])) {
-			$this->tplOrgMapper()->setOrgs((int)$tpl->getId(), array_map('intval', $p['orgIds']));
+			$this->tplOrgMapper()->setOrgs((int)$tpl->getId(), array_values(array_map('intval', $p['orgIds'])));
 		}
 		return $this->ok(['template' => ['id' => (int)$tpl->getId()]], 201);
 	}
@@ -771,7 +772,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			throw new NotFoundException();
 		}
 		$orgIds = $this->request->getParam('orgIds') ?? [];
-		$this->tplOrgMapper()->setOrgs($id, is_array($orgIds) ? array_map('intval', $orgIds) : []);
+		$this->tplOrgMapper()->setOrgs($id, is_array($orgIds) ? array_values(array_map('intval', $orgIds)) : []);
 		return new JSONResponse(null, 204);
 	}
 
@@ -792,7 +793,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 				throw new ValidationException('VALIDATION_FAILED', ['userIds' => 'not_staff:' . (is_string($uid) ? $uid : 'invalid')]);
 			}
 		}
-		$contacts = array_map(static fn(string $uid) => ['userId' => $uid, 'roleLabel' => null, 'showPhone' => false, 'showEmail' => true], array_slice($uids, 0, 50));
+		$contacts = array_values(array_map(static fn(string $uid) => ['userId' => $uid, 'roleLabel' => null, 'showPhone' => false, 'showEmail' => true], array_slice($uids, 0, 50)));
 		$this->contactMapper()->setForOrg($orgId, $contacts);
 		return new JSONResponse(null, 204);
 	}
@@ -975,7 +976,11 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$this->org((int)$u->getOrgId());
 		$node = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class)
 			->orgNodeForOrg((int)$u->getOrgId(), (int)$u->getFileId(), null);
-		$resp = new \OCP\AppFramework\Http\StreamResponse($node->fopen('r'));
+		$stream = $node->fopen('r');
+		if (!is_resource($stream)) {
+			throw new ApiException(500, 'READ_FAILED', 'cannot read file');
+		}
+		$resp = new \OCP\AppFramework\Http\StreamResponse($stream);
 		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\PortalCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
 		$resp->addHeader('X-Content-Type-Options', 'nosniff');
 		$resp->addHeader('Content-Type', 'application/octet-stream');
@@ -1013,7 +1018,13 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$docs = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class);
 		$node = $docs->orgNodeForOrg($orgId, (int)$u->getFileId(), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
 		$org = $this->orgs->find($orgId);
+		if ($org === null) {
+			throw new NotFoundException();
+		}
 		$folder = $docs->orgFolder($orgId, (string)$org->getName(), $org->getFolderId(), $org->getFolderPath());
+		if (!$folder instanceof \OCP\Files\Folder) {
+			throw new ApiException(500, 'NO_DOCS_ROOT', 'org folder unavailable');
+		}
 		$dokumente = $docs->ensureSubFolder($folder, \OCA\PortalCheck\Service\DocumentService::DIR_DOCS);
 		$target = $docs->uniqueName($dokumente, $node->getName());
 		$node->move(rtrim($dokumente->getPath(), '/') . '/' . $target);

@@ -47,6 +47,10 @@ class FormTemplateMapper extends QBMapper
 	}
 
 	/** @return list<FormTemplate> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<FormTemplate>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

@@ -97,6 +97,9 @@ class ChunkUploadService
 		$f = $dir->newFile($part);
 		$in = fopen($tmpPath, 'r');
 		$out = $f->write();
+		if (!is_resource($in) || !is_resource($out)) {
+			throw new ApiException(500, 'UPLOAD_FAILED', 'cannot buffer chunk');
+		}
 		stream_copy_to_stream($in, $out);
 		fclose($in);
 		fclose($out);
@@ -128,12 +131,23 @@ class ChunkUploadService
 		$dir = $this->dir();
 		$tmp = tempnam(sys_get_temp_dir(), 'ptl_');
 		$out = fopen($tmp, 'w');
+		if (!is_resource($out)) {
+			@unlink($tmp);
+			$this->chunks->setState($uploadId, 'receiving');
+			throw new ApiException(500, 'UPLOAD_FAILED', 'cannot assemble chunks');
+		}
 		for ($i = 0; $i < self::MAX_CHUNKS; $i++) {
 			$part = self::safeId($uploadId) . '.part' . $i;
 			if (!$dir->fileExists($part)) {
 				break; // contiguous assembly — a mid-file gap shrinks the result and the byte check rejects
 			}
 			$in = $dir->getFile($part)->read();
+			if (!is_resource($in)) {
+				fclose($out);
+				@unlink($tmp);
+				$this->chunks->setState($uploadId, 'receiving');
+				throw new ApiException(500, 'UPLOAD_FAILED', 'cannot read chunk');
+			}
 			stream_copy_to_stream($in, $out);
 			fclose($in);
 		}

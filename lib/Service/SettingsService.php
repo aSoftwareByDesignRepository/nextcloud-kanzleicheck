@@ -100,7 +100,8 @@ class SettingsService
 		if ($value !== '' && $this->crypto !== null) {
 			try {
 				$value = 'v2:' . $this->crypto->encrypt($value);
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck secret encrypt failed — storing unencrypted', ['key' => $key, 'e' => $e->getMessage()]);
 			}
 		}
 		$this->set($key, $value);

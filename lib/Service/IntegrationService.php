@@ -60,8 +60,11 @@ class IntegrationService
 		if ($pcCustId <= 0 || $facade === null) {
 			return [];
 		}
+		if (!is_callable([$facade, 'listByPcCustomer'])) {
+			return [];
+		}
 		try {
-			$rows = $facade->listByPcCustomer($pcCustId, 50);
+			$rows = call_user_func([$facade, 'listByPcCustomer'], $pcCustId, 50);
 			return array_values(array_map(static function (array $r): array {
 				return [
 					'id' => (int)($r['icInvoiceId'] ?? $r['id'] ?? 0),

@@ -89,7 +89,11 @@ class UploadChunkMapper
 			->where($qb->expr()->in('state', $qb->createNamedParameter(['receiving', 'assembling'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
 			->andWhere($qb->expr()->lt('last_chunk_at', $qb->createNamedParameter($cutoff, 'datetime')))
 			->setMaxResults($limit);
-		return $qb->executeQuery()->fetchAll() ?: [];
+		$out = [];
+		foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
+			$out[] = ['upload_id' => (string)$row['upload_id']];
+		}
+		return $out;
 	}
 
 	public function delete(string $uploadId): void

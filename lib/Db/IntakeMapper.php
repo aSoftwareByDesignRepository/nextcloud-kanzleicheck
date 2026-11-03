@@ -27,7 +27,11 @@ class IntakeMapper
 		$qb->select('*')->from(self::TABLE)
 			->where($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)));
 		$row = $qb->executeQuery()->fetch();
-		return $row === false ? null : $row;
+		return $row === false ? null : [
+			'enabled' => (int)$row['enabled'],
+			'token_hash' => (string)$row['token_hash'],
+			'rotated_at' => (string)$row['rotated_at'],
+		];
 	}
 
 	public function upsert(int $orgId, bool $enabled, string $tokenHash): void

@@ -47,6 +47,10 @@ class PortalSessionMapper extends QBMapper
 	}
 
 	/** @return list<PortalSession> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<PortalSession>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

@@ -2,6 +2,12 @@
    Loaded on every app surface (staff shell + guest portal pages). */
 
 :root {
+	/* Family canvas (DESIGN-SYSTEM §2.3): slate tint only on the app scope,
+	 * never body. Mirrors --mc-bg-soft / --bc-bg-soft in sibling apps. */
+	--ptl-bg: var(--color-main-background);
+	--ptl-bg-soft: color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%);
+	--ptl-bg-card: var(--color-main-background);
+	--ptl-text: var(--color-main-text);
 	--ptl-form-border: var(--color-border-maxcontrast, var(--color-border));
 	--ptl-border-strong: var(--color-border-maxcontrast, var(--color-border));
 	--portalcheck-color-form-border: var(--ptl-form-border);
@@ -10,6 +16,18 @@
 	--ptl-danger-fill: var(--color-element-error, #c90000);
 	--ptl-danger-ink: var(--color-error-text, var(--color-element-error, #8a0000));
 	--ptl-danger-border: var(--color-border-error, var(--color-element-error, #c90000));
+}
+
+/* App shell canvas: paint the flat family slate + canvas-local ink so staff
+ * surfaces never float on the NC theming wallpaper/photo gradient. */
+#content.app-portalcheck #app-content,
+.ptl-app {
+	background: var(--ptl-bg-soft);
+	color: var(--ptl-text);
+}
+.ptl-app {
+	min-height: 100%;
+	box-sizing: border-box;
 }
 
 /* #app-content control-border baseline (DESIGN-SYSTEM §3.6.0): NC core

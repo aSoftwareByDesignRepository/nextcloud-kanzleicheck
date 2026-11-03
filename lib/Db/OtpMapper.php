@@ -47,6 +47,10 @@ class OtpMapper extends QBMapper
 	}
 
 	/** @return list<Otp> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<Otp>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

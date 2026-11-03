@@ -71,7 +71,7 @@ class IntakeHoldService
 		$f = $dir->newFile($safe);
 		$in = fopen($tmpPath, 'rb');
 		$out = $f->write();
-		if ($in !== false && $out !== false) {
+		if (is_resource($in) && is_resource($out)) {
 			stream_copy_to_stream($in, $out);
 		}
 		if (is_resource($in)) {
@@ -85,7 +85,7 @@ class IntakeHoldService
 	/**
 	 * Staff accept: validate + file every buffered attachment into Eingang,
 	 * then drop the quarantine dir and mark the hold accepted.
-	 * @return array{stored:int,failed:int}
+	 * @return array{stored:int,failed:int,errors:list<string>}
 	 */
 	public function accept(string $actor, int $holdId): array
 	{
@@ -97,6 +97,7 @@ class IntakeHoldService
 		$org = $this->orgs->find($orgId);
 		$stored = 0;
 		$failed = 0;
+		$errors = [];
 		$dir = $this->bufferDir($holdId, false);
 		if ($org !== null && $dir !== null && $this->docs->rootHealthy()) {
 			$orgFolder = $this->docs->orgFolder($orgId, $org->getName(), $org->getFolderId(), $org->getFolderPath());
@@ -123,7 +124,8 @@ class IntakeHoldService
 					$stored++;
 				} catch (\Throwable $e) {
 					$failed++;
-					$this->logger->warning('portalcheck hold accept file failed', ['e' => $e->getMessage()]);
+					$errors[] = $node->getName();
+					$this->logger->warning('portalcheck hold accept file failed', ['file' => $node->getName(), 'e' => $e->getMessage()]);
 				}
 				@unlink($tmp);
 			}
@@ -133,8 +135,8 @@ class IntakeHoldService
 		$hold->setReviewedAt(new \DateTimeImmutable());
 		$this->holds->update($hold);
 		$this->clearBuffer($holdId);
-		$this->audit->log($actor, 'intake_hold.accept', 'intake_hold', $holdId, ['stored' => $stored, 'failed' => $failed]);
-		return ['stored' => $stored, 'failed' => $failed];
+		$this->audit->log($actor, 'intake_hold.accept', 'intake_hold', $holdId, ['stored' => $stored, 'failed' => $failed, 'errors' => $errors]);
+		return ['stored' => $stored, 'failed' => $failed, 'errors' => $errors];
 	}
 
 	public function discard(string $actor, int $holdId): void
@@ -156,7 +158,9 @@ class IntakeHoldService
 		$dir = $this->bufferDir($holdId, false);
 		try {
 			$dir?->delete();
-		} catch (\Throwable) {
+		} catch (\Throwable $e) {
+			// best-effort: hold row already settled — residue reaps next sweep
+			$this->logger->warning('portalcheck hold buffer delete failed', ['hold' => $holdId, 'e' => $e->getMessage()]);
 		}
 	}
 }

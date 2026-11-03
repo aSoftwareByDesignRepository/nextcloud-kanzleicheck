@@ -47,6 +47,10 @@ class DocRequestMapper extends QBMapper
 	}
 
 	/** @return list<DocRequest> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<DocRequest>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

@@ -47,6 +47,10 @@ class MobileSeatMapper extends QBMapper
 	}
 
 	/** @return list<MobileSeat> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<MobileSeat>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

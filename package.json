@@ -1,0 +1,13 @@
+{
+  "name": "portalcheck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client portal for Nextcloud — passwordless client access, chat, documents, requests and approvals",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

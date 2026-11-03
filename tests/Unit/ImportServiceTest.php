@@ -28,7 +28,55 @@ class ImportServiceTest extends TestCase
 	public function testTooLargeRejected(): void
 	{
 		$csv = "org_name,email\n" . str_repeat("Org,a@b.de\n", ImportService::MAX_ROWS + 1);
-		$this->expectException(ValidationException::class);
-		ImportService::parse($csv);
+		try {
+			ImportService::parse($csv);
+			$this->fail('expected ValidationException');
+		} catch (ValidationException $e) {
+			$this->assertSame(['file' => 'IMPORT_TOO_LARGE'], $e->getFields());
+		}
+	}
+
+	public function testExactlyMaxRowsAccepted(): void
+	{
+		$csv = "org_name,email\n" . str_repeat("Org,a@b.de\n", ImportService::MAX_ROWS);
+		$rows = ImportService::parse($csv);
+		$this->assertCount(ImportService::MAX_ROWS, $rows);
+	}
+
+	public function testAllDataRowsReturned(): void
+	{
+		$rows = ImportService::parse("org_name,email\nA,a@b.de\nB,b@b.de\nC,c@b.de\n");
+		$this->assertCount(3, $rows);
+		$this->assertSame(['A', 'B', 'C'], array_column($rows, 'org_name'));
+	}
+
+	public function testEqualDelimiterCountsPreferComma(): void
+	{
+		// one ';' and one ',' in the header → tie → ',' must win
+		$rows = ImportService::parse("org_name;email,display_name\nMuster;m@x.de,Max\n");
+		$this->assertCount(1, $rows);
+		$this->assertSame('Muster;m@x.de', $rows[0]['org_name;email']);
+		$this->assertSame('Max', $rows[0]['display_name']);
+	}
+
+	public function testHeaderNormalizedTrimLowercase(): void
+	{
+		$rows = ImportService::parse(" Org_Name , EMAIL \nFirma,x@y.de\n");
+		$this->assertSame('Firma', $rows[0]['org_name']);
+		$this->assertSame('x@y.de', $rows[0]['email']);
+	}
+
+	public function testRaggedRowsAligned(): void
+	{
+		// row shorter than header → missing keys padded with ''
+		$rows = ImportService::parse("org_name,org_ref,email\nFirma\n");
+		$this->assertSame('Firma', $rows[0]['org_name']);
+		$this->assertSame('', $rows[0]['org_ref']);
+		$this->assertSame('', $rows[0]['email']);
+		// row longer than header → extra cells land on '' keys
+		$rows = ImportService::parse("org_name,email\nFirma,x@y.de,EXTRA\n");
+		$this->assertSame('Firma', $rows[0]['org_name']);
+		$this->assertSame('x@y.de', $rows[0]['email']);
+		$this->assertContains('EXTRA', $rows[0]);
 	}
 }

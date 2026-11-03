@@ -33,8 +33,9 @@ class IntakeAndNotifyTest extends TestCase
 			$upserts->append([$o, $e, $t]);
 			$state->exchangeArray(['enabled' => $e ? 1 : 0, 'token_hash' => $t]);
 		});
-		$svc = new IntakeService($intake, $holds, $settings, new TokenService(), $this->createMock(AuditService::class));
-		return [$svc, $upserts, $state];
+		$audit = $this->createMock(AuditService::class);
+		$svc = new IntakeService($intake, $holds, $settings, new TokenService(), $audit);
+		return [$svc, $upserts, $state, $audit];
 	}
 
 	private function assertUpserted(\ArrayObject $upserts): void
@@ -106,5 +107,79 @@ class IntakeAndNotifyTest extends TestCase
 		$svc->setEnabled('admin', 4, true);
 		$this->assertSame('aabbccddee0011223344556677889900', $state['token_hash']);
 		$this->assertSame(1, $state['enabled']);
+	}
+
+	public function testTokenMatchesExactHmacContract(): void
+	{
+		// pin the wire contract: HMAC(secret:nonce, 'ptl-intake:<orgId>')[:16]
+		$nonce = 'aabbccddee0011223344556677889900';
+		[$svc] = $this->svc(['enabled' => 1, 'token_hash' => $nonce]);
+		$expected = substr(hash_hmac('sha256', 'ptl-intake:7', 's3cr3t:' . $nonce), 0, 16);
+		$this->assertSame($expected, $svc->currentToken(7));
+	}
+
+	public function testFreshNonceIs32Hex(): void
+	{
+		[$svc, , $state] = $this->svc(null);
+		$svc->currentToken(5);
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', (string)$state['token_hash']);
+	}
+
+	public function testIsEnabledAcceptsDbStringRow(): void
+	{
+		// DB returns '1' as string — the strict cast must survive
+		[$on] = $this->svc(['enabled' => '1', 'token_hash' => 'aa']);
+		$this->assertTrue($on->isEnabled(3));
+	}
+
+	public function testParseAddressAcceptsUppercaseHexLowercased(): void
+	{
+		$parsed = IntakeService::parseAddress('mandanten+in-42-AABBCCDDEE001122@kanzlei.example');
+		$this->assertSame(42, $parsed['orgId']);
+		$this->assertSame('aabbccddee001122', $parsed['token']);
+	}
+
+	public function testRotateKeepsIntakeEnabled(): void
+	{
+		// rotation refreshes the nonce but must never disable intake
+		[$svc, $upserts, $state] = $this->svc(['enabled' => 1, 'token_hash' => 'aabbccddee0011223344556677889900']);
+		$oldNonce = (string)$state['token_hash'];
+		$svc->rotate('admin', 9);
+		$this->assertSame(1, $state['enabled']);
+		$last = $upserts[count($upserts) - 1];
+		$this->assertTrue($last[1]);
+		$this->assertNotSame($oldNonce, $state['token_hash']);
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', (string)$state['token_hash']);
+	}
+
+	public function testLazyUpsertPreservesEnabledFlag(): void
+	{
+		// enabled row with empty nonce → lazy nonce keeps enabled=true
+		[$svc, $upserts] = $this->svc(['enabled' => '1', 'token_hash' => '']);
+		$svc->currentToken(5);
+		$this->assertTrue($upserts[count($upserts) - 1][1]);
+		// disabled row → lazy nonce keeps enabled=false
+		[$svc, $upserts] = $this->svc(['enabled' => '0', 'token_hash' => '']);
+		$svc->currentToken(5);
+		$this->assertFalse($upserts[count($upserts) - 1][1]);
+		// row missing the enabled key entirely → default false, never true
+		[$svc, $upserts] = $this->svc(['token_hash' => '']);
+		$svc->currentToken(5);
+		$this->assertFalse($upserts[count($upserts) - 1][1]);
+	}
+
+	public function testAuditActionsLogged(): void
+	{
+		[$svc, , , $audit] = $this->svc(['enabled' => 0, 'token_hash' => 'aa']);
+		$audit->expects($this->once())->method('log')->with('admin', 'intake.enable', 'org', 4);
+		$svc->setEnabled('admin', 4, true);
+
+		[$svc, , , $audit] = $this->svc(['enabled' => 1, 'token_hash' => 'aa']);
+		$audit->expects($this->once())->method('log')->with('admin', 'intake.disable', 'org', 4);
+		$svc->setEnabled('admin', 4, false);
+
+		[$svc, , , $audit] = $this->svc(['enabled' => 1, 'token_hash' => 'aa']);
+		$audit->expects($this->once())->method('log')->with('admin', 'intake.rotate', 'org', 4);
+		$svc->rotate('admin', 4);
 	}
 }

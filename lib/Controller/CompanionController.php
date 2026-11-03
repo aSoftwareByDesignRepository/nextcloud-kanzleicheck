@@ -399,9 +399,9 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 	}
 
 	#[PublicPage] #[NoCSRFRequired]
-	public function chunkPut(string $uploadId, int $index): JSONResponse
+	public function chunkPut(string $uploadKey, int $index): JSONResponse
 	{
-		$row = $this->chunkSvc()->find($uploadId);
+		$row = $this->chunkSvc()->find($uploadKey);
 		if ($row === null) {
 			throw new NotFoundException();
 		}
@@ -409,15 +409,18 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		// raw request body → temp file (mobile sends bytes, not multipart)
 		$content = fopen('php://input', 'rb');
 		$tmp = tempnam(sys_get_temp_dir(), 'ptl_chk_');
-		if (is_resource($content)) {
-			$out = fopen($tmp, 'wb');
+		$out = fopen($tmp, 'wb');
+		if (is_resource($content) && $out !== false) {
 			stream_copy_to_stream($content, $out);
+		}
+		if (is_resource($content)) {
+			fclose($content);
+		}
+		if (is_resource($out)) {
 			fclose($out);
-		} else {
-			file_put_contents($tmp, is_string($content) ? $content : '');
 		}
 		try {
-			$this->chunkSvc()->putChunk($uploadId, (int)$row['org_id'], $this->actor(), $index, $tmp);
+			$this->chunkSvc()->putChunk($uploadKey, (int)$row['org_id'], $this->actor(), $index, $tmp);
 		} finally {
 			@unlink($tmp);
 		}
@@ -425,22 +428,22 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 	}
 
 	#[PublicPage] #[NoCSRFRequired]
-	public function chunkFinish(string $uploadId): JSONResponse
+	public function chunkFinish(string $uploadKey): JSONResponse
 	{
-		$row = $this->chunkSvc()->find($uploadId);
+		$row = $this->chunkSvc()->find($uploadKey);
 		if ($row === null) {
 			throw new NotFoundException();
 		}
 		$orgId = (int)$row['org_id'];
 		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), DocumentService::DIR_INBOX);
-		$res = $this->chunkSvc()->finish($uploadId, $orgId, $this->actor());
+		$res = $this->chunkSvc()->finish($uploadKey, $orgId, $this->actor());
 		try {
 			$this->uploadService->validateFile($res['tmp'], (string)$row['file_name'], $this->uploadService->maxBytes());
 			$stored = $this->uploadService->store($eingang, $orgId, $this->actor(), $res['tmp'], (string)$row['file_name'], 'app', null);
 		} finally {
 			@unlink($res['tmp']);
 		}
-		$this->chunkSvc()->complete($uploadId);
+		$this->chunkSvc()->complete($uploadKey);
 		$this->notifyService->clientMail($orgId, 'document');
 		return $this->ok(['id' => (int)$stored['upload']->getId(), 'duplicate' => $stored['duplicate'] !== null], 201);
 	}
@@ -489,7 +492,11 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 	{
 		$this->companionOrg($orgId);
 		$node = $this->docs->documentNodeForOrg($orgId, $fileId);
-		$resp = new \OCP\AppFramework\Http\StreamResponse($node->fopen('r'));
+		$stream = $node->fopen('r');
+		if (!is_resource($stream)) {
+			throw new ApiException(500, 'READ_FAILED', 'cannot read file');
+		}
+		$resp = new \OCP\AppFramework\Http\StreamResponse($stream);
 		$resp->addHeader('Content-Disposition', 'attachment; filename="' . SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
 		$resp->addHeader('X-Content-Type-Options', 'nosniff');
 		$resp->addHeader('Content-Type', 'application/octet-stream');
@@ -521,7 +528,8 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 				'approve:' . $id . ':' . hash('sha256', $res['code']),
 				['code' => $res['code'], 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->outbox->drain(3);
-		} catch (\Throwable) {
+		} catch (\Throwable $e) {
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck companion approval OTP mail enqueue failed', ['approval' => $id, 'e' => $e->getMessage()]);
 		}
 		return $this->ok(['sent' => true], 202);
 	}
@@ -640,6 +648,9 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 	{
 		$this->formOrg($formId);
 		$form = $this->forms->find($formId);
+		if ($form === null) {
+			throw new NotFoundException();
+		}
 		$tplMapper = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class);
 		$tpl = $tplMapper->find((int)$form->getTplId());
 		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($formId);
@@ -668,13 +679,14 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$orgId = $this->formOrg($formId);
 		$this->formService->submit($this->actor(), $formId, $orgId);
 		$form = $this->forms->find($formId);
-		if ($form->getReqItemId() !== null) {
+		if ($form !== null && $form->getReqItemId() !== null) {
 			try {
 				$item = $this->items->find((int)$form->getReqItemId());
 				if ($item !== null) {
 					$this->requests->deliverItem($this->actor(), (int)$item->getReqId(), (int)$item->getId());
 				}
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck companion form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
 			}
 		}
 		return new JSONResponse(null, 204);

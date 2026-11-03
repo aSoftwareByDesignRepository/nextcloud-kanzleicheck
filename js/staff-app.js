@@ -211,7 +211,7 @@ async function vRequests(mine){
   reqs.forEach(rq=>{
     const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-items"></div></div>');
     row.querySelector('b').textContent=rq.title;
-    row.querySelector('.ptl-muted').textContent=(rq.deadline?t('Deadline')+' '+rq.deadline:t('no deadline'))+(rq.overdue?' — '+t('OVERDUE'):'')+' · '+rq.state+' · '+rq.items.accepted+'/'+rq.items.total+' '+t('accepted');
+    row.querySelector('.ptl-muted').textContent=(rq.deadline?t('Deadline')+' '+rq.deadline:t('no deadline'))+(rq.overdue?' — '+t('OVERDUE'):'')+' · '+rq.state+' · '+(rq.items?.accepted??0)+'/'+(rq.items?.total??0)+' '+t('accepted');
     const items=row.querySelector('.ptl-items');
     const detail=h('<details class="ptl-items-detail"><summary>'+esc(t('Details'))+'</summary></details>');
     items.appendChild(detail);
@@ -470,7 +470,10 @@ async function vUploads(){
 async function vSettings(){
   const r=await get('/api/portal/settings');
   const body=chrome('settings',t('Settings'));
-  if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('App admins only'))+'</p>'));return;}
+  if(!r.success){
+    body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('No access'))+'</h2><p class="ptl-muted">'+esc(t('Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list.'))+'</p><p class="ptl-muted">'+esc(t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'))+'</p></div>'));
+    return;
+  }
   const s=r.data.settings,d=r.data.door;
   const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>');
   const sel=form.querySelector('#s-preset');
@@ -625,5 +628,16 @@ async function vPeople(){
 }
 
 const VIEWS={overview:vOverview,inbox:vInbox,board:vBoard,requests:vRequests,orgs:vOrgs,uploads:vUploads,holds:vHolds,forms:vForms,people:vPeople,settings:vSettings};
-(async()=>{const d=await get('/api/portal/settings');ME_ADMIN=d.success===true;vOverview();})();
+(async()=>{
+  const d=await get('/api/portal/settings');ME_ADMIN=d.success===true;
+  // Deep links (notification mails land ?view=inbox&org=N — see NotifyService).
+  const p=new URLSearchParams(location.search);
+  const v=p.get('view'),orgId=parseInt(p.get('org')||'',10);
+  if(v==='inbox'&&orgId>0){
+    const oRes=await get('/api/portal/orgs');
+    const o=(oRes.data&&oRes.data.orgs||[]).find(x=>x.id===orgId);
+    if(o){openConv(orgId,o.name);return;}
+  }
+  (VIEWS[v]||vOverview)();
+})();
 })();

@@ -22,6 +22,9 @@ class ImportService
 		$delim = substr_count($first, ';') > substr_count($first, ',') ? ';' : ',';
 		$rows = [];
 		$fh = fopen('php://memory', 'r+');
+		if (!is_resource($fh)) {
+			throw new ValidationException('VALIDATION_FAILED', ['file' => 'IMPORT_PARSE_ERROR']);
+		}
 		fwrite($fh, $csv);
 		rewind($fh);
 		$header = null;

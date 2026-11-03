@@ -88,13 +88,19 @@ class IntakeMailService
 		} finally {
 			imap_close($conn);
 		}
-		return $stats;
+		return [
+			'polled' => (int)$stats['polled'],
+			'stored' => (int)$stats['stored'],
+			'held' => (int)$stats['held'],
+			'skipped' => (int)$stats['skipped'],
+			'error' => $stats['error'] === null ? null : (string)$stats['error'],
+		];
 	}
 
-	private function processMessage($conn, int $uid, int $maxAttachmentBytes, array &$stats): void
+	private function processMessage(\IMAP\Connection $conn, int $uid, int $maxAttachmentBytes, array &$stats): void
 	{
 		$headers = imap_headerinfo($conn, $uid) ?: (object)[];
-		$toRaw = imap_fetchheader($conn, (string)$uid, FT_UID);
+		$toRaw = imap_fetchheader($conn, $uid, FT_UID) ?: '';
 		$parsed = null;
 		foreach (['toaddress', 'to'] as $prop) {
 			$addr = $headers->$prop ?? '';
@@ -157,7 +163,7 @@ class IntakeMailService
 	}
 
 	/** @return list<array{0:string,1:string}> [filename, tmpPath] extracted parts (caller unlinks) */
-	private function extractParts($conn, int $uid, int $maxBytes): array
+	private function extractParts(\IMAP\Connection $conn, int $uid, int $maxBytes): array
 	{
 		$out = [];
 		$structure = imap_fetchstructure($conn, $uid, FT_UID);
@@ -171,7 +177,7 @@ class IntakeMailService
 			if (($part->bytes ?? 0) > $maxBytes) {
 				continue;
 			}
-			$data = imap_fetchbody($conn, $uid, (string)$partNo, FT_UID);
+			$data = imap_fetchbody($conn, $uid, (string)$partNo, FT_UID) ?: '';
 			$data = match ((int)($part->encoding ?? 0)) {
 				3 => base64_decode($data, true) ?: '',
 				4 => quoted_printable_decode($data),
@@ -188,7 +194,7 @@ class IntakeMailService
 		return $out;
 	}
 
-	private function storeAttachments($conn, int $uid, int $orgId, string $actor, int $maxBytes, array &$stats): int
+	private function storeAttachments(\IMAP\Connection $conn, int $uid, int $orgId, string $actor, int $maxBytes, array &$stats): int
 	{
 		$stored = 0;
 		foreach ($this->extractParts($conn, $uid, $maxBytes) as [$name, $tmp]) {
@@ -222,7 +228,7 @@ class IntakeMailService
 		return null;
 	}
 
-	private function extractBody($conn, int $uid): string
+	private function extractBody(\IMAP\Connection $conn, int $uid): string
 	{
 		$body = imap_body($conn, $uid, FT_UID) ?: '';
 		$body = trim(strip_tags(html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8')));

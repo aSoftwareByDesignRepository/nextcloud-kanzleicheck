@@ -47,6 +47,10 @@ class ReqTemplateMapper extends QBMapper
 	}
 
 	/** @return list<ReqTemplate> */
+	/**
+	 * @param 'ASC'|'DESC' $dir
+	 * @return list<ReqTemplate>
+	 */
 	public function findAllOrdered(string $orderCol = 'id', string $dir = 'ASC'): array
 	{
 		$qb = $this->db->getQueryBuilder();

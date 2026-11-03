@@ -29,8 +29,10 @@ class ReqFileMapper
 		]);
 		try {
 			$qb->executeStatement();
-		} catch (\Throwable) {
-			// already attached — idempotent
+		} catch (\Throwable $e) {
+			// already attached — idempotent, but log so unexpected failures stay observable
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('portalcheck req-file attach skipped', ['item' => $itemId, 'upload' => $uploadId, 'e' => $e->getMessage()]);
+			return;
 		}
 	}
 

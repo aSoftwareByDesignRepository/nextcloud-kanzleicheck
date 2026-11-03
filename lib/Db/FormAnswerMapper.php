@@ -28,10 +28,15 @@ class FormAnswerMapper
 			->where($qb->expr()->eq('form_id', $qb->createNamedParameter($formId)))
 			->andWhere($qb->expr()->eq('field_key', $qb->createNamedParameter($fieldKey)));
 		$row = $qb->executeQuery()->fetch();
-		return $row === false ? null : $row;
+		return $row === false ? null : [
+			'value' => $row['value'] === null ? null : (string)$row['value'],
+			'revision' => (int)$row['revision'],
+			'updated_by' => (string)$row['updated_by'],
+			'updated_at' => (string)$row['updated_at'],
+		];
 	}
 
-	/** @return array<string,array{value:?string,revision:int,updated_by:string}> */
+	/** @return array<string,array{value:?string,revision:int,updated_by:string,updated_at:string}> */
 	public function allForForm(int $formId): array
 	{
 		$qb = $this->db->getQueryBuilder();
@@ -43,6 +48,7 @@ class FormAnswerMapper
 				'value' => $row['value'],
 				'revision' => (int)$row['revision'],
 				'updated_by' => (string)$row['updated_by'],
+				'updated_at' => (string)$row['updated_at'],
 			];
 		}
 		return $out;

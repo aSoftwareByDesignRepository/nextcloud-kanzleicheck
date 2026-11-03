@@ -45,7 +45,9 @@ class JobCursorMapper
 			]);
 			try {
 				$ins->executeStatement();
-			} catch (\Throwable) {
+			} catch (\Throwable $e) {
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck job cursor insert failed', ['job' => $job, 'e' => $e->getMessage()]);
+				return;
 			}
 		}
 	}

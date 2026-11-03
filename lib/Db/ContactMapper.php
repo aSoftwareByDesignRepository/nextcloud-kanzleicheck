@@ -28,10 +28,20 @@ class ContactMapper
 			->from(self::TABLE)
 			->where($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)))
 			->orderBy('position', 'ASC');
-		return $qb->executeQuery()->fetchAll() ?: [];
+		$out = [];
+		foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
+			$out[] = [
+				'user_id' => (string)$row['user_id'],
+				'role_label' => $row['role_label'] === null ? null : (string)$row['role_label'],
+				'show_phone' => (int)$row['show_phone'],
+				'show_email' => (int)$row['show_email'],
+				'position' => (int)$row['position'],
+			];
+		}
+		return $out;
 	}
 
-	/** @param list<array{userId:string,roleLabel:?string,showPhone:bool,showEmail:bool}> $contacts ≤5 */
+	/** @param list<array{userId:string,roleLabel:?string,showPhone:bool,showEmail?:bool}> $contacts ≤5 */
 	public function setForOrg(int $orgId, array $contacts): void
 	{
 		$del = $this->db->getQueryBuilder();

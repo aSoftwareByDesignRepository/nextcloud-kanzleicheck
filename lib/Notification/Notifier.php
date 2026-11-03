@@ -9,6 +9,7 @@ use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
 use OCP\Notification\INotifier;
+use OCP\Notification\UnknownNotificationException;
 
 /** Staff NC notifications — fixed localized subjects, orgId only (§9.8, NN-P04). */
 class Notifier implements INotifier
@@ -30,7 +31,7 @@ class Notifier implements INotifier
 	public function prepare(INotification $notification, string $languageCode): INotification
 	{
 		if ($notification->getApp() !== Application::APP_ID) {
-			throw new \InvalidArgumentException('Unknown app');
+			throw new UnknownNotificationException('Unknown app');
 		}
 		$l = $this->l10n->get(Application::APP_ID, $languageCode);
 		$text = match ($notification->getSubject()) {

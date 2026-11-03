@@ -49,7 +49,7 @@ class PresetCatalog
 			],
 		];
 		$p = $map[$preset] ?? $map['generic'];
-		$l = $p[$lang] ?? $p['en'];
+		$l = is_array($p[$lang] ?? null) ? $p[$lang] : $p['en'];
 		return [
 			'orgLabel' => $l['orgLabel'],
 			'orgPerson' => $l['orgPerson'],
