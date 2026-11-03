@@ -128,7 +128,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		foreach ($orgIds as $oid) {
 			$openApprovals += count($this->approvalMapper->findByOrg($oid, 'pending', 200));
 		}
-		return $this->ok(['stats' => ['unread' => $unread, 'newUploads' => $newUploads, 'overdueRequests' => $overdue, 'openApprovals' => $openApprovals], 'queue' => array_slice($inbox, 0, 10)]);
+		return $this->ok(['stats' => ['unread' => $unread, 'newUploads' => $newUploads, 'overdueRequests' => $overdue, 'openApprovals' => $openApprovals], 'queue' => array_slice($this->withOrgNames($inbox), 0, 10)]);
 	}
 
 	private function db(): \OCP\IDBConnection
@@ -144,15 +144,20 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			$orgIds = array_values(array_intersect($orgIds, $this->contactMapper()->orgsForUser($this->staffUid)));
 		}
 		$inbox = $this->chat->inboxForStaff($this->staffUid, $orgIds);
+		return $this->ok(['conversations' => $this->withOrgNames($inbox)]);
+	}
+
+	private function withOrgNames(array $conversations): array
+	{
 		$names = [];
 		foreach ($this->orgs->findAllOrdered() as $o) {
 			$names[(int)$o->getId()] = $o->getName();
 		}
-		foreach ($inbox as &$c) {
+		foreach ($conversations as &$c) {
 			$c['orgName'] = $names[$c['orgId']] ?? '';
 			$c['lastAuthorName'] = $c['lastAuthor'] !== null ? $this->actors->displayName($c['lastAuthor']) : null;
 		}
-		return $this->ok(['conversations' => $inbox]);
+		return $conversations;
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]

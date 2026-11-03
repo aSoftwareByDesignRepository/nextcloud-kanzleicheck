@@ -40,6 +40,11 @@ async function visitStaff(page, surface) {
 	const target = surface.nav ? `/?view=${surface.nav}` : '/';
 	await page.goto(`${APP}${target}`, { waitUntil: 'domcontentloaded' });
 	await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+	// render-completion proof per surface — a dead view must not be captured
+	// (sleep+shoot let the vOverview fragment crash ship as "populated" PNGs)
+	if (surface.readySelector) {
+		await page.locator(surface.readySelector).first().waitFor({ state: 'attached', timeout: 15000 });
+	}
 	await page.waitForTimeout(1200);
 }
 

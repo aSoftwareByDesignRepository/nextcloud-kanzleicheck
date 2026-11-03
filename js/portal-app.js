@@ -56,16 +56,16 @@ async function viewStart(){
   el.innerHTML='<h1>'+esc(t('To do'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   const items=(r.data&&r.data.todo)||[];
   if(!items.length){el.appendChild(h('<div class="ptl-card"><h2>'+esc(t('All done'))+'</h2><p class="ptl-muted">'+esc(t('We will let you know when we need something.'))+'</p></div>'));return;}
-  const list=h('<div class="ptl-stack"></div>');
+  const list=h('<div class="ptl-stack"></div>').firstElementChild;
   if(contacts.length){
-    const cc=h('<div class="ptl-card ptl-contact"><h2>'+esc(t('Your contact person'))+'</h2></div>');
+    const cc=h('<div class="ptl-card ptl-contact"><h2>'+esc(t('Your contact person'))+'</h2></div>').firstElementChild;
     contacts.forEach(c=>{
       cc.appendChild(h('<div class="ptl-kvrow"><span>'+esc(c.name)+(c.role?' · '+esc(c.role):'')+'</span>'+(c.email?'<b>'+esc(c.email)+'</b>':'')+'</div>'));
     });
     el.appendChild(cc);
   }
   if(orgRow&&orgRow.bookingUrl){
-    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>');
+    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>').firstElementChild;
     bk.href=orgRow.bookingUrl;bk.querySelector('b').textContent='📅 '+t('Book an appointment');
     el.appendChild(bk);
   }
@@ -130,10 +130,10 @@ async function viewForm(id){
   if(!r.success){status(t('Form not found.'));return;}
   const f=r.data.form;
   el.innerHTML='<h1>'+esc(t('Form'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
-  const wrap=h('<div class="ptl-card"></div>');
+  const wrap=h('<div class="ptl-card"></div>').firstElementChild;
   f.fields.forEach(fd=>{
     const ans=(f.answers||[]).find(a=>a.key===fd.key);
-    const w=h('<div class="ptl-field"><label class="ptl-label"></label></div>');
+    const w=h('<div class="ptl-field"><label class="ptl-label"></label></div>').firstElementChild;
     w.querySelector('label').textContent=fd.label+(fd.required?' *':'');
     let input;
     if(fd.type==='yes_no'||fd.type==='single_choice'){
@@ -231,7 +231,7 @@ async function viewMore(){
   }
   const orgRow=ORGS.find(o=>o.id===ORG);
   if(orgRow&&orgRow.bookingUrl){
-    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>');
+    const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>').firstElementChild;
     bk.href=orgRow.bookingUrl;bk.querySelector('b').textContent='📅 '+t('Book an appointment');el.appendChild(bk);
   }
   if(nr.success&&nr.data&&nr.data.invoices&&nr.data.invoices.length){
@@ -240,19 +240,19 @@ async function viewMore(){
   }
   el.appendChild(h('<h2>'+esc(t('E-mail notifications'))+'</h2>'));
   const notifyRow=h('<div class="ptl-card"><label class="ptl-check"><input type="checkbox" id="ptl-notify"> '+esc(t('Notify me by e-mail when something new arrives'))+'</label></div>');
-  el.appendChild(notifyRow);
   const nq=await api('/portal/api/orgs/'+ORG+'/notify');
   if(nq.success&&nq.data){notifyRow.querySelector('#ptl-notify').checked=!!nq.data.mailsEnabled;}
   notifyRow.querySelector('#ptl-notify').onchange=async e=>{await put('/portal/api/orgs/'+ORG+'/notify',{mailsEnabled:e.target.checked});status(t('Saved.'));};
+  el.appendChild(notifyRow);
   el.appendChild(h('<h2>'+esc(t('Tasks'))+'</h2>'));
   const tasks=(r.data&&r.data.tasks)||[];
   el.appendChild(h(tasks.length?'<div class="ptl-card">'+tasks.map(it=>'<p>'+esc(it.title)+' — <b>'+esc(it.statusLabel)+'</b>'+(it.dueDate?' · '+it.dueDate:'')+'</p>').join('')+'</div>':'<p class="ptl-muted">'+esc(t('No tasks visible.'))+'</p>'));
   el.appendChild(h('<h2>'+esc(t('My devices'))+'</h2>'));
   const devs=(d.data&&d.data.devices)||[];
-  const dl=h('<div class="ptl-card"></div>');
+  const dl=h('<div class="ptl-card"></div>').firstElementChild;
   if(!devs.length){dl.appendChild(h('<p class="ptl-muted">'+esc(t('No devices connected.'))+'</p>'));}
   devs.forEach(dv=>{
-    const row=h('<div class="ptl-dev"><span></span></div>');
+    const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
     row.querySelector('span').textContent=dv.name+' ('+dv.platform+')';
     const rm=btn(t('Remove'),async()=>{const rr=await fetch(base+'/portal/api/devices/'+dv.id,{method:'DELETE',headers:{'X-PTL-CSRF':CSRF||CSRF||ck('ptl_csrf')}});if(rr.ok||rr.status===204)viewMore();},true);
     row.appendChild(rm);dl.appendChild(row);

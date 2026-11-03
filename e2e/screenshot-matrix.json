@@ -41,6 +41,7 @@
    "states": [
     "populated"
    ],
+   "readySelector": "#ptl-body .ptl-list .ptl-row",
    "dark": true
   },
   {
@@ -50,7 +51,8 @@
    "nav": "board",
    "states": [
     "populated"
-   ]
+   ],
+   "readySelector": "#ptl-body .ptl-board"
   },
   {
    "id": "staff-requests",
@@ -59,7 +61,8 @@
    "nav": "requests",
    "states": [
     "populated"
-   ]
+   ],
+   "readySelector": "#ptl-body .ptl-list .ptl-card"
   },
   {
    "id": "staff-orgs",
@@ -68,7 +71,8 @@
    "nav": "orgs",
    "states": [
     "populated"
-   ]
+   ],
+   "readySelector": "#ptl-body .ptl-list .ptl-row"
   },
   {
    "id": "staff-uploads",
@@ -77,7 +81,8 @@
    "nav": "uploads",
    "states": [
     "populated"
-   ]
+   ],
+   "readySelector": "#ptl-body .ptl-list"
   },
   {
    "id": "staff-settings",
@@ -86,7 +91,8 @@
    "nav": "settings",
    "states": [
     "current"
-   ]
+   ],
+   "readySelector": "#ptl-body .ptl-card"
   }
  ]
 }

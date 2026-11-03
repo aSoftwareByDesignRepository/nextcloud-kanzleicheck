@@ -79,9 +79,9 @@ async function vOverview(){
   const q=r.data.queue||[];
   if(q.length){
     body.appendChild(h('<h2>'+esc(t('Recently active'))+'</h2>'));
-    const list=h('<div class="ptl-list"></div>');
+    const list=h('<div class="ptl-list"></div>').firstElementChild;
     q.slice(0,8).forEach(c=>{
-      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>');
+      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
       row.setAttribute('aria-label',c.orgName||t('Client'));
       row.querySelector('b').textContent=c.orgName||t('Client');row.querySelector('.ptl-muted').textContent=c.lastPreview||'';
       row.onclick=()=>openConv(c.orgId,c.orgName);list.appendChild(row);
@@ -101,9 +101,9 @@ async function vInbox(mine){
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   const convs=r.data.conversations||[];
   if(!convs.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No conversations.'))+'</p>'));return;}
-  const list=h('<div class="ptl-list"></div>');
+  const list=h('<div class="ptl-list"></div>').firstElementChild;
   convs.forEach(c=>{
-    const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>');
+    const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
     row.querySelector('b').textContent=c.orgName;
     row.querySelector('.ptl-muted').textContent=(c.lastAuthorName?c.lastAuthorName+': ':'')+(c.lastPreview||'')+(c.state==='archived'?' '+t('(archived)'):'');
     row.onclick=()=>openConv(c.orgId,c.orgName);list.appendChild(row);
@@ -161,9 +161,9 @@ async function vBoard(){
     status(rr.success?t('Created.'):(rr.message||t('Error')));if(rr.success)vBoard();
   },true));
   const cols=r.data.columns||{};
-  const wrap=h('<div class="ptl-board"></div>');
+  const wrap=h('<div class="ptl-board"></div>').firstElementChild;
   Object.entries(cols).forEach(([key,col])=>{
-    const c=h('<div class="ptl-col"><h2></h2></div>');
+    const c=h('<div class="ptl-col"><h2></h2></div>').firstElementChild;
     c.querySelector('h2').textContent=col.label+' ('+col.cards.length+')';
     col.cards.forEach(card=>c.appendChild(taskCard(card)));
     wrap.appendChild(c);
@@ -215,18 +215,18 @@ async function vRequests(mine){
   body.appendChild(mineCb);
   const r=await get('/api/portal/requests'+(mine?'?mine=1':''));
   const reqs=(r.data&&r.data.requests)||[];
-  const list=h('<div class="ptl-list"></div>');
+  const list=h('<div class="ptl-list"></div>').firstElementChild;
   reqs.forEach(rq=>{
     const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-items"></div></div>');
     row.querySelector('b').textContent=rq.title;
     row.querySelector('.ptl-muted').textContent=(rq.deadline?t('Deadline')+' '+rq.deadline:t('no deadline'))+(rq.overdue?' — '+t('OVERDUE'):'')+' · '+rq.state+' · '+(rq.items?.accepted??0)+'/'+(rq.items?.total??0)+' '+t('accepted');
     const items=row.querySelector('.ptl-items');
-    const detail=h('<details class="ptl-items-detail"><summary>'+esc(t('Details'))+'</summary></details>');
+    const detail=h('<details class="ptl-items-detail"><summary>'+esc(t('Details'))+'</summary></details>').firstElementChild;
     items.appendChild(detail);
     row.querySelector('details').addEventListener('toggle',async ev=>{
       if(!ev.target.open||ev.target.dataset.loaded)return;
       ev.target.dataset.loaded='1';
-      const itemsList=h('<div class="ptl-itemlist"></div>');
+      const itemsList=h('<div class="ptl-itemlist"></div>').firstElementChild;
       detail.appendChild(itemsList);
       const dr=await get('/api/portal/requests/'+rq.id);
       if(!dr.success){itemsList.appendChild(h('<p class="ptl-muted">'+esc(t('Error'))+'</p>'));return;}
@@ -243,7 +243,7 @@ async function vRequests(mine){
         ir.querySelector('b').textContent=it.label;
         ir.querySelector('.ptl-muted').textContent=it.state+(it.hint?' · '+it.hint:'')+(it.rejectReason?' — '+t('Rejected')+': '+it.rejectReason:'');
         (it.files||[]).forEach(fid=>{
-          const a=h('<a class="ptl-file"></a>');
+          const a=h('<a class="ptl-file"></a>').firstElementChild;
           a.textContent='📎 '+t('file')+' #'+fid;a.href=base+'/api/portal/uploads/'+fid+'/file';
           ir.querySelector('.ptl-itemfiles').appendChild(a);
         });
@@ -301,7 +301,7 @@ async function vOrgs(){
     const list=document.getElementById('ptl-orglist');list.innerHTML='';
     if(!orgs.length){list.appendChild(h('<p class="ptl-muted">'+esc(t('No clients.'))+'</p>'));return;}
     orgs.forEach(o=>{
-      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span><span class="ptl-pill"></span></button>');
+      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span><span class="ptl-pill"></span></button>').firstElementChild;
       row.querySelector('b').textContent=o.name;
       row.querySelector('.ptl-muted').textContent=[o.ref,o.kind,o.state].filter(Boolean).join(' · ');
       row.querySelector('.ptl-pill').textContent=o.appOn?t('App on'):t('App off');
@@ -355,7 +355,7 @@ async function openOrg(id){
   body.appendChild(h('<h2>'+esc(t('Contacts'))+'</h2><div id="ptl-members"></div>'));
   const ml=document.getElementById('ptl-members');
   (r.data.members||[]).forEach(m=>{
-    const row=h('<div class="ptl-dev"><span></span></div>');
+    const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
     row.querySelector('span').textContent=(m.displayName||m.email)+(m.status!=='active'?' ('+m.status+')':'');
     if(ME_ADMIN&&m.status==='active'){
       const dis=btn(t('Disable'),async()=>{await put('/api/portal/identities/'+m.identityId+'/status',{status:'disabled'});openOrg(id);},false);
@@ -376,7 +376,7 @@ async function openOrg(id){
   body.appendChild(h('<h2>'+esc(t('Upload links'))+'</h2><div id="ptl-ulinks"></div>'));
   const ul=document.getElementById('ptl-ulinks');
   (r.data.ulinks||[]).forEach(l=>{
-    const row=h('<div class="ptl-dev"><span></span></div>');
+    const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
     row.querySelector('span').textContent=l.label+' · '+l.usedFiles+'/'+l.maxFiles+(l.revoked?' '+t('(revoked)'):'');
     if(!l.revoked){const rm=btn(t('Revoke'),async()=>{await del('/api/portal/ulinks/'+l.id);openOrg(id);},false);rm.className='ptl-btn ptl-btn--sm';row.appendChild(rm);}
     ul.appendChild(row);
@@ -411,10 +411,10 @@ async function openOrg(id){
   const ar=await get('/api/portal/orgs/'+id+'/approvals');
   if(ar.success&&ar.data){
     (ar.data.approvals||[]).forEach(a=>{
-      const row=h('<div class="ptl-dev"><span></span></div>');
+      const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
       row.querySelector('span').textContent=a.fileName+' · '+a.state+(a.deadline?' · '+a.deadline:'');
       if(a.state==='pending'){const w=btn(t('Withdraw'),async()=>{await post('/api/portal/approvals/'+a.id+'/withdraw');openOrg(id);},false);w.className='ptl-btn ptl-btn--sm';row.appendChild(w);}
-      const pf=h('<a class="ptl-btn ptl-btn--sm"></a>');pf.textContent=t('Proof');pf.href=base+'/api/portal/approvals/'+a.id+'/proof';row.appendChild(pf);
+      const pf=h('<a class="ptl-btn ptl-btn--sm"></a>').firstElementChild;pf.textContent=t('Proof');pf.href=base+'/api/portal/approvals/'+a.id+'/proof';row.appendChild(pf);
       ap.appendChild(row);
     });
   }
@@ -456,13 +456,13 @@ async function vUploads(){
   const r=await get('/api/portal/uploads');
   const ups=(r.data&&r.data.uploads)||[];
   if(!ups.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No new uploads.'))+'</p>'));}
-  const list=h('<div class="ptl-list"></div>');
+  const list=h('<div class="ptl-list"></div>').firstElementChild;
   ups.forEach(u=>{
     const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
     row.querySelector('b').textContent=u.fileName;
     row.querySelector('.ptl-muted').textContent=u.orgName+' · '+u.uploader+' · '+u.source+' · '+new Date(u.createdAt).toLocaleString()+(u.duplicate?' · '+t('DUPLICATE'):'')+(u.note?' · '+u.note:'');
     const act=row.querySelector('.ptl-actions');
-    const dl=h('<a class="ptl-btn"></a>');dl.textContent=t('Download');dl.href=base+'/api/portal/uploads/'+u.id+'/file';act.appendChild(dl);
+    const dl=h('<a class="ptl-btn"></a>').firstElementChild;dl.textContent=t('Download');dl.href=base+'/api/portal/uploads/'+u.id+'/file';act.appendChild(dl);
     act.appendChild(btn(t('Seen'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'eingesehen'});vUploads();}));
     act.appendChild(btn(t('Filed'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'abgelegt'});vUploads();},true));
     act.appendChild(btn(t('Publish to client'),async()=>{
@@ -483,7 +483,7 @@ async function vSettings(){
     return;
   }
   const s=r.data.settings,d=r.data.door;
-  const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label" for="s-preset">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label" for="s-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label" for="s-max">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label" for="s-ttl">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>');
+  const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label" for="s-preset">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label" for="s-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label" for="s-max">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label" for="s-ttl">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>').firstElementChild;
   const sel=form.querySelector('#s-preset');
   r.data.presets.forEach(p=>sel.appendChild(new Option(p,p)));
   sel.value=s.preset;form.querySelector('#s-label').value=s.providerLabel;form.querySelector('#s-max').value=s.uploadMaxMb;form.querySelector('#s-ttl').value=s.otpTtlMin;
@@ -493,7 +493,7 @@ async function vSettings(){
   },true));
   body.appendChild(form);
   // door
-  const door=h('<div class="ptl-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="ptl-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="ptl-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="ptl-label" for="d-users">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="ptl-input"><label class="ptl-label" for="d-admins">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="ptl-input"><div class="ptl-actions"></div></div>');
+  const door=h('<div class="ptl-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="ptl-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="ptl-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="ptl-label" for="d-users">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="ptl-input"><label class="ptl-label" for="d-admins">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="ptl-input"><div class="ptl-actions"></div></div>').firstElementChild;
   door.querySelector('#d-restr').checked=d.restricted;
   door.querySelector('#d-users').value=(d.allowedUsers||[]).join(', ');
   door.querySelector('#d-admins').value=(d.appAdmins||[]).join(', ');
@@ -528,7 +528,7 @@ async function vHolds(){
   const r=await get('/api/portal/intake-holds');
   const holds=(r.data&&r.data.holds)||[];
   if(!holds.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No held e-mails.'))+'</p>'));return;}
-  const list=h('<div class="ptl-list"></div>');
+  const list=h('<div class="ptl-list"></div>').firstElementChild;
   holds.forEach(hh=>{
     const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
     row.querySelector('b').textContent=t('Hold')+' #'+hh.id+' · '+t('org')+' '+hh.orgId;
@@ -578,7 +578,7 @@ async function vForms(){
   const orgs=await get('/api/portal/orgs');
   const orgNames={};(orgs.data&&orgs.data.orgs||[]).forEach(o=>orgNames[o.id]=o.name);
   if(!forms.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No forms sent yet.'))+'</p>'));
-  const list=h('<div class="ptl-list"></div>');
+  const list=h('<div class="ptl-list"></div>').firstElementChild;
   forms.forEach(f=>{
     const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
     row.querySelector('b').textContent=(orgNames[f.orgId]||'#'+f.orgId)+' · '+t('Form')+' #'+f.id;
@@ -586,7 +586,7 @@ async function vForms(){
     const act=row.querySelector('.ptl-actions');
     act.appendChild(btn(t('Answers'),()=>openForm(f.id),true));
     if(f.state==='submitted')act.appendChild(btn(t('Reopen'),async()=>{await post('/api/portal/forms/'+f.id+'/reopen');vForms();}));
-    const csv=h('<a class="ptl-btn ptl-btn--sm"></a>');csv.textContent='CSV';csv.href=base+'/api/portal/forms/'+f.id+'/export.csv';act.appendChild(csv);
+    const csv=h('<a class="ptl-btn ptl-btn--sm"></a>').firstElementChild;csv.textContent='CSV';csv.href=base+'/api/portal/forms/'+f.id+'/export.csv';act.appendChild(csv);
     list.appendChild(row);
   });
   body.appendChild(list);
@@ -595,7 +595,7 @@ async function openForm(id){
   const r=await get('/api/portal/forms/'+id);
   if(!r.success){status(t('Not found.'));return;}
   const f=r.data.form,body=chrome('forms',t('Form')+' #'+id+' — '+f.name);
-  const card=h('<div class="ptl-card"></div>');
+  const card=h('<div class="ptl-card"></div>').firstElementChild;
   (f.fields||[]).forEach(fd=>{
     const ans=(f.answers||[]).find(a=>a.key===fd.key);
     card.appendChild(h('<div class="ptl-kvrow"><span>'+esc(fd.label)+'</span><b>'+esc(ans?String(ans.value):'—')+'</b></div>'));
@@ -614,7 +614,7 @@ async function vPeople(){
     const r=await get('/api/portal/identities?q='+encodeURIComponent(q));
     const list=document.getElementById('ptl-plist');list.innerHTML='';
     (r.data&&r.data.identities||[]).forEach(i=>{
-      const row=h('<div class="ptl-dev"><span></span></div>');
+      const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
       row.querySelector('span').textContent=(i.displayName||'')+' <'+i.email+'>'+(i.status!=='active'?' ('+i.status+')':'');
       const st=btn(i.status==='disabled'?t('Enable'):t('Disable'),async()=>{
         await put('/api/portal/identities/'+i.id+'/status',{status:i.status==='disabled'?'active':'disabled'});render(document.getElementById('ptl-pq').value);

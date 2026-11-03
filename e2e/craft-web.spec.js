@@ -70,6 +70,10 @@ test.describe('craft web', () => {
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 			await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
 			if (nav) await page.locator(`.ptl-navbtn[data-v="${nav}"]`).click();
+			if (name === 'overview') {
+				// fragment-crash regression: .ptl-row only exists if vOverview ran to completion
+				await page.locator('#ptl-body .ptl-list .ptl-row').first().waitFor({ state: 'attached', timeout: 15000 });
+			}
 			await page.waitForTimeout(1200);
 			await shot(page, `ptl-staff-${name}-light-1280`);
 		});
@@ -81,6 +85,7 @@ test.describe('craft web', () => {
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#ptl-body .ptl-list .ptl-row').first().waitFor({ state: 'attached', timeout: 15000 });
 		await page.waitForTimeout(1200);
 		await shot(page, 'ptl-staff-overview-dark-1280');
 	});
@@ -90,6 +95,7 @@ test.describe('craft web', () => {
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#ptl-body .ptl-list .ptl-row').first().waitFor({ state: 'attached', timeout: 15000 });
 		await page.waitForTimeout(1200);
 		await shot(page, 'ptl-staff-overview-light-375');
 	});
