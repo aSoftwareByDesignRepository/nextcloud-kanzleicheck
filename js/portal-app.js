@@ -91,7 +91,7 @@ async function viewStart(){
   el.appendChild(list);
 }
 function todoCard(it){
-  const c=h('<div class="ptl-card"><h2></h2><p class="ptl-muted"></p><div class="ptl-actions"></div></div>');
+  const c=h('<div class="ptl-card"><h2></h2><p class="ptl-muted"></p><div class="ptl-actions"></div></div>').firstElementChild;
   c.querySelector('h2').textContent=it.title;
   const sub=it.kind==='request'?t('Requested document'):it.kind==='approval'?t('Approval'):t('Form');
   c.querySelector('.ptl-muted').textContent=sub+(it.deadline?' · '+t('Due')+' '+it.deadline:'')+(it.overdue?' — '+t('Overdue'):'');

@@ -308,6 +308,10 @@
 		"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.": "This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.",
 		"Choose organisation": "Choose organisation",
 		"Switch organisation": "Switch organisation",
-		"Your sign-in is linked to more than one organisation.": "Your sign-in is linked to more than one organisation."
+		"Your sign-in is linked to more than one organisation.": "Your sign-in is linked to more than one organisation.",
+		"Access denied": "Access denied",
+		"Back to Nextcloud": "Back to Nextcloud",
+		"You do not have access to PortalCheck.": "You do not have access to PortalCheck.",
+		"Please sign in to continue.": "Please sign in to continue."
 	}
 }

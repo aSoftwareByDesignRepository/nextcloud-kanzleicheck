@@ -309,6 +309,10 @@ OC.L10N.register(
 	"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link." : "Esta cuenta no está vinculada a ningún portal. Si esperaba acceso, contacte con la organización que le invitó — pueden reenviarle su enlace de acceso.",
 	"Choose organisation" : "Elegir organización",
 	"Switch organisation" : "Cambiar de organización",
-	"Your sign-in is linked to more than one organisation." : "Tu inicio de sesión está vinculado a más de una organización."
+	"Your sign-in is linked to more than one organisation." : "Tu inicio de sesión está vinculado a más de una organización.",
+	"Access denied" : "Acceso denegado",
+	"Back to Nextcloud" : "Volver a Nextcloud",
+	"You do not have access to PortalCheck." : "No tiene acceso a PortalCheck.",
+	"Please sign in to continue." : "Inicie sesión para continuar."
 	}
 );

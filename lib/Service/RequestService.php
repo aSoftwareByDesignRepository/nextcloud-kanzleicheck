@@ -11,9 +11,11 @@ namespace OCA\PortalCheck\Service;
 
 use OCA\PortalCheck\Db\DocRequest;
 use OCA\PortalCheck\Db\DocRequestMapper;
+use OCA\PortalCheck\Db\ReqFileMapper;
 use OCA\PortalCheck\Db\ReqItem;
 use OCA\PortalCheck\Db\ReqItemMapper;
 use OCA\PortalCheck\Db\ReqRemindMapper;
+use OCA\PortalCheck\Db\UploadMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Exception\ValidationException;
@@ -39,6 +41,8 @@ class RequestService
 		private readonly ReqRemindMapper $reminds,
 		private readonly AuditService $audit,
 		private readonly IDBConnection $db,
+		private readonly UploadMapper $uploads,
+		private readonly ReqFileMapper $reqFiles,
 	) {
 	}
 
@@ -142,11 +146,22 @@ class RequestService
 		if ($i->getState() === 'accepted') {
 			throw new ApiException(409, 'REQUEST_CLOSED', 'item already accepted');
 		}
+		if ($uploadId > 0) {
+			$u = $this->uploads->find($uploadId);
+			// uniform 404 (G-01): unknown OR foreign-org upload ids collapse —
+			// never bind another org's file into this request's item.
+			if ($u === null || (int)$u->getOrgId() !== (int)$r->getOrgId()) {
+				throw new NotFoundException();
+			}
+		}
 		$i->setState('delivered');
 		$i->setRejectReason(null);
 		$i->setDeliveredBy($actor);
 		$i->setDeliveredAt(new \DateTimeImmutable());
 		$this->items->update($i);
+		if ($uploadId > 0) {
+			$this->reqFiles->attach($itemId, $uploadId);
+		}
 		return $i;
 	}
 

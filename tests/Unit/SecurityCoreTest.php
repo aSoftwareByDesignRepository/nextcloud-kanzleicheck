@@ -6,8 +6,10 @@ namespace OCA\PortalCheck\Tests\Unit;
 
 use OCA\PortalCheck\Db\DocRequest;
 use OCA\PortalCheck\Db\DocRequestMapper;
+use OCA\PortalCheck\Db\ReqFileMapper;
 use OCA\PortalCheck\Db\ReqItemMapper;
 use OCA\PortalCheck\Db\ReqRemindMapper;
+use OCA\PortalCheck\Db\UploadMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\ConflictException;
 use OCA\PortalCheck\Exception\RateLimitException;
@@ -170,6 +172,8 @@ class SecurityCoreTest extends TestCase
 			$this->createMock(ReqRemindMapper::class),
 			$this->createMock(AuditService::class),
 			$this->createMock(IDBConnection::class),
+			$this->createMock(UploadMapper::class),
+			$this->createMock(ReqFileMapper::class),
 		);
 		$r = new DocRequest();
 		$r->setState('open');
@@ -192,6 +196,8 @@ class SecurityCoreTest extends TestCase
 			$this->createMock(ReqRemindMapper::class),
 			$this->createMock(AuditService::class),
 			$this->createMock(IDBConnection::class),
+			$this->createMock(UploadMapper::class),
+			$this->createMock(ReqFileMapper::class),
 		);
 		$r = new DocRequest();
 		$r->setState('open');

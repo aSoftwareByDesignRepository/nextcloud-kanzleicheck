@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\PortalCheck\Middleware;
 
+use OCA\PortalCheck\AppInfo\Application;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\ConflictException;
 use OCA\PortalCheck\Exception\DeviceRevokedException;
@@ -15,24 +16,41 @@ use OCA\PortalCheck\Exception\ValidationException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\Response;
+use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Middleware;
+use OCP\IRequest;
+use OCP\IURLGenerator;
+use OCP\L10N\IFactory;
 use Psr\Log\LoggerInterface;
 
 /**
  * Exception → uniform envelope: {success:false,error,message,fields}.
  * NOT_FOUND collapses every miss (foreign-org id OR nonexistent) into one
  * canonical payload — status, headers and body byte-identical (G-01).
+ *
+ * Page routes (staff UI + portal GETs — every path without `/api/`) never get
+ * the JSON envelope: gate failures render the access-denied page, anything
+ * else rethrows so core can render its HTML error page. Raw JSON on a page
+ * route is a dead surface for humans (ptl-intake-denied-staff).
  */
 class ApiExceptionMiddleware extends Middleware
 {
-	public function __construct(private readonly LoggerInterface $logger)
-	{
+	public function __construct(
+		private readonly LoggerInterface $logger,
+		private readonly IRequest $request,
+		private readonly IFactory $l10nFactory,
+		private readonly IURLGenerator $urlGenerator,
+	) {
 	}
 
-	public function afterException(Controller $controller, string $methodName, \Exception $exception): JSONResponse
+	public function afterException(Controller $controller, string $methodName, \Exception $exception): Response
 	{
 		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
 			throw $exception;
+		}
+		if ($this->isPageRequest()) {
+			return $this->pageError($exception);
 		}
 		if ($exception instanceof NotFoundException || $exception instanceof \OCP\AppFramework\Db\DoesNotExistException) {
 			return self::notFound();
@@ -82,5 +100,57 @@ class ApiExceptionMiddleware extends Middleware
 		return new JSONResponse([
 			'success' => false, 'error' => $code, 'message' => $message, 'fields' => (object)$fields,
 		], $status);
+	}
+
+	/** HTML page GET (not an `/api/` route) — humans, not API clients. */
+	private function isPageRequest(): bool
+	{
+		$rest = $this->restPath();
+		return $rest !== null
+			&& !str_contains($rest, '/api/')
+			&& $this->request->getMethod() === 'GET';
+	}
+
+	private function restPath(): ?string
+	{
+		$path = $this->request->getPathInfo() ?: '';
+		foreach (['/index.php/apps/' . Application::APP_ID, '/apps/' . Application::APP_ID] as $p) {
+			if (str_starts_with($path, $p)) {
+				return substr($path, strlen($p));
+			}
+		}
+		return null;
+	}
+
+	private function pageError(\Exception $exception): TemplateResponse
+	{
+		$l = $this->l10nFactory->get(Application::APP_ID);
+		if ($exception instanceof ForbiddenException) {
+			return (new TemplateResponse(Application::APP_ID, 'access-denied', [
+				'title' => $l->t('Access denied'),
+				'message' => $l->t('You do not have access to PortalCheck.'),
+				'hint' => $l->t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'),
+				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
+			], 'guest'))->setStatus(Http::STATUS_FORBIDDEN);
+		}
+		if ($exception instanceof UnauthorizedException) {
+			return (new TemplateResponse(Application::APP_ID, 'access-denied', [
+				'title' => $l->t('Access denied'),
+				'message' => $l->t('Please sign in to continue.'),
+				'hint' => '',
+				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
+			], 'guest'))->setStatus(Http::STATUS_UNAUTHORIZED);
+		}
+		if ($exception instanceof NotFoundException || $exception instanceof \OCP\AppFramework\Db\DoesNotExistException) {
+			return (new TemplateResponse(Application::APP_ID, 'access-denied', [
+				'title' => $l->t('Not found'),
+				'message' => $l->t('Not found.'),
+				'hint' => '',
+				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
+			], 'guest'))->setStatus(Http::STATUS_NOT_FOUND);
+		}
+		// Non-gate failure on a page route: rethrow so core renders its HTML
+		// error page — a JSON envelope is a dead surface in a browser.
+		throw $exception;
 	}
 }

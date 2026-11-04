@@ -308,6 +308,10 @@
 		"This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.": "Esta conta não está vinculada a nenhum portal. Se você esperava acesso, contate a organização que o convidou — eles podem reenviar seu link de acesso.",
 		"Choose organisation": "Escolher organização",
 		"Switch organisation": "Trocar de organização",
-		"Your sign-in is linked to more than one organisation.": "Seu login está vinculado a mais de uma organização."
+		"Your sign-in is linked to more than one organisation.": "Seu login está vinculado a mais de uma organização.",
+		"Access denied": "Acesso negado",
+		"Back to Nextcloud": "Voltar ao Nextcloud",
+		"You do not have access to PortalCheck.": "Você não tem acesso ao PortalCheck.",
+		"Please sign in to continue.": "Entre para continuar."
 	}
 }

@@ -308,6 +308,10 @@
     "This account is not linked to a portal. If you expected access, contact the organisation that invited you — they can resend your sign-in link.": "Det här kontot är inte kopplat till någon portal. Om du förväntade dig åtkomst, kontakta organisationen som bjöd in dig — de kan skicka din inloggningslänk igen.",
     "Choose organisation": "Välj organisation",
     "Switch organisation": "Byt organisation",
-    "Your sign-in is linked to more than one organisation.": "Din inloggning är kopplad till fler än en organisation."
+    "Your sign-in is linked to more than one organisation.": "Din inloggning är kopplad till fler än en organisation.",
+    "Access denied": "Åtkomst nekad",
+    "Back to Nextcloud": "Tillbaka till Nextcloud",
+    "You do not have access to PortalCheck.": "Du har inte åtkomst till PortalCheck.",
+    "Please sign in to continue.": "Logga in för att fortsätta."
   }
 }
