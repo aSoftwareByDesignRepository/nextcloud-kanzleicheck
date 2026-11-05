@@ -316,7 +316,7 @@ async function vOrgs(){
     const r=await post('/api/portal/orgs',{name:f.name,ref:f.ref||null,kind:f.kind});
     status(r.success?t('Created.'):(r.message||t('Error')));if(r.success)vOrgs();
   },true));
-  body.appendChild(btn(t('Import CSV'),async()=>{
+  if(ME_ADMIN)body.appendChild(btn(t('Import CSV'),async()=>{
     const f=await ask(t('Import clients'),null,t('Check'),[{name:'csv',label:t('CSV (email;name;org;kind;ref)'),type:'textarea',required:true},{name:'invite',label:t('Send invitations? (yes/no)')}]);
     if(!f)return;
     const invite=/^y(es)?$/i.test(f.invite||'');
@@ -614,13 +614,15 @@ function renderSyncSection(orgId,body,data){
     if(b){
       wrap.appendChild(syncChip(b.state));
       if(m.ncUidMismatch){const w=h('<span class="ptl-chip ptl-chip--warn"></span>').firstElementChild;w.textContent=t('e-mail differs');wrap.appendChild(w);}
-      if(['broken_share','broken_perms'].includes(b.state)){
+      if(ME_ADMIN&&['broken_share','broken_perms'].includes(b.state)){
         const rp=btn(t('Repair'),async()=>{const rr=await post('/api/portal/sync/'+b.bindingId+'/repair',{});status(rr.success?t('Repaired.'):(rr.message||t('Error')));openOrg(orgId);},true);rp.className='ptl-btn ptl-btn--sm';wrap.appendChild(rp);
       }
-      const tog=btn(t('Off'),async()=>{
-        if(!(await confirmDlg(t('Turn off sync'),t('The client loses folder access via their Nextcloud account. Continue?'))))return;
-        const rr=await api('/api/portal/sync/'+b.bindingId,{method:'DELETE'});status(rr.success?t('Sync off.'):(rr.message||t('Error')));openOrg(orgId);
-      });tog.className='ptl-btn ptl-btn--sm';wrap.appendChild(tog);
+      if(ME_ADMIN){
+        const tog=btn(t('Off'),async()=>{
+          if(!(await confirmDlg(t('Turn off sync'),t('The client loses folder access via their Nextcloud account. Continue?'))))return;
+          const rr=await api('/api/portal/sync/'+b.bindingId,{method:'DELETE'});status(rr.success?t('Sync off.'):(rr.message||t('Error')));openOrg(orgId);
+        });tog.className='ptl-btn ptl-btn--sm';wrap.appendChild(tog);
+      }
     }else if(ME_ADMIN){
       const st=btn(t('Set up'),()=>syncSetupDialog(orgId,m),true);st.className='ptl-btn ptl-btn--sm';wrap.appendChild(st);
     }
@@ -738,7 +740,7 @@ async function vHolds(){
 async function vForms(){
   VIEW_SEQ++;
   const body=chrome('forms',t('Questionnaires'));
-  body.appendChild(btn(t('+ New template'),async()=>{
+  if(ME_ADMIN)body.appendChild(btn(t('+ New template'),async()=>{
     const f=await ask(t('New form template'),null,t('Create'),[
       {name:'name',label:t('Name'),required:true},
       {name:'fields',label:t('Fields (one per line: key|label|type|required)',),type:'textarea',required:true},
