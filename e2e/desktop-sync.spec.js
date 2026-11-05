@@ -71,6 +71,9 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			await expect(page.locator('.ptl-sync-list')).toBeVisible();
 			const row = page.locator('.ptl-sync-row', { hasText: 'Sync UI Client' });
 			await expect(row).toBeVisible();
+			// bring the sync row inside the #app-content scrollport into the
+			// viewport — a fullPage:false shot of an off-screen row proves nothing
+			await row.scrollIntoViewIfNeeded();
 			await shot(page, 'ptl-staff-sync-section-1280');
 			// DOM click — the row sits below the fold inside NC's #app-content
 			// scroller, which confuses Playwright's viewport math (the element
@@ -101,6 +104,7 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			const chip = row.locator('.ptl-chip').first();
 			await chip.waitFor({ state: 'visible', timeout: 20000 });
 			await expect(row.locator('.ptl-chip', { hasText: 'e-mail differs' })).toBeVisible();
+			await row.scrollIntoViewIfNeeded();
 			await shot(page, 'ptl-staff-sync-chip-active');
 			const bid = Number(db(`SELECT id FROM oc_ptl_sync WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
 			expect(bid).toBeGreaterThan(0);
