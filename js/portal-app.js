@@ -10,7 +10,10 @@ const post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})});
 const put=(u,b)=>api(u,{method:'PUT',body:JSON.stringify(b||{})});
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
 const h=html=>{const t=document.createElement('template');t.innerHTML=html;return t.content.cloneNode(true);};
-let ORG=null,ME=null,POLL=null,ORGS=[];
+/* VIEW_SEQ invalidates any in-flight view continuation on every view entry
+   (stale_response_render_clobber); POLL_* keep exactly one chat chain alive
+   per generation (poller_chain_fork_duplicate_render). */
+let ORG=null,ME=null,POLL=null,ORGS=[],VIEW_SEQ=0,POLL_GEN=0,POLL_BUSY=0,POLL_WANT=false;
 const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t;};
 
 async function init(){
@@ -29,9 +32,9 @@ async function init(){
 }
 let READY=false;
 async function pollBadges(){
-  if(!ORG)return;
-  const r=await api('/portal/api/orgs/'+ORG+'/unread');
-  if(!r.success||!r.data)return;
+  const org=ORG;if(!org)return;
+  const r=await api('/portal/api/orgs/'+org+'/unread');
+  if(!r.success||!r.data||org!==ORG)return;
   const chat=document.querySelector('.ptl-tab[data-view="chat"] .ptl-badge');
   if(chat){chat.hidden=!(r.data.messages>0);chat.textContent=r.data.messages>0?String(r.data.messages):'';}
 }
@@ -47,6 +50,7 @@ function route(v){
 /* ── Org picker: multi-mandate accounts choose their portal section first
    * (companion parity: App.tsx orgs.pick). Re-entered via the switch on Home. ── */
 function viewOrgPick(){
+  VIEW_SEQ++;
   el.innerHTML='<h1>'+esc(t('Choose organisation'))+'</h1><p class="ptl-muted">'+esc(t('Your sign-in is linked to more than one organisation.'))+'</p><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   const sel=h('<div class="ptl-orgpick"></div>').firstElementChild;
   ORGS.forEach(o=>{
@@ -60,18 +64,25 @@ function viewOrgPick(){
 }
 /* ── Home: consolidated to-do stack ── */
 async function viewStart(){
-  pollBadges();
-  const cr=await api('/portal/api/orgs/'+ORG+'/contact');
-  const contacts=(cr.data&&cr.data.contacts)||[];
-  const orgRow=ORGS.find(o=>o.id===ORG);
-  const r=await api('/portal/api/orgs/'+ORG+'/todo');
+  const seq=++VIEW_SEQ,org=ORG;
+  // paint the view chrome BEFORE awaiting — a late whole-view paint must
+  // never clobber a view the user already navigated to.
   el.innerHTML='<h1>'+esc(t('To do'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   if(ORGS.length>1){
+    const orgRow0=ORGS.find(o=>o.id===org);
     const ctx=h('<p class="ptl-orgctx"><span class="ptl-muted"></span></p>').firstElementChild;
-    ctx.querySelector('.ptl-muted').textContent=orgRow?orgRow.name:'';
+    ctx.querySelector('.ptl-muted').textContent=orgRow0?orgRow0.name:'';
     ctx.appendChild(btn(t('Switch organisation'),()=>route('pick'),true));
     el.insertBefore(ctx,el.children[1]);
   }
+  pollBadges();
+  const [cr,r]=await Promise.all([
+    api('/portal/api/orgs/'+org+'/contact'),
+    api('/portal/api/orgs/'+org+'/todo'),
+  ]);
+  if(seq!==VIEW_SEQ||org!==ORG)return; // superseded — never paint stale
+  const contacts=(cr.data&&cr.data.contacts)||[];
+  const orgRow=ORGS.find(o=>o.id===org);
   const items=(r.data&&r.data.todo)||[];
   if(!items.length){el.appendChild(h('<div class="ptl-card"><h2>'+esc(t('All done'))+'</h2><p class="ptl-muted">'+esc(t('We will let you know when we need something.'))+'</p></div>'));return;}
   const list=h('<div class="ptl-stack"></div>').firstElementChild;
@@ -144,7 +155,9 @@ async function approvalFlow(id,decision){
   if(r.success)viewStart();
 }
 async function viewForm(id){
+  const seq=++VIEW_SEQ;
   const r=await api('/portal/api/forms/'+id);
+  if(seq!==VIEW_SEQ)return; // superseded — never paint over a newer view
   if(!r.success){status(t('Form not found.'));return;}
   const f=r.data.form;
   el.innerHTML='<h1>'+esc(t('Form'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
@@ -183,54 +196,68 @@ async function viewForm(id){
 /* ── Chat ── */
 let LAST=0;
 async function viewChat(){
+  VIEW_SEQ++;LAST=0;
+  const gen=++POLL_GEN,org=ORG;
   el.innerHTML='<h1>'+esc(t('Chat'))+'</h1><div id="ptl-msgs" class="ptl-msgs"></div><form id="ptl-cf" class="ptl-composer"><input id="ptl-cm" class="ptl-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a message…'))+'"><button class="ptl-btn ptl-btn--primary">'+esc(t('Send'))+'</button></form><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   document.getElementById('ptl-cf').addEventListener('submit',async e=>{
     e.preventDefault();
     const inp=document.getElementById('ptl-cm'),body=inp.value.trim();
     if(!body)return;
     inp.value='';
-    const r=await post('/portal/api/orgs/'+ORG+'/messages',{body,clientUuid:crypto.randomUUID()});
-    if(r.success)pullMessages();else status(r.message||t('Error'));
+    const r=await post('/portal/api/orgs/'+org+'/messages',{body,clientUuid:crypto.randomUUID()});
+    // trigger the pending poll early on the SAME chain — never fork a second
+    if(r.success){if(POLL){clearTimeout(POLL);POLL=null;}pullMessages(gen);}else status(r.message||t('Error'));
   });
-  await pullMessages();
+  await pullMessages(gen);
 }
-async function pullMessages(){
-  const r=await api('/portal/api/orgs/'+ORG+'/messages?after='+LAST);
-  const box=document.getElementById('ptl-msgs');if(!box)return;
+async function pullMessages(gen){
+  const org=ORG;
+  if(!org||gen!==POLL_GEN)return;
+  if(POLL_BUSY===gen){POLL_WANT=true;return;} // same chain already in flight — coalesce
+  POLL_BUSY=gen;
+  const r=await api('/portal/api/orgs/'+org+'/messages?after='+LAST).catch(()=>({success:false}));
+  if(POLL_BUSY===gen)POLL_BUSY=0;
+  if(POLL_WANT){POLL_WANT=false;pullMessages(POLL_GEN);return;} // one fresh pull under current gen/org
+  const box=document.getElementById('ptl-msgs');
+  if(!box||org!==ORG||gen!==POLL_GEN)return; // view/org switched mid-flight — drop, stop chain
   if(r.success&&r.data){
     r.data.messages.forEach(m=>{
-      LAST=Math.max(LAST,m.id);
+      if(m.id<=LAST)return; // already painted — belt dedupe vs overlapping fetches
+      LAST=m.id;
       box.appendChild(h('<div class="ptl-msg'+(m.mine?' ptl-msg--mine':'')+'"><div class="ptl-msg__body"></div><div class="ptl-msg__meta"></div></div>'));
       const last=box.lastElementChild;
       last.querySelector('.ptl-msg__body').textContent=m.body;
       last.querySelector('.ptl-msg__meta').textContent=(m.mine?t('You'):(m.kind==='staff'?t('Your provider'):m.author))+' · '+new Date(m.createdAt).toLocaleString();
     });
-    if(r.data.messages.length){box.scrollTop=box.scrollHeight;post('/portal/api/orgs/'+ORG+'/read',{lastReadId:LAST});}
-    POLL=setTimeout(pullMessages,r.data.pollAfterMs||15000);
-  }else{POLL=setTimeout(pullMessages,30000);}
+    if(r.data.messages.length){box.scrollTop=box.scrollHeight;post('/portal/api/orgs/'+org+'/read',{lastReadId:LAST});}
+    POLL=setTimeout(()=>{POLL=null;pullMessages(gen);},r.data.pollAfterMs||15000);
+  }else{POLL=setTimeout(()=>{POLL=null;pullMessages(gen);},30000);}
 }
 
 /* ── Documents ── */
 async function viewDocs(){
+  const seq=++VIEW_SEQ,org=ORG;
   el.innerHTML='<h1>'+esc(t('Documents'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div><div class="ptl-card"><button class="ptl-btn ptl-btn--primary" id="ptl-up">'+esc(t('Upload a file'))+'</button></div><div id="ptl-files"></div>';
   document.getElementById('ptl-up').onclick=()=>{
     const inp=document.createElement('input');inp.type='file';
     inp.onchange=async()=>{
       const fd=new FormData();fd.append('file',inp.files[0]);
       status(t('Uploading…'));
-      const r=await fetch(base+'/portal/api/orgs/'+ORG+'/uploads',{method:'POST',headers:{'X-PTL-CSRF':CSRF||CSRF||ck('ptl_csrf')},body:fd}).then(x=>x.json()).catch(()=>({success:false}));
+      const r=await fetch(base+'/portal/api/orgs/'+org+'/uploads',{method:'POST',headers:{'X-PTL-CSRF':CSRF||CSRF||ck('ptl_csrf')},body:fd}).then(x=>x.json()).catch(()=>({success:false}));
       status(r.success?t('Uploaded. Thank you!'):(r.message||t('Error')));
       if(r.success)viewDocs();
     };
     inp.click();
   };
-  const r=await api('/portal/api/orgs/'+ORG+'/documents');
+  const r=await api('/portal/api/orgs/'+org+'/documents');
+  if(seq!==VIEW_SEQ)return; // superseded — never paint stale
   const box=document.getElementById('ptl-files');
+  if(!box)return;
   const files=(r.data&&r.data.files)||[];
   if(!files.length){box.appendChild(h('<p class="ptl-muted">'+esc(t('No documents have been shared with you yet.'))+'</p>'));return;}
   files.forEach(f=>{
     const a=document.createElement('a');
-    a.className='ptl-file';a.href=base+'/portal/api/orgs/'+ORG+'/files/'+f.id+'/download';
+    a.className='ptl-file';a.href=base+'/portal/api/orgs/'+org+'/files/'+f.id+'/download';
     a.textContent='📄 '+f.name+' ('+Math.ceil(f.size/1024)+' KB)';
     box.appendChild(a);
   });
@@ -238,16 +265,20 @@ async function viewDocs(){
 
 /* ── More ── */
 async function viewMore(){
-  const r=await api('/portal/api/orgs/'+ORG+'/tasks');
-  const d=await api('/portal/api/devices');
-  const ir=await api('/portal/api/orgs/'+ORG+'/intake');
-  const nr=await api('/portal/api/orgs/'+ORG+'/invoices').catch(()=>({success:false}));
+  const seq=++VIEW_SEQ,org=ORG;
+  const [r,d,ir,nr]=await Promise.all([
+    api('/portal/api/orgs/'+org+'/tasks'),
+    api('/portal/api/devices'),
+    api('/portal/api/orgs/'+org+'/intake'),
+    api('/portal/api/orgs/'+org+'/invoices').catch(()=>({success:false})),
+  ]);
+  if(seq!==VIEW_SEQ||org!==ORG)return; // superseded — never paint stale
   el.innerHTML='<h1>'+esc(t('More'))+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div>';
   if(ir.success&&ir.data&&ir.data.address){
     el.appendChild(h('<h2>'+esc(t('Send documents by e-mail'))+'</h2>'));
     el.appendChild(h('<div class="ptl-card"><p>'+esc(t('Attachments to this address land in your inbox for review:'))+'</p><p><b>'+esc(ir.data.address)+'</b></p></div>'));
   }
-  const orgRow=ORGS.find(o=>o.id===ORG);
+  const orgRow=ORGS.find(o=>o.id===org);
   if(orgRow&&orgRow.bookingUrl){
     const bk=h('<a class="ptl-card ptl-book" target="_blank" rel="noopener"><b></b></a>').firstElementChild;
     bk.href=orgRow.bookingUrl;bk.querySelector('b').textContent='📅 '+t('Book an appointment');el.appendChild(bk);
@@ -258,9 +289,10 @@ async function viewMore(){
   }
   el.appendChild(h('<h2>'+esc(t('E-mail notifications'))+'</h2>'));
   const notifyRow=h('<div class="ptl-card"><label class="ptl-check"><input type="checkbox" id="ptl-notify"> '+esc(t('Notify me by e-mail when something new arrives'))+'</label></div>');
-  const nq=await api('/portal/api/orgs/'+ORG+'/notify');
+  const nq=await api('/portal/api/orgs/'+org+'/notify');
+  if(seq!==VIEW_SEQ||org!==ORG)return; // superseded — never paint stale
   if(nq.success&&nq.data){notifyRow.querySelector('#ptl-notify').checked=!!nq.data.mailsEnabled;}
-  notifyRow.querySelector('#ptl-notify').onchange=async e=>{await put('/portal/api/orgs/'+ORG+'/notify',{mailsEnabled:e.target.checked});status(t('Saved.'));};
+  notifyRow.querySelector('#ptl-notify').onchange=async e=>{await put('/portal/api/orgs/'+org+'/notify',{mailsEnabled:e.target.checked});status(t('Saved.'));};
   el.appendChild(notifyRow);
   el.appendChild(h('<h2>'+esc(t('Tasks'))+'</h2>'));
   const tasks=(r.data&&r.data.tasks)||[];

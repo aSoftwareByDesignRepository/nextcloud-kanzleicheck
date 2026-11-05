@@ -12,8 +12,11 @@ const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=
 let ME_ADMIN=false;
 /* per-loader generation counters — a superseded list fetch must never paint
    over a newer result (stale_response_render_clobber). Module scope so view
-   remounts also invalidate in-flight fetches from the previous mount. */
-let ORG_SEQ=0,PQ_SEQ=0;
+   remounts also invalidate in-flight fetches from the previous mount.
+   VIEW_SEQ covers whole-view entries: every view function bumps it on entry,
+   so any in-flight continuation of a previous view (await→chrome()/paint)
+   detects its own staleness and returns before touching the document. */
+let ORG_SEQ=0,PQ_SEQ=0,VIEW_SEQ=0;
 
 /* native dialog helpers (never window.prompt/confirm) */
 function ask(title,label,okLabel,fields){return new Promise(res=>{
@@ -60,10 +63,13 @@ function chrome(active,title){
 
 /* ── Overview ── */
 async function vOverview(){
+  const seq=++VIEW_SEQ;
   const r=await get('/api/portal/overview');
+  if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   const body=chrome('overview',t('What needs attention?'));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   const su=await get('/api/portal/setup');
+  if(seq!==VIEW_SEQ)return;
   if(su.success&&su.data&&su.data.setup&&!su.data.setup.done){
     const coach=h('<div class="ptl-card ptl-coach"><h2>'+esc(t('Initial setup'))+'</h2><ul></ul></div>');
     const ul=coach.querySelector('ul');
@@ -96,6 +102,7 @@ async function vOverview(){
 
 /* ── Messages (inbox + thread) ── */
 async function vInbox(mine){
+  VIEW_SEQ++;
   const body=chrome('inbox',t('Messages'));
   const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
   mineCb.querySelector('#ptl-mine').checked=!!mine;
@@ -114,26 +121,48 @@ async function vInbox(mine){
   });
   body.appendChild(list);
 }
-let CONV_ORG=null,CONV_LAST=0,CONV_TIMER=null;
+/* Exactly ONE self-rescheduling chain per conversation generation:
+   - CONV_GEN invalidates orphan chains on re-open/view-switch (a stale
+     chain must die, not keep polling into a detached or recycled box).
+   - CONV_BUSY holds the generation currently in flight: a caller on the
+     SAME generation coalesces via WANT (a send marks WANT and the
+     finishing pull runs ONE fresh pull — never a second parallel chain,
+     poller_chain_fork_duplicate_render); a NEWER generation always fetches
+     immediately — the superseded response is dropped on arrival anyway.
+   - the painted-org check (o!==CONV_ORG) drops cross-org responses before
+     they can paint or corrupt CONV_LAST (stale_response_render_clobber). */
+let CONV_ORG=null,CONV_LAST=0,CONV_TIMER=null,CONV_BUSY=0,CONV_WANT=false,CONV_GEN=0;
 async function openConv(orgId,name){
+  VIEW_SEQ++;
   if(CONV_TIMER){clearTimeout(CONV_TIMER);CONV_TIMER=null;}
   CONV_ORG=orgId;CONV_LAST=0;
+  const gen=++CONV_GEN;
   const body=chrome('inbox',t('Chat')+' — '+name);
   body.appendChild(h('<div id="ptl-msgs" class="ptl-msgs"></div>'));
   body.appendChild(h('<form id="ptl-cf" class="ptl-composer"><input id="ptl-cm" class="ptl-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a reply…'))+'"><button class="ptl-btn ptl-btn--primary">'+esc(t('Send'))+'</button></form>'));
   body.querySelector('#ptl-cf').addEventListener('submit',async e=>{
     e.preventDefault();const inp=document.getElementById('ptl-cm'),v=inp.value.trim();if(!v)return;
     const r=await post('/api/portal/orgs/'+orgId+'/messages',{body:v,clientUuid:crypto.randomUUID()});
-    if(r.success){inp.value='';pullConv();}else status(r.message||t('Error'));
+    // send triggers the pending poll EARLY on the same chain — clear the
+    // armed timer first, never invoke a second self-rescheduling chain.
+    if(r.success){inp.value='';if(CONV_TIMER){clearTimeout(CONV_TIMER);CONV_TIMER=null;}pullConv(gen);}else status(r.message||t('Error'));
   });
-  pullConv();
+  pullConv(gen);
 }
-async function pullConv(){
-  const r=await get('/api/portal/orgs/'+CONV_ORG+'/messages?after='+CONV_LAST);
-  const box=document.getElementById('ptl-msgs');if(!box||CONV_ORG===null)return;
-  if(r.success&&r.data){
+async function pullConv(gen){
+  const o=CONV_ORG;
+  if(o===null||gen!==CONV_GEN)return;
+  if(CONV_BUSY===gen){CONV_WANT=true;return;} // same chain already in flight — coalesce
+  CONV_BUSY=gen;
+  const r=await get('/api/portal/orgs/'+o+'/messages?after='+CONV_LAST).catch(()=>null);
+  if(CONV_BUSY===gen)CONV_BUSY=0;
+  if(CONV_WANT){CONV_WANT=false;pullConv(CONV_GEN);return;} // coalesced — one fresh pull under current gen/org
+  const box=document.getElementById('ptl-msgs');
+  if(!box||o!==CONV_ORG||gen!==CONV_GEN)return; // view/org switched mid-flight — drop, stop chain
+  if(r&&r.success&&r.data){
     (r.data.messages||[]).forEach(m=>{
-      CONV_LAST=Math.max(CONV_LAST,m.id);
+      if(m.id<=CONV_LAST)return; // already painted — belt dedupe vs overlapping fetches
+      CONV_LAST=m.id;
       const mine=m.kind==='staff';
       const row=h('<div class="ptl-msg'+(mine?' ptl-msg--mine':'')+'"><div class="ptl-msg__body"></div><div class="ptl-msg__meta"></div></div>');
       row.querySelector('.ptl-msg__body').textContent=m.body;
@@ -143,12 +172,14 @@ async function pullConv(){
     if(r.data.messages.length)box.scrollTop=box.scrollHeight;
     if(r.data.state==='archived'){document.getElementById('ptl-cf')?.remove();status(t('Conversation archived (read only).'));}
   }
-  CONV_TIMER=setTimeout(pullConv,15000);
+  CONV_TIMER=setTimeout(()=>{CONV_TIMER=null;pullConv(gen);},15000);
 }
 
 /* ── Task board ── */
 async function vBoard(){
+  const seq=++VIEW_SEQ;
   const r=await get('/api/portal/board');
+  if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   const body=chrome('board',t('Tasks'));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   body.appendChild(btn(t('+ New task'),async()=>{
@@ -198,6 +229,7 @@ function taskCard(it){
 
 /* ── Requests ── */
 async function vRequests(mine){
+  VIEW_SEQ++;
   const body=chrome('requests',t('Document requests'));
   body.appendChild(btn(t('+ New request'),async()=>{
     const orgs=(await get('/api/portal/orgs')).data.orgs;
@@ -272,6 +304,7 @@ async function vRequests(mine){
 
 /* ── Clients ── */
 async function vOrgs(){
+  VIEW_SEQ++;
   const body=chrome('orgs',t('Clients'));
   body.appendChild(btn(t('+ New client'),async()=>{
     const f=await ask(t('New client'),null,t('Create'),[
@@ -319,7 +352,9 @@ async function vOrgs(){
   }
 }
 async function openOrg(id){
+  const seq=++VIEW_SEQ;
   const r=await get('/api/portal/orgs/'+id);
+  if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   if(!r.success){status(t('Not found.'));return;}
   const o=r.data.org,body=chrome('orgs',t('Client')+': '+o.name);
   const info=h('<div class="ptl-card"><div class="ptl-kv"></div><div class="ptl-actions"></div></div>');
@@ -427,6 +462,7 @@ async function openOrg(id){
   body.appendChild(h('<h2>'+esc(t('Approvals'))+'</h2><div id="ptl-appr"></div>'));
   const ap=document.getElementById('ptl-appr');
   const ar=await get('/api/portal/orgs/'+id+'/approvals');
+  if(seq!==VIEW_SEQ)return;
   if(ar.success&&ar.data){
     (ar.data.approvals||[]).forEach(a=>{
       const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
@@ -509,8 +545,11 @@ async function syncSetupDialog(orgId,member){
   document.body.appendChild(dlg);
   const q=dlg.querySelector('#sd-q'),hits=dlg.querySelector('#sd-hits'),uidI=dlg.querySelector('#sd-uid'),okB=dlg.querySelector('.ptl-btn--primary'),err=dlg.querySelector('#sd-err');
   const sug=s.data.suggest;
+  let sdSeq=0;
   const fill=async(term)=>{
+    const seq=++sdSeq;
     const r=await get('/api/portal/users/search?q='+encodeURIComponent(term));
+    if(seq!==sdSeq||!dlg.isConnected)return; // superseded/closed — never paint stale hits
     hits.innerHTML='';
     ((r.data&&r.data.users)||[]).forEach(u=>{
       const b=document.createElement('button');b.type='button';b.className='ptl-row';
@@ -592,6 +631,7 @@ function renderSyncSection(orgId,body,data){
 
 /* ── Uploads ── */
 async function vUploads(){
+  VIEW_SEQ++;
   const body=chrome('uploads',t('Inbox — upload queue'));
   const r=await get('/api/portal/uploads');
   const ups=(r.data&&r.data.uploads)||[];
@@ -616,7 +656,9 @@ async function vUploads(){
 
 /* ── Settings ── */
 async function vSettings(){
+  const seq=++VIEW_SEQ;
   const r=await get('/api/portal/settings');
+  if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   const body=chrome('settings',t('Settings'));
   if(!r.success){
     body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('No access'))+'</h2><p class="ptl-muted">'+esc(t('Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list.'))+'</p><p class="ptl-muted">'+esc(t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'))+'</p></div>'));
@@ -645,6 +687,7 @@ async function vSettings(){
   body.appendChild(door);
   // license + diagnostics
   const l=await get('/api/portal/license');
+  if(seq!==VIEW_SEQ)return;
   if(l.success&&l.data){
     const lic=l.data.license;
     body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('License'))+'</h2><p>'+esc(t('Status:'))+' <b>'+esc(lic.status)+'</b> · '+esc(t('Portal clients:'))+' '+lic.usedPortalClients+'/'+lic.portalClients+' · '+esc(t('Mobile seats:'))+' '+(lic.mobileSeats??'—')+'</p><div id="l-actions"></div></div>'));
@@ -656,6 +699,7 @@ async function vSettings(){
     }));
   }
   const diag=await get('/api/portal/diagnostics');
+  if(seq!==VIEW_SEQ)return;
   if(diag.success&&diag.data){
     const g=diag.data;
     body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('Diagnostics'))+'</h2><p>'+esc(t('Cron:'))+' '+(g.cron.stale?'<b>'+esc(t('stale'))+'</b>':esc(t('ok')))+' · '+esc(t('Outbox:'))+' '+g.outbox.pending+' '+t('pending')+' / '+g.outbox.failed+' '+t('failed')+' · '+esc(t('Documents root:'))+' '+(g.docsRoot.healthy?esc(t('ok')):esc(t('broken — configure')))+' · '+esc(t('License:'))+' '+esc(g.license.status)+'</p></div>'));
@@ -664,6 +708,7 @@ async function vSettings(){
 
 /* ── Mail intake holds (US-P24) ── */
 async function vHolds(){
+  VIEW_SEQ++;
   const body=chrome('holds',t('Mail review'));
   const r=await get('/api/portal/intake-holds');
   const holds=(r.data&&r.data.holds)||[];
@@ -691,6 +736,7 @@ async function vHolds(){
 
 /* ── Questionnaires (staff side, US-P28) ── */
 async function vForms(){
+  VIEW_SEQ++;
   const body=chrome('forms',t('Questionnaires'));
   body.appendChild(btn(t('+ New template'),async()=>{
     const f=await ask(t('New form template'),null,t('Create'),[
@@ -732,7 +778,9 @@ async function vForms(){
   body.appendChild(list);
 }
 async function openForm(id){
+  const seq=++VIEW_SEQ;
   const r=await get('/api/portal/forms/'+id);
+  if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   if(!r.success){status(t('Not found.'));return;}
   const f=r.data.form,body=chrome('forms',t('Form')+' #'+id+' — '+f.name);
   const card=h('<div class="ptl-card"></div>').firstElementChild;
@@ -746,6 +794,7 @@ async function openForm(id){
 
 /* ── People (identities admin, US-P07) ── */
 async function vPeople(){
+  VIEW_SEQ++;
   const body=chrome('people',t('People'));
   if(!ME_ADMIN){body.appendChild(h('<p class="ptl-muted">'+esc(t('App admins only'))+'</p>'));return;}
   body.appendChild(h('<input id="ptl-pq" class="ptl-input" placeholder="'+esc(t('Search e-mail or name…'))+'">'));
