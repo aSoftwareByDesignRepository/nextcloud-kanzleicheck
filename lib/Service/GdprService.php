@@ -26,6 +26,8 @@ class GdprService
 		private readonly OtpMapper $otps,
 		private readonly IDBConnection $db,
 		private readonly AuditService $audit,
+		private readonly ?SyncBindingService $syncBindings = null,
+		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncMapper = null,
 	) {
 	}
 
@@ -45,17 +47,28 @@ class GdprService
 		foreach ($qb->executeQuery()->fetchAll() ?: [] as $r) {
 			$msgs[] = ['id' => (int)$r['id'], 'convId' => (int)$r['conv_id'], 'body' => $r['body'], 'createdAt' => $r['created_at']];
 		}
+		$bindings = [];
+		if ($this->syncMapper !== null) {
+			foreach ($this->syncMapper->findByIdentity($identityId) as $b) {
+				$bindings[] = ['bindingId' => (int)$b->getId(), 'orgId' => (int)$b->getOrgId(), 'perms' => $b->getPerms(), 'state' => $b->getState(), 'createdAt' => $b->getCreatedAt()->format('c')];
+			}
+		}
 		return [
-			'identity' => ['id' => (int)$i->getId(), 'email' => $i->getEmail(), 'displayName' => $i->getDisplayName(), 'status' => $i->getStatus(), 'createdAt' => $i->getCreatedAt()->format('c')],
+			'identity' => ['id' => (int)$i->getId(), 'email' => $i->getEmail(), 'displayName' => $i->getDisplayName(), 'status' => $i->getStatus(), 'ncUid' => $i->getNcUid(), 'ncUidMismatch' => (bool)$i->getNcUidMismatch(), 'createdAt' => $i->getCreatedAt()->format('c')],
 			'memberships' => $members,
 			'devices' => $devices,
 			'messages' => $msgs,
+			'syncBindings' => $bindings,
 		];
 	}
 
 	/** Erase: anonymise identity, drop credentials; optionally purge messages. */
 	public function erase(string $actor, int $identityId, bool $deleteMessages): void
 	{
+		// US-S07 cascade first: shares revoked + binding rows dropped +
+		// nc_uid cleared — BEFORE the anonymising transaction. The attached
+		// NC user is never touched (D-B08/NN-01).
+		$this->syncBindings?->cascadeErase($actor, $identityId);
 		$this->db->beginTransaction();
 		try {
 			$i = $this->identities->find($identityId);

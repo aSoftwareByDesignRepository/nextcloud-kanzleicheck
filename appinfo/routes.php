@@ -68,6 +68,16 @@ return [
 		['name' => 'staffApi#orgDocuments', 'url' => '/api/portal/orgs/{orgId}/documents', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		['name' => 'staffApi#publishUpload', 'url' => '/api/portal/uploads/{id}/publish', 'verb' => 'POST', 'requirements' => ['id' => '\d+']],
 		['name' => 'staffApi#setup', 'url' => '/api/portal/setup', 'verb' => 'GET'],
+		// Desktop-Sync (nc-user-binding, §9.3): mutations canManageClients, reads door-admitted
+		['name' => 'staffApi#syncList', 'url' => '/api/portal/orgs/{id}/sync', 'verb' => 'GET', 'requirements' => ['id' => '\d+']],
+		['name' => 'staffApi#syncEnable', 'url' => '/api/portal/orgs/{id}/sync', 'verb' => 'POST', 'requirements' => ['id' => '\d+']],
+		['name' => 'staffApi#ncBind', 'url' => '/api/portal/identities/{id}/nc-bind', 'verb' => 'PUT', 'requirements' => ['id' => '\d+']],
+		['name' => 'staffApi#ncUnbind', 'url' => '/api/portal/identities/{id}/nc-bind', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
+		['name' => 'staffApi#ncSuggest', 'url' => '/api/portal/identities/{id}/nc-suggest', 'verb' => 'GET', 'requirements' => ['id' => '\d+']],
+		['name' => 'staffApi#syncPerms', 'url' => '/api/portal/sync/{bid}/perms', 'verb' => 'PUT', 'requirements' => ['bid' => '\d+']],
+		['name' => 'staffApi#syncRepair', 'url' => '/api/portal/sync/{bid}/repair', 'verb' => 'POST', 'requirements' => ['bid' => '\d+']],
+		['name' => 'staffApi#syncRevoke', 'url' => '/api/portal/sync/{bid}', 'verb' => 'DELETE', 'requirements' => ['bid' => '\d+']],
+		['name' => 'staffApi#searchUsers', 'url' => '/api/portal/users/search', 'verb' => 'GET'],
 		// client portal pages (guest)
 		['name' => 'portal#login', 'url' => '/portal/login', 'verb' => 'GET'],
 		['name' => 'portal#index', 'url' => '/portal', 'verb' => 'GET'],

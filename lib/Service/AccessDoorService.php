@@ -32,6 +32,7 @@ class AccessDoorService
 		private readonly IGroupManager $groupManager,
 		private readonly IUserManager $userManager,
 		private readonly SettingsService $settings,
+		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncBindings = null,
 	) {
 	}
 
@@ -147,6 +148,12 @@ class AccessDoorService
 			if ($uid === '' || !$this->userManager->userExists($uid)) {
 				return ['ok' => false, 'error' => 'user:' . $uid];
 			}
+		}
+		// D-B12/NN-10: the fail-closed guard applies at BOTH write edges —
+		// flipping to Open while non-terminal sync bindings exist would make
+		// every bound client uid staff instantly.
+		if (!$restricted && $this->syncBindings !== null && $this->syncBindings->countNonTerminal() > 0) {
+			return ['ok' => false, 'error' => 'SYNC_DOOR_BINDINGS_LIVE'];
 		}
 		$this->settings->setBool('door_restricted', $restricted);
 		$this->settings->setList('allowed_groups', array_values(array_unique(array_map('strval', $groups))));

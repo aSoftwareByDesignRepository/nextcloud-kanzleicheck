@@ -39,6 +39,7 @@ class UploadService
 		private readonly UploadMapper $uploads,
 		private readonly SettingsService $settings,
 		private readonly DocumentService $docs,
+		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncBindings = null,
 	) {
 	}
 
@@ -114,12 +115,49 @@ class UploadService
 		return ['upload' => $u, 'duplicate' => $dup];
 	}
 
+	/**
+	 * US-S14 integrity re-verify: on orgs with an ACTIVE rw sync binding the
+	 * client can write into Eingang via desktop sync — the ingest sha256 is
+	 * therefore re-checked at every staff review transition and open/download.
+	 * ro bindings and unbound orgs pay no re-hash cost (AC-4).
+	 */
+	public function verifyIntegrity(Upload $u): Upload
+	{
+		if ($this->syncBindings === null || $this->syncBindings->countActiveRwByOrg((int)$u->getOrgId()) === 0) {
+			return $u;
+		}
+		$node = $this->docs->findNodeById((int)$u->getFileId());
+		$new = 'ok';
+		if (!$node instanceof File) {
+			$new = 'deleted_after_upload';
+		} else {
+			try {
+				$new = $this->docs->hashFile($node) === $u->getSha256() ? 'ok' : 'modified_after_upload';
+			} catch (\Throwable) {
+				$new = 'deleted_after_upload';
+			}
+		}
+		if ($new !== $u->getIntegrity()) {
+			$u->setIntegrity($new);
+			$u = $this->uploads->update($u);
+		}
+		return $u;
+	}
+
 	/** Staff queue review: neu → eingesehen → abgelegt (never backwards). */
-	public function review(int $uploadId, string $actor, string $state): Upload
+	public function review(int $uploadId, string $actor, string $state, bool $reack = false): Upload
 	{
 		$u = $this->uploads->find($uploadId);
 		if ($u === null) {
 			throw new \OCA\PortalCheck\Exception\NotFoundException();
+		}
+		$u = $this->verifyIntegrity($u);
+		if ($u->getIntegrity() === 'deleted_after_upload') {
+			throw new ApiException(409, 'UPLOAD_DELETED', 'file was deleted after upload');
+		}
+		if ($u->getIntegrity() === 'modified_after_upload' && !$reack) {
+			// blocked until explicit re-acknowledgement — never a silent pass (NN-09)
+			throw new ApiException(409, 'UPLOAD_MODIFIED', 'file was modified after upload — re-acknowledge to continue');
 		}
 		$order = ['neu' => 0, 'eingesehen' => 1, 'abgelegt' => 2];
 		if (!isset($order[$state]) || $order[$state] <= $order[$u->getState()]) {

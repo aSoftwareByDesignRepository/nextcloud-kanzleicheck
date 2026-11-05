@@ -28,6 +28,12 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(\DateTimeImmutable $createdAt)
  * @method ?\DateTimeImmutable getLastLoginAt()
  * @method void setLastLoginAt(?\DateTimeImmutable $lastLoginAt)
+ * @method ?string getNcUid()
+ * @method void setNcUid(?string $ncUid)
+ * @method ?string getNcUidOrigin()
+ * @method void setNcUidOrigin(?string $ncUidOrigin)
+ * @method bool getNcUidMismatch()
+ * @method void setNcUidMismatch(bool $ncUidMismatch)
  */
 class Identity extends Entity
 {
@@ -37,6 +43,9 @@ class Identity extends Entity
 	protected $locale;
 	protected $createdAt;
 	protected $lastLoginAt;
+	protected $ncUid;
+	protected $ncUidOrigin;
+	protected $ncUidMismatch;
 
 	public function __construct()
 	{
@@ -47,5 +56,8 @@ class Identity extends Entity
 		$this->addType('locale', 'string');
 		$this->addType('createdAt', 'datetime_immutable');
 		$this->addType('lastLoginAt', 'datetime_immutable');
+		$this->addType('ncUid', 'string');
+		$this->addType('ncUidOrigin', 'string');
+		$this->addType('ncUidMismatch', 'boolean');
 	}
 }

@@ -40,6 +40,7 @@ class Application extends App implements IBootstrap
 				$c->get(\OCP\IDBConnection::class),
 				$c->get(\OCP\IConfig::class),
 				$c->get(IRootFolder::class),
+				$c->get(\OCP\Share\IManager::class),
 			);
 		});
 		// afterException iterates in reverse — generic envelope registers FIRST.

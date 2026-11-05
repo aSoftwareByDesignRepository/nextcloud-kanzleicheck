@@ -299,14 +299,18 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$csv = (string)$this->request->getParam('csv', '');
 		$dry = $this->request->getParam('dryRun', '1') !== '0';
 		$rows = ImportService::parse($csv);
+		$sync = $this->syncBindings();
 		if ($dry) {
-			return $this->ok(['rows' => $this->import->plan($rows, $this->orgService, $this->identities), 'dryRun' => true]);
+			return $this->ok(['rows' => $this->import->plan($rows, $this->orgService, $this->identities, fn(string $u, string $e): string => $sync->classifyNcUid($u, $e)), 'dryRun' => true]);
 		}
 		$sendInvites = $this->request->getParam('sendInvitations');
 		$sendInvites = $sendInvites === true || $sendInvites === '1' || $sendInvites === 'true';
 		$outbox = \OCP\Server::get(\OCA\PortalCheck\Service\MailOutboxService::class);
 		$applied = 0;
+		$syncRows = [];
+		$line = 1;
 		foreach ($rows as $r) {
+			$line++;
 			$orgName = trim((string)($r['org_name'] ?? ''));
 			$email = IdentityService::normalizeEmail((string)$r['email'] ?? '');
 			if ($orgName === '' || !IdentityService::isValidEmail($email)) {
@@ -319,6 +323,24 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			}
 			$identity = $this->identities->upsert($email, (string)($r['display_name'] ?? $email));
 			$this->identities->addMembership((int)$identity->getId(), (int)$org->getId(), $this->staffUid);
+			$ncUid = trim((string)($r['nc_uid'] ?? ''));
+			if ($ncUid !== '') {
+				// AF-06: re-classify at write time — door/user state may have
+				// changed since the dry run; blocked rows are reported, never
+				// silently skipped.
+				$bucket = $sync->classifyNcUid($ncUid, $email);
+				if ($bucket !== 'ok') {
+					$syncRows[] = ['line' => $line, 'email' => $email, 'sync' => $bucket];
+				} else {
+					try {
+						$sync->attach($this->staffUid, (int)$identity->getId(), $ncUid);
+						$sync->enable($this->staffUid, (int)$org->getId(), (int)$identity->getId());
+						$syncRows[] = ['line' => $line, 'email' => $email, 'sync' => 'ok'];
+					} catch (\Throwable $e) {
+						$syncRows[] = ['line' => $line, 'email' => $email, 'sync' => $e instanceof ApiException ? $e->getErrorCode() : 'sync_failed'];
+					}
+				}
+			}
 			if ($sendInvites) {
 				$outbox->enqueue($email, 'invite',
 					'invite:' . $email . ':' . $org->getId(),
@@ -330,7 +352,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		if ($sendInvites) {
 			$outbox->drain(20);
 		}
-		return $this->ok(['applied' => $applied]);
+		return $this->ok(['applied' => $applied, 'sync' => $syncRows]);
 	}
 
 	// ── settings & door ──────────────────────────────────────────────
@@ -422,6 +444,11 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			is_array($p['appAdmins'] ?? null) ? $p['appAdmins'] : [],
 		);
 		if (!$res['ok']) {
+			if ($res['error'] === 'SYNC_DOOR_BINDINGS_LIVE') {
+				// D-B12: opening the door while bindings exist is refused —
+				// actionable error naming the fix, never a bare 400.
+				throw new ApiException(409, 'SYNC_DOOR_BINDINGS_LIVE', 'active sync bindings exist — revoke them before opening the door');
+			}
 			throw new ValidationException('VALIDATION_FAILED', [$res['error'] => 'unknown']);
 		}
 		return $this->ok(['saved' => true]);
@@ -443,7 +470,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$o = $this->orgService->mustGet($id);
 		$members = array_map(function ($m) {
 			$i = $this->identityMapper->find((int)$m->getIdentityId());
-			return ['identityId' => (int)$m->getIdentityId(), 'role' => $m->getRole(), 'email' => $i?->getEmail(), 'displayName' => $i?->getDisplayName(), 'status' => $i?->getStatus()];
+			return ['identityId' => (int)$m->getIdentityId(), 'role' => $m->getRole(), 'email' => $i?->getEmail(), 'displayName' => $i?->getDisplayName(), 'status' => $i?->getStatus(), 'ncUid' => $i?->getNcUid(), 'ncUidMismatch' => (bool)($i?->getNcUidMismatch())];
 		}, $this->members->findByOrg($id));
 		return $this->ok(['org' => [
 			'id' => $id, 'name' => $o->getName(), 'ref' => $o->getRef(), 'kind' => $o->getKind(),
@@ -453,7 +480,9 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		'invoices' => $o->getPcCustId() !== null ? $this->integrations->invoicesForOrg((int)$o->getPcCustId()) : [],
 		'invoiceAvailable' => $this->integrations->invoiceAvailable() && $o->getPcCustId() !== null,
 		'pcCustId' => $o->getPcCustId(),
-		'contacts' => $this->contactMapper()->findForOrg($id)]);
+		'contacts' => $this->contactMapper()->findForOrg($id),
+		'sync' => $this->syncBindings()->listForOrg($id),
+		'doorRestricted' => $this->door->isRestricted()]);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]
@@ -471,6 +500,9 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	public function removeMember(int $id, int $identityId): JSONResponse
 	{
 		$this->org($id);
+		// MH-15: the member's sync binding is revoked BEFORE the membership
+		// row drops — the share must die before the binding loses its context.
+		$this->syncBindings()->cascadeMemberRemove($this->staffUid, $identityId, $id);
 		if (!$this->members->deleteByIdentityAndOrg($identityId, $id)) {
 			throw new NotFoundException();
 		}
@@ -480,9 +512,132 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function offboardOrg(int $id): JSONResponse
 	{
+		$this->org($id);
+		// US-S06/ZF-03: sweep once before the state flip and once after —
+		// a binding enabled mid-cascade is still caught. Failures surface as
+		// a partial-offboard warning, never silently.
+		$first = $this->syncBindings()->cascadeOffboard($this->staffUid, $id);
 		$this->orgService->offboard($this->staffUid, $id);
 		$this->chat->archiveForOrg($id);
+		$second = $this->syncBindings()->cascadeOffboard($this->staffUid, $id);
+		$failed = $first['failed'] + $second['failed'];
+		if ($failed > 0) {
+			return $this->ok(['offboarded' => true, 'partialWarning' => 'sync_revoke_failed', 'failed' => $failed]);
+		}
 		return new JSONResponse(null, 204);
+	}
+
+	// ── Desktop-Sync (nc-user-binding, staff surface) ────────────────
+
+	/** Bindings of an org with live (rate-capped) verify — door-admitted read. */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function syncList(int $id): JSONResponse
+	{
+		$this->org($id);
+		return $this->ok(['bindings' => $this->syncBindings()->listForOrg($id), 'doorRestricted' => $this->door->isRestricted()]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function syncEnable(int $id): JSONResponse
+	{
+		$this->requireAdmin();
+		$identityId = $this->strictId($this->request->getParam('identityId'));
+		if ($identityId === null) {
+			throw new ValidationException('VALIDATION_FAILED', ['identityId' => 'required']);
+		}
+		$b = $this->syncBindings()->enable($this->staffUid, $id, $identityId, (string)$this->request->getParam('perms', 'rw'));
+		return $this->ok(['binding' => $this->bindingJson($b)], 201);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function ncBind(int $id): JSONResponse
+	{
+		$this->requireAdmin();
+		$i = $this->syncBindings()->attach(
+			$this->staffUid, $id,
+			(string)$this->request->getParam('ncUid', ''),
+			$this->boolParam('acceptMismatch'),
+			$this->boolParam('acceptShared'),
+		);
+		return $this->ok(['identity' => ['id' => $id, 'ncUid' => $i->getNcUid(), 'ncUidMismatch' => (bool)$i->getNcUidMismatch()]]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function ncUnbind(int $id): JSONResponse
+	{
+		$this->requireAdmin();
+		$this->syncBindings()->unbind($this->staffUid, $id);
+		return new JSONResponse(null, 204);
+	}
+
+	/** Email-match suggestion + current binding for the setup dialog (D-B21). */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function ncSuggest(int $id): JSONResponse
+	{
+		$identity = $this->identityMapper->find($id);
+		if ($identity === null) {
+			throw new NotFoundException();
+		}
+		return $this->ok([
+			'suggest' => $this->syncBindings()->suggestFor($identity),
+			'ncUid' => $identity->getNcUid(),
+			'ncUidMismatch' => (bool)$identity->getNcUidMismatch(),
+			'doorRestricted' => $this->door->isRestricted(),
+		]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function syncPerms(int $bid): JSONResponse
+	{
+		$this->requireAdmin();
+		$b = $this->syncBindings()->setPerms($this->staffUid, $bid, (string)$this->request->getParam('perms', ''));
+		return $this->ok(['binding' => $this->bindingJson($b)]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function syncRepair(int $bid): JSONResponse
+	{
+		$this->requireAdmin();
+		$b = $this->syncBindings()->repair($this->staffUid, $bid);
+		return $this->ok(['binding' => $this->bindingJson($b)]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function syncRevoke(int $bid): JSONResponse
+	{
+		$this->requireAdmin();
+		$this->syncBindings()->revoke($this->staffUid, $bid);
+		return new JSONResponse(null, 204);
+	}
+
+	/** People-search picker for the bind dialog — directory pick only, no raw uid typing. */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function searchUsers(): JSONResponse
+	{
+		$q = trim((string)$this->request->getParam('q', ''));
+		$out = [];
+		if ($q !== '') {
+			foreach ($this->userManager->search($q, 20) as $u) {
+				$out[] = ['uid' => $u->getUID(), 'displayName' => $u->getDisplayName(), 'email' => $u->getEMailAddress(), 'staff' => $this->door->isStaff($u->getUID())];
+			}
+		}
+		return $this->ok(['users' => $out]);
+	}
+
+	private function syncBindings(): \OCA\PortalCheck\Service\SyncBindingService
+	{
+		return \OCP\Server::get(\OCA\PortalCheck\Service\SyncBindingService::class);
+	}
+
+	private function bindingJson(\OCA\PortalCheck\Db\SyncBinding $b): array
+	{
+		return ['bindingId' => (int)$b->getId(), 'identityId' => (int)$b->getIdentityId(), 'orgId' => (int)$b->getOrgId(), 'perms' => $b->getPerms(), 'state' => $b->getState()];
+	}
+
+	private function boolParam(string $key): bool
+	{
+		$v = $this->request->getParam($key);
+		return $v === true || $v === '1' || $v === 'true';
 	}
 
 	// ── uploads queue ────────────────────────────────────────────────
@@ -501,7 +656,7 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			'id' => (int)$u->getId(), 'orgId' => (int)$u->getOrgId(), 'orgName' => $orgNames[(int)$u->getOrgId()] ?? '',
 			'fileName' => $u->getFileName(), 'size' => (int)$u->getSizeBytes(), 'source' => $u->getSource(),
 			'uploader' => $this->actors->displayName($u->getUploader()), 'state' => $u->getState(),
-			'duplicate' => (bool)$u->getIsDuplicate(), 'createdAt' => $u->getCreatedAt()->format('c'), 'note' => $u->getNote(),
+			'duplicate' => (bool)$u->getIsDuplicate(), 'integrity' => $u->getIntegrity(), 'createdAt' => $u->getCreatedAt()->format('c'), 'note' => $u->getNote(),
 		], $rows);
 		return $this->ok(['uploads' => $out]);
 	}
@@ -509,8 +664,8 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function reviewUpload(int $id): JSONResponse
 	{
-		$u = $this->uploadService->review($id, $this->staffUid, (string)$this->request->getParam('state', ''));
-		return $this->ok(['upload' => ['id' => (int)$u->getId(), 'state' => $u->getState()]]);
+		$u = $this->uploadService->review($id, $this->staffUid, (string)$this->request->getParam('state', ''), $this->boolParam('reack'));
+		return $this->ok(['upload' => ['id' => (int)$u->getId(), 'state' => $u->getState(), 'integrity' => $u->getIntegrity()]]);
 	}
 
 	// ── upload links ─────────────────────────────────────────────────
@@ -979,6 +1134,15 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			throw new NotFoundException();
 		}
 		$this->org((int)$u->getOrgId());
+		// US-S14: on rw-bound orgs the ingest sha256 is re-verified at staff
+		// open — a sync-share tamper flags, never silently passes.
+		$u = $this->uploadService->verifyIntegrity($u);
+		if ($u->getIntegrity() === 'deleted_after_upload') {
+			throw new ApiException(409, 'UPLOAD_DELETED', 'file was deleted after upload');
+		}
+		if ($u->getIntegrity() === 'modified_after_upload' && !$this->boolParam('reack')) {
+			throw new ApiException(409, 'UPLOAD_MODIFIED', 'file was modified after upload — re-acknowledge to open anyway');
+		}
 		$node = \OCP\Server::get(\OCA\PortalCheck\Service\DocumentService::class)
 			->orgNodeForOrg((int)$u->getOrgId(), (int)$u->getFileId(), null);
 		$stream = $node->fopen('r');

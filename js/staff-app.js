@@ -373,6 +373,7 @@ async function openOrg(id){
     const rr=await post('/api/portal/orgs/'+id+'/members',{email:f.email,displayName:f.displayName});
     status(rr.success?t('Added.'):(rr.message||t('Error')));if(rr.success)openOrg(id);
   }));
+  renderSyncSection(id,body,r.data);
   body.appendChild(h('<h2>'+esc(t('Upload links'))+'</h2><div id="ptl-ulinks"></div>'));
   const ul=document.getElementById('ptl-ulinks');
   (r.data.ulinks||[]).forEach(l=>{
@@ -448,6 +449,128 @@ async function openOrg(id){
     if(!inv.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No invoices.'))+'</p>'));
     else body.appendChild(h('<div class="ptl-card">'+inv.map(i=>'<div class="ptl-kvrow"><span>'+esc(i.ref||('#'+i.id))+(i.overdue?' ⚠':'')+'</span><b>'+esc(i.status)+'</b></div>').join('')+'</div>'));
   }
+}
+
+/* ── Desktop-Sync (nc-user-binding §7) ──
+   One control per member: toggle + chip. Three display states only
+   (D-B20): Aktiv | Ausstehend | Problem+repair. The two-layer model
+   (identity bind vs org share) never leaks into the UI (D-B19). */
+const SYNC_CHIP={
+  active:['ok',()=>t('Active')],
+  pending_accept:['warn',()=>t('Pending (recipient must accept the share)')],
+  disabled:['muted',()=>t('Paused by you')],
+  broken_user:['bad',()=>t('Problem — account missing or disabled')],
+  broken_share:['bad',()=>t('Problem — share missing')],
+  broken_perms:['bad',()=>t('Problem — permissions changed')],
+  staff_conflict:['bad',()=>t('Problem — account is staff')],
+};
+function syncChip(state){
+  const c=SYNC_CHIP[state]||['muted',()=>state];
+  const el=h('<span class="ptl-chip ptl-chip--'+c[0]+'"><span class="ptl-chip-label"></span></span>').firstElementChild;
+  el.querySelector('.ptl-chip-label').textContent=c[1]();
+  return el;
+}
+async function syncSetupDialog(orgId,member){
+  const s=await get('/api/portal/identities/'+member.identityId+'/nc-suggest');
+  if(!s.success){status(s.message||t('Error'));return;}
+  if(!s.data.doorRestricted){status(t('Desktop sync requires a restricted access door — see Settings → Access (door).'));return;}
+  if(s.data.ncUid){
+    // already bound (AC-3): show the bound account + inline unbind escape
+    const u=await confirmDlg(t('Already linked'),t('This person is linked to Nextcloud account')+' "'+s.data.ncUid+'". '+t('Unlink now?'));
+    if(u){const rr=await api('/api/portal/identities/'+member.identityId+'/nc-bind',{method:'DELETE'});status(rr.success?t('Unlinked.'):(rr.message||t('Error')));openOrg(orgId);}
+    return;
+  }
+  const dlg=document.createElement('dialog');dlg.className='ptl-dialog';
+  dlg.innerHTML='<form method="dialog" class="ptl-card"><h2>'+esc(t('Set up desktop sync'))+'</h2>'
+    +'<p class="ptl-muted">'+esc(t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.'))+'</p>'
+    +'<label class="ptl-label" for="sd-q">'+esc(t('Nextcloud account'))+'</label><input id="sd-q" class="ptl-input" autocomplete="off"><div id="sd-hits" class="ptl-list"></div><input id="sd-uid" type="hidden">'
+    +'<fieldset class="ptl-fieldset"><legend>'+esc(t('Access'))+'</legend>'
+    +'<label class="ptl-label"><input type="radio" name="sd-perms" value="rw" checked> '+esc(t('Read & write'))+'</label>'
+    +'<label class="ptl-label"><input type="radio" name="sd-perms" value="ro"> '+esc(t('Read only'))+'</label></fieldset>'
+    +'<p id="sd-err" class="ptl-field-error" role="alert" hidden></p>'
+    +'<div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary" disabled>'+esc(t('Link & enable'))+'</button></div></form>';
+  document.body.appendChild(dlg);
+  const q=dlg.querySelector('#sd-q'),hits=dlg.querySelector('#sd-hits'),uidI=dlg.querySelector('#sd-uid'),okB=dlg.querySelector('.ptl-btn--primary'),err=dlg.querySelector('#sd-err');
+  const sug=s.data.suggest;
+  const fill=async(term)=>{
+    const r=await get('/api/portal/users/search?q='+encodeURIComponent(term));
+    hits.innerHTML='';
+    ((r.data&&r.data.users)||[]).forEach(u=>{
+      const b=document.createElement('button');b.type='button';b.className='ptl-row';
+      b.textContent=u.displayName+' ('+u.uid+')'+(u.email?' — '+u.email:'')+(u.staff?' ⚠ '+t('staff'):'');
+      if(u.staff){b.disabled=true;b.title=t('Staff accounts cannot be linked');}
+      b.onclick=()=>{uidI.value=u.uid;q.value=u.displayName+' ('+u.uid+')';okB.disabled=false;hits.innerHTML='';};
+      hits.appendChild(b);
+    });
+  };
+  if(sug){uidI.value=sug.uid;q.value=sug.displayName+' ('+sug.uid+')';okB.disabled=false;}
+  let deb=null;q.addEventListener('input',()=>{clearTimeout(deb);uidI.value='';okB.disabled=true;deb=setTimeout(()=>fill(q.value),300);});
+  dlg.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();dlg.close('');}});
+  dlg.addEventListener('close',async()=>{
+    if(dlg.returnValue!=='ok'){dlg.remove();return;}
+    const perms=dlg.querySelector('input[name="sd-perms"]:checked').value;
+    const attempt=async(acceptMismatch,acceptShared)=>{
+      const r=await put('/api/portal/identities/'+member.identityId+'/nc-bind',{ncUid:uidI.value,acceptMismatch:acceptMismatch?'1':'0',acceptShared:acceptShared?'1':'0'});
+      if(r.success)return 'ok';
+      return r.error||'ERR';
+    };
+    const bindAndEnable=async()=>{
+      const res=await attempt(false,false);
+      if(res==='SYNC_EMAIL_MISMATCH'||res==='SYNC_UID_SHARED'){
+        // confirm gate stays inside the same dialog — the click IS the control
+        const warn=res==='SYNC_EMAIL_MISMATCH'?t('The account e-mail differs from the portal e-mail. Link anyway?'):t('This account is already linked to another person. Link anyway?');
+        if(!(await confirmDlg(t('Please confirm'),warn)))return 'aborted';
+        const again=await attempt(true,true);
+        if(again!=='ok')return again;
+      }else if(res!=='ok')return res;
+      const en=await post('/api/portal/orgs/'+orgId+'/sync',{identityId:member.identityId,perms});
+      return en.success?'ok':(en.error||'ERR');
+    };
+    const out=await bindAndEnable();
+    const msg={ok:t('Desktop sync enabled.'),SYNC_UID_UNKNOWN:t('Account not found.'),SYNC_UID_IS_STAFF:t('Staff accounts cannot be linked.'),SYNC_UID_DISABLED:t('Activate the account in user administration first.'),SYNC_ALREADY_BOUND:t('Already linked — unlink first.'),SYNC_NOT_BOUND:t('Link the account first.'),SYNC_ORG_OFFBOARDED:t('Client is offboarded.'),SYNC_DOOR_OPEN:t('Desktop sync requires a restricted access door.'),NO_SHARE_PERM:t('Check share permission on the documents folder.'),NO_DOCS_ROOT:t('Documents root is not configured.'),aborted:t('Cancelled.')}[out]||t('Error');
+    status(msg);
+    dlg.remove();
+    openOrg(orgId);
+  });
+  dlg.showModal();
+}
+function renderSyncSection(orgId,body,data){
+  body.appendChild(h('<h2>'+esc(t('Desktop sync'))+'</h2>'));
+  const sec=h('<div class="ptl-card"><p class="ptl-muted"></p><div class="ptl-sync-list"></div></div>').firstElementChild;
+  sec.querySelector('.ptl-muted').textContent=t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.');
+  body.appendChild(sec);
+  const list=sec.querySelector('.ptl-sync-list');
+  if(!data.doorRestricted){
+    const n=h('<p class="ptl-muted"></p>').firstElementChild;
+    n.textContent=t('Desktop sync is unavailable while the access door is open — restrict it under Settings → Access (door).');
+    list.appendChild(n);return; // proactive notice (US-S16), no dead-end error
+  }
+  const bindings={};(data.sync||[]).forEach(b=>bindings[b.identityId]=b);
+  const members=(data.members||[]).filter(m=>m.status==='active');
+  if(!members.length){list.appendChild(h('<p class="ptl-muted">'+esc(t('No contacts yet.'))+'</p>'));return;}
+  members.forEach(m=>{
+    const row=h('<div class="ptl-dev ptl-sync-row"></div>').firstElementChild;
+    const label=h('<span></span>').firstElementChild;
+    label.textContent=(m.displayName||m.email)+(m.ncUid?' — '+(m.ncDisplay||m.ncUid):'');
+    row.appendChild(label);
+    const b=bindings[m.identityId];
+    const wrap=h('<span class="ptl-actions"></span>').firstElementChild;
+    if(b){
+      wrap.appendChild(syncChip(b.state));
+      if(m.ncUidMismatch){const w=h('<span class="ptl-chip ptl-chip--warn"></span>').firstElementChild;w.textContent=t('e-mail differs');wrap.appendChild(w);}
+      if(['broken_share','broken_perms'].includes(b.state)){
+        const rp=btn(t('Repair'),async()=>{const rr=await post('/api/portal/sync/'+b.bindingId+'/repair',{});status(rr.success?t('Repaired.'):(rr.message||t('Error')));openOrg(orgId);},true);rp.className='ptl-btn ptl-btn--sm';wrap.appendChild(rp);
+      }
+      const tog=btn(t('Off'),async()=>{
+        if(!(await confirmDlg(t('Turn off sync'),t('The client loses folder access via their Nextcloud account. Continue?'))))return;
+        const rr=await api('/api/portal/sync/'+b.bindingId,{method:'DELETE'});status(rr.success?t('Sync off.'):(rr.message||t('Error')));openOrg(orgId);
+      });tog.className='ptl-btn ptl-btn--sm';wrap.appendChild(tog);
+    }else if(ME_ADMIN){
+      const st=btn(t('Set up'),()=>syncSetupDialog(orgId,m),true);st.className='ptl-btn ptl-btn--sm';wrap.appendChild(st);
+    }
+    row.appendChild(wrap);
+    list.appendChild(row);
+  });
 }
 
 /* ── Uploads ── */

@@ -101,7 +101,10 @@ class SettingsService
 			try {
 				$value = 'v2:' . $this->crypto->encrypt($value);
 			} catch (\Throwable $e) {
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck secret encrypt failed — storing unencrypted', ['key' => $key, 'e' => $e->getMessage()]);
+				// fail closed: a secret we cannot encrypt must never reach the
+				// appconfig table in plaintext — refuse the write instead.
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('portalcheck secret encrypt failed — refusing write', ['key' => $key, 'e' => $e->getMessage()]);
+				throw new \OCA\PortalCheck\Exception\ApiException(500, 'SECRET_ENCRYPT_FAILED', 'secret could not be encrypted — nothing stored');
 			}
 		}
 		$this->set($key, $value);

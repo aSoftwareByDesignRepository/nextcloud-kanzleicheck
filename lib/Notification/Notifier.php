@@ -37,6 +37,7 @@ class Notifier implements INotifier
 		$text = match ($notification->getSubject()) {
 			'portal_message' => $l->t('New client message'),
 			'portal_upload' => $l->t('New upload'),
+			'portal_sync_break' => $l->t('Desktop sync problem'),
 			default => $l->t('Portal update'),
 		};
 		$notification->setParsedSubject($text)

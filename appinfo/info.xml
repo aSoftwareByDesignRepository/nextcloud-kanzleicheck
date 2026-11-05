@@ -76,7 +76,7 @@ und jedes Team, das externe Kunden betreut.
 - MySQL/MariaDB, PostgreSQL oder SQLite
 - Funktionierende Ausgangsmail-Konfiguration in Nextcloud (Login-Codes)
 	]]></description>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 	<licence>agpl</licence>
 	<author>Alexander Mäule</author>
 	<namespace>PortalCheck</namespace>
@@ -96,6 +96,7 @@ und jedes Team, das externe Kunden betreut.
 		<job>OCA\PortalCheck\BackgroundJob\SchedulerJob</job>
 		<job>OCA\PortalCheck\BackgroundJob\RetentionJob</job>
 		<job>OCA\PortalCheck\BackgroundJob\ChunkCleanupJob</job>
+		<job>OCA\PortalCheck\BackgroundJob\SyncReconcileJob</job>
 	</background-jobs>
 	<repair-steps>
 		<uninstall>

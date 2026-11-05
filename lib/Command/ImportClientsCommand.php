@@ -53,18 +53,27 @@ class ImportClientsCommand extends Command
 			$output->writeln('<error>' . $e->getMessage() . '</error>');
 			return 1;
 		}
+		$sync = \OCP\Server::get(\OCA\PortalCheck\Service\SyncBindingService::class);
 		if ($input->getOption('dry-run')) {
-			$plan = $this->import->plan($rows, $this->orgs, $this->identities);
+			$plan = $this->import->plan($rows, $this->orgs, $this->identities, fn(string $u, string $e): string => $sync->classifyNcUid($u, $e));
 			foreach ($plan as $p) {
-				$output->writeln(sprintf('line %d: %s → %s', $p['line'], $p['email'], $p['action']));
+				$line = sprintf('line %d: %s → %s', $p['line'], $p['email'], $p['action']);
+				if (isset($p['sync'])) {
+					$line .= ' [sync: ' . $p['sync'] . ']';
+				}
+				$output->writeln($line);
 			}
 			$output->writeln('<info>' . count($plan) . ' row(s), dry run — no writes.</info>');
 			return 0;
 		}
 		$applied = 0;
 		$invites = 0;
+		$synced = 0;
+		$syncBlocked = 0;
+		$line = 1;
 		foreach (array_chunk($rows, 100) as $batch) {
 			foreach ($batch as $r) {
+				$line++;
 				$orgName = trim((string)($r['org_name'] ?? ''));
 				$email = IdentityService::normalizeEmail((string)($r['email'] ?? ''));
 				if ($orgName === '' || !IdentityService::isValidEmail($email)) {
@@ -78,6 +87,24 @@ class ImportClientsCommand extends Command
 				$isNew = $this->identities->activeByEmail($email) === null;
 				$identity = $this->identities->upsert($email, (string)($r['display_name'] ?? $email));
 				$this->identities->addMembership((int)$identity->getId(), (int)$org->getId(), 'system:import');
+				$ncUid = trim((string)($r['nc_uid'] ?? ''));
+				if ($ncUid !== '') {
+					$bucket = $sync->classifyNcUid($ncUid, $email);
+					if ($bucket !== 'ok') {
+						$syncBlocked++;
+						$output->writeln('<comment>line ' . $line . ': sync blocked (' . $bucket . ') for ' . $email . '</comment>');
+					} else {
+						try {
+							$sync->attach('system:import', (int)$identity->getId(), $ncUid);
+							$sync->enable('system:import', (int)$org->getId(), (int)$identity->getId());
+							$synced++;
+						} catch (\Throwable $e) {
+							$syncBlocked++;
+							$code = $e instanceof \OCA\PortalCheck\Exception\ApiException ? $e->getErrorCode() : 'sync_failed';
+							$output->writeln('<comment>line ' . $line . ': sync failed (' . $code . ') for ' . $email . '</comment>');
+						}
+					}
+				}
 				if ($isNew && $input->getOption('send-invites')) {
 					$this->outbox->enqueue($email, 'invite', 'invite:' . $email,
 						['portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')], 'de');
@@ -86,7 +113,7 @@ class ImportClientsCommand extends Command
 				$applied++;
 			}
 		}
-		$output->writeln('<info>' . $applied . ' row(s) applied' . ($invites > 0 ? ', ' . $invites . ' invitation(s) queued' : '') . '.</info>');
+		$output->writeln('<info>' . $applied . ' row(s) applied' . ($invites > 0 ? ', ' . $invites . ' invitation(s) queued' : '') . (($synced + $syncBlocked) > 0 ? ', ' . $synced . ' sync binding(s), ' . $syncBlocked . ' blocked' : '') . '.</info>');
 		return 0;
 	}
 }

@@ -71,6 +71,19 @@ class IdentityMapper extends QBMapper
 		}
 	}
 
+	/** Identity bound to a given NC uid (attach binding), or null. */
+	public function findByNcUid(string $ncUid): ?Identity
+	{
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')->from($this->getTableName())
+			->where($qb->expr()->eq('nc_uid', $qb->createNamedParameter($ncUid)));
+		try {
+			return $this->findEntity($qb);
+		} catch (DoesNotExistException) {
+			return null;
+		}
+	}
+
 	/** @return list<Identity> */
 	public function search(string $term, int $limit = 50, int $offset = 0): array
 	{

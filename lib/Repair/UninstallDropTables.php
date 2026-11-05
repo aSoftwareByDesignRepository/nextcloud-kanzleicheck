@@ -63,6 +63,7 @@ final class UninstallDropTables implements IRepairStep
 		'ptl_req_tpl',
 		'ptl_req_tpl_org',
 		'ptl_session',
+		'ptl_sync',
 		'ptl_task',
 		'ptl_ulink',
 		'ptl_upload',
@@ -73,6 +74,7 @@ final class UninstallDropTables implements IRepairStep
 		private readonly IDBConnection $connection,
 		private readonly IConfig $config,
 		private readonly IRootFolder $rootFolder,
+		private readonly ?\OCP\Share\IManager $shareManager = null,
 	) {
 	}
 
@@ -98,6 +100,9 @@ final class UninstallDropTables implements IRepairStep
 
 	private function dropAllTablesAndMetadata(IOutput $output): void
 	{
+		// GAC-7/US-S11: every live binding share is revoked BEFORE ptl_sync
+		// drops — app removal must leave zero dangling shares.
+		$this->revokeBindingShares($output);
 		$provider = $this->connection->getDatabaseProvider();
 		$fkChecksDisabled = false;
 		if ($provider === IDBConnection::PLATFORM_MYSQL) {
@@ -140,5 +145,37 @@ final class UninstallDropTables implements IRepairStep
 		$prefix = (string)$this->config->getSystemValue('dbtableprefix', 'oc_');
 		$this->connection->executeStatement('DROP TABLE IF EXISTS ' . $prefix . $logicalTable);
 		return true;
+	}
+
+	private function revokeBindingShares(IOutput $output): void
+	{
+		if ($this->shareManager === null || !$this->connection->tableExists('ptl_sync')) {
+			return;
+		}
+		$revoked = 0;
+		try {
+			$qb = $this->connection->getQueryBuilder();
+			$qb->select('s.share_id', 'i.nc_uid')->from('ptl_sync', 's')
+				->leftJoin('s', 'ptl_identity', 'i', 'i.id = s.identity_id')
+				->where($qb->expr()->neq('s.state', $qb->createNamedParameter('revoked')));
+			foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
+				$shareId = (string)($row['share_id'] ?? '');
+				$uid = (string)($row['nc_uid'] ?? '');
+				if ($shareId === '' || $uid === '') {
+					continue;
+				}
+				try {
+					$this->shareManager->deleteShare($this->shareManager->getShareById($shareId, $uid));
+					$revoked++;
+				} catch (\Throwable) {
+					// already gone — uninstall tolerates it
+				}
+			}
+		} catch (\Throwable) {
+			// join against a partially-migrated tree must not block removal
+		}
+		if ($revoked > 0) {
+			$output->info(sprintf('portalcheck: revoked %d binding share(s) before table drop.', $revoked));
+		}
 	}
 }

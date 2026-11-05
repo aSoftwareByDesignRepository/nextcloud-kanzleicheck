@@ -40,6 +40,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setReviewedBy(?string $reviewedBy)
  * @method ?\DateTimeImmutable getReviewedAt()
  * @method void setReviewedAt(?\DateTimeImmutable $reviewedAt)
+ * @method string getIntegrity()
+ * @method void setIntegrity(string $integrity)
  * @method \DateTimeImmutable getCreatedAt()
  * @method void setCreatedAt(\DateTimeImmutable $createdAt)
  */
@@ -57,6 +59,7 @@ class Upload extends Entity
 	protected $state;
 	protected $reviewedBy;
 	protected $reviewedAt;
+	protected $integrity;
 	protected $createdAt;
 
 	public function __construct()
@@ -74,6 +77,7 @@ class Upload extends Entity
 		$this->addType('state', 'string');
 		$this->addType('reviewedBy', 'string');
 		$this->addType('reviewedAt', 'datetime_immutable');
+		$this->addType('integrity', 'string');
 		$this->addType('createdAt', 'datetime_immutable');
 	}
 }
