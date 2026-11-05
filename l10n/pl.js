@@ -125,6 +125,7 @@ OC.L10N.register(
 	"OTP validity (minutes)" : "Ważność kodu (minuty)",
 	"OVERDUE" : "PO TERMINIE",
 	"Offboard" : "Dezaktywuj",
+	"Offboarded — but" : "Dezaktywowano — ale",
 	"Open" : "Otwórz",
 	"Open approvals" : "Oczekujące zatwierdzenia",
 	"Other" : "Inne",
@@ -358,6 +359,7 @@ OC.L10N.register(
 	"Unlink now?" : "Usunąć powiązanie teraz?",
 	"Unlinked." : "Powiązanie usunięte.",
 	"e-mail differs" : "e-mail się różni",
-	"staff" : "pracownik"
+	"staff" : "pracownik",
+	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "zsynchronizowanych udostępnień nie można było unieważnić. Otwórz poniżej Synchronizację z komputerem i unieważnij je ponownie."
 	}
 );

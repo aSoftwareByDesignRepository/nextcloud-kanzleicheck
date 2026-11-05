@@ -154,3 +154,31 @@ dialog .ptl-btn--primary:active,
 	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	color: var(--color-primary-element-text, #fff) !important;
 }
+
+/* ── Forced-colors affordance (WCAG 1.4.11, ptl-v15) ─────────────────
+ * Under forced-colors:active the primary fill collapses and the inherited
+ * transparent border leaves the CTA as bare text. Pin a visible system-colour
+ * boundary on every .ptl-btn variant — never forced-color-adjust:none.
+ * !important is required: the armor above carries !important border-color and
+ * would otherwise defeat this rule. */
+@media (forced-colors: active) {
+	.ptl-btn,
+	.ptl-app .ptl-btn,
+	.ptl-portal .ptl-btn,
+	.ptl-dialog .ptl-btn,
+	dialog .ptl-btn,
+	[role="dialog"] .ptl-btn,
+	[role="alertdialog"] .ptl-btn {
+		border: 1px solid ButtonText !important;
+	}
+	.ptl-btn:focus-visible,
+	.ptl-app .ptl-btn:focus-visible,
+	.ptl-portal .ptl-btn:focus-visible,
+	.ptl-dialog .ptl-btn:focus-visible,
+	dialog .ptl-btn:focus-visible,
+	[role="dialog"] .ptl-btn:focus-visible,
+	[role="alertdialog"] .ptl-btn:focus-visible {
+		outline: 2px solid ButtonText;
+		outline-offset: 2px;
+	}
+}

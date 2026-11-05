@@ -125,6 +125,7 @@ OC.L10N.register(
 	"OTP validity (minutes)" : "Kodens gyldighet (minutter)",
 	"OVERDUE" : "FORFALT",
 	"Offboard" : "Deaktivere",
+	"Offboarded — but" : "Deaktivert — men",
 	"Open" : "Åpne",
 	"Open approvals" : "Åpne godkjenninger",
 	"Other" : "Annet",
@@ -358,6 +359,7 @@ OC.L10N.register(
 	"Unlink now?" : "Opphev kobling nå?",
 	"Unlinked." : "Kobling opphevet.",
 	"e-mail differs" : "e-post avviker",
-	"staff" : "medarbeider"
+	"staff" : "medarbeider",
+	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synkroniserte deling(er) kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall dem igjen."
 	}
 );

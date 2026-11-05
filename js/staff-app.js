@@ -324,7 +324,15 @@ async function openOrg(id){
   },!o.appOn));
   if(o.state==='active')act.appendChild(btn(t('Offboard'),async()=>{
     if(!(await confirmDlg(t('Offboard'),t('Chat will be archived and members lose access. Continue?'))))return;
-    await post('/api/portal/orgs/'+id+'/offboard');openOrg(id);
+    const rr=await post('/api/portal/orgs/'+id+'/offboard');
+    const wn=rr&&rr.data&&rr.data.partialWarning==='sync_revoke_failed'?(rr.data.failed||0):0;
+    await openOrg(id);
+    if(wn>0){
+      // failed share revokes leave live oc_share rows — surface, never silently
+      const w=h('<p class="ptl-chip ptl-chip--warn ptl-warnbar" role="alert"></p>').firstElementChild;
+      w.textContent=t('Offboarded — but')+' '+wn+' '+t('synced share(s) could not be revoked. Open Desktop sync below and revoke them again.');
+      const pb=document.getElementById('ptl-body');if(pb)pb.prepend(w);
+    }else if(rr&&rr.success===false){status(rr.message||t('Error'));}
   }));
   act.appendChild(btn(t('Edit details'),async()=>{
     const f=await ask(t('Client details'),null,t('Save'),[

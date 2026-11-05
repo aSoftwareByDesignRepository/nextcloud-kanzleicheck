@@ -124,6 +124,7 @@
     "OTP validity (minutes)": "Code-geldigheid (minuten)",
     "OVERDUE": "VERVALLEN",
     "Offboard": "Deactiveren",
+    "Offboarded — but": "Gedeactiveerd — maar",
     "Open": "Openen",
     "Open approvals": "Openstaande goedkeuringen",
     "Other": "Overig",
@@ -357,6 +358,7 @@
     "Unlink now?": "Nu ontkoppelen?",
     "Unlinked.": "Ontkoppeld.",
     "e-mail differs": "e-mail wijkt af",
-    "staff": "medewerker"
+    "staff": "medewerker",
+    "synced share(s) could not be revoked. Open Desktop sync below and revoke them again.": "gesynchroniseerde share(s) konden niet worden ingetrokken. Ga hieronder naar Desktopsynchronisatie en trek ze opnieuw in."
   }
 }

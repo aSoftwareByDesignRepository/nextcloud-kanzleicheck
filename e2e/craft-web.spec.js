@@ -46,6 +46,10 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#ptl-send-form').waitFor({ state: 'visible', timeout: 15000 });
+		// ptl-v15: under forced colors the primary CTA must keep a visible
+		// boundary — bare text fails WCAG 1.4.11.
+		const bw = await page.locator('#ptl-send-btn').evaluate((el) => getComputedStyle(el).borderTopWidth);
+		if (parseFloat(bw) < 1) throw new Error(`forced-colors CTA border missing (borderTopWidth=${bw})`);
 		await shot(page, 'ptl-portal-login-hc-1280');
 	});
 	test('guest notfound light 1280', async ({ page }) => {
@@ -154,6 +158,10 @@ test.describe('craft web', () => {
 		await page.locator('#ptl-code').fill('000000');
 		await verify.locator('button[type="submit"], .ptl-btn--primary').first().click();
 		await page.locator('.ptl-field-error:not([hidden])').first().waitFor({ state: 'visible', timeout: 15000 });
+		// ptl-v14: one failure, one surface — a field-scoped error must NOT be
+		// mirrored verbatim into the status line.
+		const st = (await page.locator('#ptl-login-status').textContent()) || '';
+		if (st.trim() !== '') throw new Error(`field-scoped error duplicated into status line: ${st.trim()}`);
 		await shot(page, 'ptl-portal-login-fielderror-light-1280');
 	});
 	/* c2 deeplink: notification mails land ?view=inbox&org=N — boot must open

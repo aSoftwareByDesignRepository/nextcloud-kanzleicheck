@@ -203,6 +203,7 @@ OC.L10N.register(
 	"OVERDUE" : "ÜBERFÄLLIG",
 	"Off" : "Aus",
 	"Offboard" : "Offboarden",
+	"Offboarded — but" : "Offboarded — aber",
 	"Only my clients" : "Nur meine Mandanten",
 	"Open" : "Öffnen",
 	"Open approvals" : "Offene Freigaben",
@@ -358,6 +359,7 @@ OC.L10N.register(
 	"pending" : "wartend",
 	"rows" : "Zeilen",
 	"staff" : "Mitarbeiter",
-	"stale" : "veraltet"
+	"stale" : "veraltet",
+	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synchronisierte Freigabe(n) konnten nicht widerrufen werden. Öffnen Sie unten „Desktop-Sync“ und widerrufen Sie sie erneut."
 	}
 );

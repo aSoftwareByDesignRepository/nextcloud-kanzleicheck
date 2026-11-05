@@ -203,6 +203,7 @@ OC.L10N.register(
 	"OVERDUE" : "OVERDUE",
 	"Off" : "Off",
 	"Offboard" : "Offboard",
+	"Offboarded — but" : "Offboarded — but",
 	"Only my clients" : "Only my clients",
 	"Open" : "Open",
 	"Open approvals" : "Open approvals",
@@ -358,6 +359,7 @@ OC.L10N.register(
 	"pending" : "pending",
 	"rows" : "rows",
 	"staff" : "staff",
-	"stale" : "stale"
+	"stale" : "stale",
+	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synced share(s) could not be revoked. Open Desktop sync below and revoke them again."
 	}
 );

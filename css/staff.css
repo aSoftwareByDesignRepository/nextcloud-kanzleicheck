@@ -49,3 +49,7 @@
 .ptl-sync-row:last-child{border-bottom:0;}
 .ptl-fieldset{border:1px solid var(--color-border);border-radius:8px;padding:8px 12px;margin:12px 0;}
 .ptl-fieldset legend{padding:0 6px;color:var(--color-text-maxcontrast);}
+
+/* Offboard partial-revoke warning banner (ptl-c3): block-level warn chip
+ * prepended to #ptl-body after a sync_revoke_failed partial offboard. */
+.ptl-warnbar{display:flex;max-width:720px;margin:var(--ptl-space-3) 0;padding:6px 12px;font-size:.9rem;}

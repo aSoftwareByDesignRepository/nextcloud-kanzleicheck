@@ -12,14 +12,14 @@ script($appId, 'portal-login');
 		<form id="ptl-send-form" method="post" novalidate>
 			<label for="ptl-email" class="ptl-label"><?php p($l->t('E-mail address')); ?></label>
 			<input id="ptl-email" name="email" type="email" autocomplete="email" required autofocus class="ptl-input" />
-			<span class="ptl-field-error" data-for="ptl-email" hidden></span>
+			<span class="ptl-field-error" data-for="ptl-email" role="alert" hidden></span>
 			<button type="submit" class="ptl-btn ptl-btn--primary" id="ptl-send-btn"><?php p($l->t('Send code')); ?></button>
 		</form>
 		<form id="ptl-verify-form" method="post" hidden novalidate>
 			<p class="ptl-muted" id="ptl-sent-note"><?php p($l->t('We have sent you a code.')); ?></p>
 			<label for="ptl-code" class="ptl-label"><?php p($l->t('6-digit code')); ?></label>
 			<input id="ptl-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required class="ptl-input ptl-input--code" />
-			<span class="ptl-field-error" data-for="ptl-code" hidden></span>
+			<span class="ptl-field-error" data-for="ptl-code" role="alert" hidden></span>
 			<button type="submit" class="ptl-btn ptl-btn--primary" id="ptl-verify-btn"><?php p($l->t('Sign in')); ?></button>
 			<button type="button" class="ptl-btn" id="ptl-resend-btn" disabled><?php p($l->t('Request a new code')); ?></button>
 		</form>

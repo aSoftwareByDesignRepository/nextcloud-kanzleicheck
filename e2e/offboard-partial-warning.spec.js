@@ -1,0 +1,74 @@
+// @ts-check
+/**
+ * ATLAS ptl-c3 — the offboard response's partialWarning/failed keys must
+ * render a visible warning surface (count + next step), never silently.
+ * Forced partial-failure via route stub: a live share-revoke failure is not
+ * forceable through the API (SyncBindingService::dropShare swallows share
+ * errors by design), so the leg fulfils POST …/offboard with the real
+ * partial payload and asserts .ptl-warnbar renders with the failed count.
+ * Writes a craft PNG to craft/web/.
+ */
+const { test, expect } = require('@playwright/test');
+const fs = require('fs');
+const path = require('path');
+const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
+
+const APP = '/index.php/apps/portalcheck';
+const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck/craft/web');
+const authed = hasCreds();
+fs.mkdirSync(OUT, { recursive: true });
+
+test.describe('staff offboard partial-revoke warning (c3)', () => {
+	test('partialWarning response renders warnbar with failed count', async ({ page, request }) => {
+		test.skip(!authed, 'no creds');
+		const { username, password } = creds();
+		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+		const tag = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+		const orgName = `OffboardWarn ${tag}`;
+		const api = async (method, u, data) => request.fetch(`${BASE}${APP}${u}`, {
+			method, data, headers: { Authorization: auth },
+		}).then((r) => r.json());
+
+		const org = (await api('POST', '/api/portal/orgs', { name: orgName, ref: `OW-${tag}`, kind: 'company' })).data.org;
+		expect(org.id).toBeGreaterThan(0);
+
+		await page.route(`**/api/portal/orgs/${org.id}/offboard`, (route) => route.fulfill({
+			status: 200,
+			contentType: 'application/json',
+			json: { success: true, data: { offboarded: true, partialWarning: 'sync_revoke_failed', failed: 2 } },
+		}));
+
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await login(page, creds());
+		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('.ptl-navbtn[data-v="orgs"]').click();
+		// filter the list to the unique fixture — the row may be below the fold
+		await page.locator('#ptl-q').fill(orgName);
+		await page.locator('#ptl-orglist .ptl-row', { hasText: orgName }).click();
+		// the org info card is the one carrying .ptl-kv; its .ptl-actions order
+		// is fixed: [appOn toggle, Offboard, Edit details]
+		const infoCard = page.locator('#ptl-body .ptl-card:has(.ptl-kv)');
+		await infoCard.waitFor({ state: 'visible', timeout: 15000 });
+		const actions = infoCard.locator('.ptl-actions .ptl-btn');
+		await expect(actions).toHaveCount(3);
+		await actions.nth(1).click();
+		// confirmDlg → the dialog's primary button carries value="ok"
+		const dlg = page.locator('dialog.ptl-dialog');
+		await dlg.waitFor({ state: 'visible', timeout: 15000 });
+		await dlg.locator('.ptl-btn--primary').click();
+
+		const warn = page.locator('.ptl-warnbar');
+		await warn.waitFor({ state: 'visible', timeout: 15000 });
+		await expect(warn).toContainText('2');
+		await expect(warn).toHaveAttribute('role', 'alert');
+		await page.screenshot({ path: path.join(OUT, 'ptl-staff-offboard-warn-light-1280.png'), fullPage: false });
+
+		// teardown: real offboard call sunsets the fixture (page.route stub is
+		// browser-context only; the request fixture hits the live endpoint)
+		const ob = await request.fetch(`${BASE}${APP}/api/portal/orgs/${org.id}/offboard`, {
+			method: 'POST', headers: { Authorization: auth },
+		});
+		expect([200, 204]).toContain(ob.status());
+	});
+});
