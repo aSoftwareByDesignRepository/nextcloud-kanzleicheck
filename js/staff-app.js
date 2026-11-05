@@ -10,6 +10,10 @@ const h=html=>{const t=document.createElement('template');t.innerHTML=html;retur
 const btn=(label,fn,primary)=>{const b=document.createElement('button');b.className='ptl-btn'+(primary?' ptl-btn--primary':'');b.textContent=label;b.onclick=fn;return b;};
 const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t||'';document.getElementById('ptl-loading')?.remove();};
 let ME_ADMIN=false;
+/* per-loader generation counters — a superseded list fetch must never paint
+   over a newer result (stale_response_render_clobber). Module scope so view
+   remounts also invalidate in-flight fetches from the previous mount. */
+let ORG_SEQ=0,PQ_SEQ=0;
 
 /* native dialog helpers (never window.prompt/confirm) */
 function ask(title,label,okLabel,fields){return new Promise(res=>{
@@ -293,12 +297,17 @@ async function vOrgs(){
   }));
   const q=new URLSearchParams(location.search).get('q')||'';
   body.appendChild(h('<input id="ptl-q" class="ptl-input" placeholder="'+esc(t('Search…'))+'" value="'+esc(q)+'">'));
-  body.querySelector('#ptl-q').oninput=async e=>{const rr=await get('/api/portal/orgs?q='+encodeURIComponent(e.target.value));renderOrgs(rr.data&&rr.data.orgs||[]);};
+  body.querySelector('#ptl-q').oninput=e=>loadOrgs(e.target.value);
   body.appendChild(h('<div id="ptl-orglist" class="ptl-list"></div>'));
-  const r=await get('/api/portal/orgs');
-  renderOrgs(r.data&&r.data.orgs||[]);
+  loadOrgs(q);
+  async function loadOrgs(term){
+    const seq=++ORG_SEQ;
+    const rr=await get('/api/portal/orgs'+(term?'?q='+encodeURIComponent(term):''));
+    if(seq!==ORG_SEQ)return; // superseded by a newer load — never paint stale
+    renderOrgs(rr.data&&rr.data.orgs||[]);
+  }
   function renderOrgs(orgs){
-    const list=document.getElementById('ptl-orglist');list.innerHTML='';
+    const list=document.getElementById('ptl-orglist');if(!list)return;list.innerHTML='';
     if(!orgs.length){list.appendChild(h('<p class="ptl-muted">'+esc(t('No clients.'))+'</p>'));return;}
     orgs.forEach(o=>{
       const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span><span class="ptl-pill"></span></button>').firstElementChild;
@@ -742,8 +751,10 @@ async function vPeople(){
   body.appendChild(h('<input id="ptl-pq" class="ptl-input" placeholder="'+esc(t('Search e-mail or name…'))+'">'));
   body.appendChild(h('<div id="ptl-plist" class="ptl-list"></div>'));
   const render=async q=>{
+    const seq=++PQ_SEQ;
     const r=await get('/api/portal/identities?q='+encodeURIComponent(q));
-    const list=document.getElementById('ptl-plist');list.innerHTML='';
+    if(seq!==PQ_SEQ)return; // superseded by a newer load — never paint stale
+    const list=document.getElementById('ptl-plist');if(!list)return;list.innerHTML='';
     (r.data&&r.data.identities||[]).forEach(i=>{
       const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
       row.querySelector('span').textContent=(i.displayName||'')+' <'+i.email+'>'+(i.status!=='active'?' ('+i.status+')':'');
