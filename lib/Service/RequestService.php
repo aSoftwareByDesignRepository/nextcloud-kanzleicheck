@@ -19,6 +19,7 @@ use OCA\PortalCheck\Db\UploadMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Exception\ValidationException;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /**
@@ -27,6 +28,12 @@ use OCP\IDBConnection;
  *   request: open → complete (all items accepted) | closed (staff, terminal)
  *   item:    open → delivered → accepted | rejected → delivered again
  * Reminders stop on complete/closed or when all items are delivered+.
+ *
+ * unique-conflict:ok the ptl_req_item write sites (deliver/confirm/review/
+ * remind transitions) update state/reviewer columns only — ptl_req_item
+ * carries no unique index. The sole unique-index write (ptl_req insert on
+ * ptl_req_period_uq) sits inside the transaction above with a REASON_UNIQUE
+ * catch mapped to a periodKey field error.
  */
 class RequestService
 {
@@ -131,6 +138,11 @@ class RequestService
 			return $r;
 		} catch (\Throwable $e) {
 			$this->db->rollBack();
+			// ptl_req_period_uq race: two concurrent creates for the same
+			// template+org+period — the loser gets the field error, not a 500
+			if ($e instanceof DbException && $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				throw new ValidationException('VALIDATION_FAILED', ['periodKey' => 'duplicate']);
+			}
 			throw $e;
 		}
 	}

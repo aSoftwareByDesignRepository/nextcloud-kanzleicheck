@@ -368,6 +368,8 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		// persist the binding once (folder created or rebound)
 		if ($f->getId() !== $org->getFolderId()) {
 			$org->setFolderId((int)$f->getId());
+			// unique-conflict:ok folder_id rebind only — the unique ref column
+			// is never SET on this write path.
 			$this->orgs->update($org);
 		}
 		return $f;

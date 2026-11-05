@@ -14,6 +14,7 @@ use OCA\PortalCheck\Db\IdentityMapper;
 use OCA\PortalCheck\Db\Member;
 use OCA\PortalCheck\Db\MemberMapper;
 use OCA\PortalCheck\Exception\ValidationException;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /**
@@ -57,7 +58,16 @@ class IdentityService
 		$i->setDisplayName(mb_substr(trim($displayName) !== '' ? $displayName : $email, 0, 190));
 		$i->setStatus('active');
 		$i->setCreatedAt(new \DateTimeImmutable());
-		return $this->identities->insert($i);
+		try {
+			return $this->identities->insert($i);
+		} catch (DbException $e) {
+			// idem race: two concurrent creates on the same email — return the winner
+			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
+				&& ($winner = $this->identities->findByEmail($email)) !== null) {
+				return $winner;
+			}
+			throw $e;
+		}
 	}
 
 	public function addMembership(int $identityId, int $orgId, string $actor, string $role = 'member'): Member
@@ -75,7 +85,16 @@ class IdentityService
 		$m->setRole(in_array($role, ['member', 'readonly'], true) ? $role : 'member');
 		$m->setCreatedAt(new \DateTimeImmutable());
 		$m->setCreatedBy($actor);
-		return $this->members->insert($m);
+		try {
+			return $this->members->insert($m);
+		} catch (DbException $e) {
+			// idem race: concurrent add on the same (identity, org) — return the winner
+			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
+				&& ($winner = $this->members->findByIdentityAndOrg($identityId, $orgId)) !== null) {
+				return $winner;
+			}
+			throw $e;
+		}
 	}
 
 	/** Active identity or null — disabled/erased identities cannot authenticate. */

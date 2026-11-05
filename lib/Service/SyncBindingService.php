@@ -80,10 +80,12 @@ class SyncBindingService
 		return $this->userManager->get($uid);
 	}
 
-	private static function isUniqueViolation(\Throwable $e): bool
-	{
-		return $e instanceof DbException && $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION;
-	}
+	// unique-conflict:ok the remaining ->update() sites in this file only SET
+	// non-unique columns (nc_uid/origin/mismatch on ptl_identity, folder_id on
+	// ptl_org, state/share_id/verified_at on ptl_sync, revoked_at on ptl_member
+	// cascades) — the unique keys identity_id+org_id / email / ref are never
+	// rewritten by an update path. The sole insert path (enable) carries the
+	// REASON_UNIQUE catch below with share compensation (ADR-Z01).
 
 	/** @return int<0, 31> */
 	public static function permsMask(string $perms): int
@@ -302,7 +304,7 @@ class SyncBindingService
 		try {
 			$b = $existing !== null ? $this->syncs->update($b) : $this->syncs->insert($b);
 		} catch (\Throwable $e) {
-			if (self::isUniqueViolation($e)) {
+			if ($e instanceof DbException && $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
 				// ADR-Z01 compensation: delete the just-created share so no
 				// orphan share escapes the binding registry.
 				try {

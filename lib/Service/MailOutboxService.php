@@ -11,6 +11,7 @@ namespace OCA\PortalCheck\Service;
 
 use OCA\PortalCheck\Db\MailOutbox;
 use OCA\PortalCheck\Db\MailOutboxMapper;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 use OCP\Mail\IMailer;
 use OCP\Security\ICrypto;
@@ -73,8 +74,17 @@ class MailOutboxService
 		$o->setTries(0);
 		$o->setNextTryAt($now);
 		$o->setCreatedAt($now);
-		$ins = $this->outbox->insert($o);
-		return (int)$ins->getId();
+		try {
+			$ins = $this->outbox->insert($o);
+			return (int)$ins->getId();
+		} catch (DbException $e) {
+			// idem race: concurrent enqueue on the same idem_key — return the winner row
+			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
+				&& ($winner = $this->outbox->findByIdemKey($idemKey)) !== null) {
+				return (int)$winner->getId();
+			}
+			throw $e;
+		}
 	}
 
 	/**

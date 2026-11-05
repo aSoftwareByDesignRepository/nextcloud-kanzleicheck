@@ -12,6 +12,7 @@ namespace OCA\PortalCheck\Service;
 use OCA\PortalCheck\Db\Device;
 use OCA\PortalCheck\Db\DeviceMapper;
 use OCA\PortalCheck\Exception\ApiException;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /**
@@ -47,7 +48,19 @@ class DeviceService
 		$d->setCreatedAt($now);
 		$d->setLastUsedAt($now);
 		$d->setAbsExpiresAt($now->modify('+365 days'));
-		$this->devices->insert($d);
+		for ($attempt = 0; ; $attempt++) {
+			try {
+				$this->devices->insert($d);
+				break;
+			} catch (DbException $e) {
+				// token_hash collision — remint and retry (astronomically rare, but never a 500)
+				if ($e->getReason() !== DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION || $attempt >= 2) {
+					throw $e;
+				}
+				[$token, $hash] = $this->tokens->mint();
+				$d->setTokenHash($hash);
+			}
+		}
 		// cap: revoke the oldest-unused beyond the limit (US-P02 / §6)
 		$this->devices->revokeOldestBeyond($identityId, self::MAX_DEVICES);
 		return [$token, $d];

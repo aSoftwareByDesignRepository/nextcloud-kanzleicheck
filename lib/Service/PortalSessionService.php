@@ -16,6 +16,7 @@ namespace OCA\PortalCheck\Service;
 
 use OCA\PortalCheck\Db\PortalSession;
 use OCA\PortalCheck\Db\PortalSessionMapper;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /**
@@ -49,7 +50,19 @@ class PortalSessionService
 		$s->setAbsExpiresAt($now->modify('+' . self::ABS_CAP_DAYS . ' days'));
 		$s->setLastSeenAt($now);
 		$s->setUaShort(mb_substr($ua, 0, 190));
-		$this->sessions->insert($s);
+		for ($attempt = 0; ; $attempt++) {
+			try {
+				$this->sessions->insert($s);
+				break;
+			} catch (DbException $e) {
+				// token_hash collision — remint and retry
+				if ($e->getReason() !== DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION || $attempt >= 2) {
+					throw $e;
+				}
+				[$token, $hash] = $this->tokens->mint();
+				$s->setTokenHash($hash);
+			}
+		}
 		return [$token, $s];
 	}
 

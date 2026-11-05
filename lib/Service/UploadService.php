@@ -24,6 +24,11 @@ use OCP\Files\Folder;
  * (finfo), never by name: executables, scripts, macro-enabled Office —
  * FILE_TYPE_BLOCKED before storage. Server-side SHA-256 for duplicate
  * detection (US-P26) — a client-sent hash is never trusted.
+ *
+ * unique-conflict:ok every write site here targets ptl_upload, which carries
+ * no unique index (file_id is a fresh node per upload — duplicates are
+ * flagged, not blocked). ptl_sync is read-only in this file
+ * (countActiveRwByOrg for the US-S14 integrity gate).
  */
 class UploadService
 {

@@ -121,11 +121,15 @@ class MessageMapper extends QBMapper
 		return (int)$qb->executeQuery()->fetchOne();
 	}
 
+	// unique-conflict:ok author IS part of ptl_msg_dedupe_uq — but client_uuid
+	// is nulled on the same write, so merged-author rows carry (conv, author,
+	// NULL) keys that MySQL treats as distinct; no collision is reachable.
 	public function anonymizeAuthor(string $actor, string $replacement): int
 	{
 		$qb = $this->db->getQueryBuilder();
 		$qb->update($this->getTableName())
 			->set('author', $qb->createNamedParameter($replacement))
+			->set('client_uuid', $qb->createNamedParameter(null))
 			->where($qb->expr()->eq('author', $qb->createNamedParameter($actor)));
 		return $qb->executeStatement();
 	}

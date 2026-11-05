@@ -70,6 +70,8 @@ class MailOutboxMapper extends QBMapper
 		}
 	}
 
+	// unique-conflict:ok all update sites in this mapper SET state only —
+	// the unique idem_key column is never rewritten by an update path.
 	/** Row-claim CAS: only one drainer wins a pending row (§9.9). */
 	public function claim(int $id): bool
 	{

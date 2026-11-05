@@ -90,9 +90,8 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		await expect(card.first()).toBeVisible({ timeout: 15000 });
 		expect(await card.count()).toBeGreaterThanOrEqual(1);
 
-		const err = page.locator('.ptl-card .ptl-field-error');
+		const err = page.locator('.ptl-card .ptl-field-error', { hasText: 'intake-probe: scan illegible' });
 		await expect(err.first()).toBeVisible();
-		await expect(err.first()).toContainText('intake-probe: scan illegible');
 
 		await page.screenshot({ path: path.join(OUT, 'todo-rejected-render.png'), fullPage: false });
 		expect(errors, `page errors: ${errors.join(' | ')}`).toEqual([]);

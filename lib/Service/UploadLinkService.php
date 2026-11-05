@@ -8,6 +8,7 @@ use OCA\PortalCheck\Db\UploadLink;
 use OCA\PortalCheck\Db\UploadLinkMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /** Third-party upload links (US-P29): upload-only, hashed 256-bit token, expiry, counters CAS. */
@@ -43,7 +44,19 @@ class UploadLinkService
 		$l->setShowOrg($showOrg);
 		$l->setCreatedBy($actor);
 		$l->setCreatedAt(new \DateTimeImmutable());
-		$l = $this->links->insert($l);
+		for ($attempt = 0; ; $attempt++) {
+			try {
+				$l = $this->links->insert($l);
+				break;
+			} catch (DbException $e) {
+				// token_hash collision — remint and retry
+				if ($e->getReason() !== DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION || $attempt >= 2) {
+					throw $e;
+				}
+				[$token, $hash] = $this->tokens->mint();
+				$l->setTokenHash($hash);
+			}
+		}
 		return ['link' => $l, 'token' => $token];
 	}
 

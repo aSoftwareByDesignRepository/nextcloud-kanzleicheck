@@ -133,6 +133,8 @@ class IntakeHoldService
 		$hold->setState('accepted');
 		$hold->setReviewedBy($actor);
 		$hold->setReviewedAt(new \DateTimeImmutable());
+		// unique-conflict:ok ptl_intake_hold carries no unique index and these
+		// updates only SET state/reviewer columns; this file never writes ptl_org.
 		$this->holds->update($hold);
 		$this->clearBuffer($holdId);
 		$this->audit->log($actor, 'intake_hold.accept', 'intake_hold', $holdId, ['stored' => $stored, 'failed' => $failed, 'errors' => $errors]);

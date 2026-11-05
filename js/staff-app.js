@@ -527,7 +527,7 @@ async function syncSetupDialog(orgId,member){
       return en.success?'ok':(en.error||'ERR');
     };
     const out=await bindAndEnable();
-    const msg={ok:t('Desktop sync enabled.'),SYNC_UID_UNKNOWN:t('Account not found.'),SYNC_UID_IS_STAFF:t('Staff accounts cannot be linked.'),SYNC_UID_DISABLED:t('Activate the account in user administration first.'),SYNC_ALREADY_BOUND:t('Already linked — unlink first.'),SYNC_NOT_BOUND:t('Link the account first.'),SYNC_ORG_OFFBOARDED:t('Client is offboarded.'),SYNC_DOOR_OPEN:t('Desktop sync requires a restricted access door.'),NO_SHARE_PERM:t('Check share permission on the documents folder.'),NO_DOCS_ROOT:t('Documents root is not configured.'),aborted:t('Cancelled.')}[out]||t('Error');
+    const msg={ok:t('Desktop sync enabled.'),SYNC_UID_UNKNOWN:t('Account not found.'),SYNC_UID_IS_STAFF:t('Staff accounts cannot be linked'),SYNC_UID_DISABLED:t('Activate the account in user administration first.'),SYNC_ALREADY_BOUND:t('Already linked — unlink first.'),SYNC_NOT_BOUND:t('Link the account first.'),SYNC_ORG_OFFBOARDED:t('Client is offboarded.'),SYNC_DOOR_OPEN:t('Desktop sync requires a restricted access door.'),NO_SHARE_PERM:t('Check share permission on the documents folder.'),NO_DOCS_ROOT:t('Documents root is not configured.'),aborted:t('Cancelled.')}[out]||t('Error');
     status(msg);
     dlg.remove();
     openOrg(orgId);

@@ -17,6 +17,7 @@ use OCA\PortalCheck\Db\ReadMarkerMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Exception\ValidationException;
+use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
 /**
@@ -47,7 +48,11 @@ class ChatService
 			$c->setCreatedAt(new \DateTimeImmutable());
 			try {
 				$c = $this->convs->insert($c);
-			} catch (\Throwable) {
+			} catch (DbException $e) {
+				// ptl_conv_org_uq race: concurrent first message in an org — read the winner
+				if ($e->getReason() !== DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+					throw $e;
+				}
 				$c = $this->convs->findByOrg($orgId);
 			}
 		}
@@ -100,19 +105,7 @@ class ChatService
 			$m->setBody($body !== '' ? $body : null);
 			$m->setUploadId($uploadId);
 			$m->setCreatedAt(new \DateTimeImmutable());
-			try {
-				$m = $this->messages->insert($m);
-			} catch (\Throwable $e) {
-				// dedupe race: second insert of same client_uuid → return winner
-				if ($clientUuid !== null && $clientUuid !== '') {
-					$existing = $this->messages->findByDedupe($convId, $actor, $clientUuid);
-					if ($existing !== null) {
-						$this->db->commit();
-						return $existing;
-					}
-				}
-				throw $e;
-			}
+			$m = $this->messages->insert($m);
 			$qb = $this->db->getQueryBuilder();
 			$qb->update('ptl_conv')->set('last_message_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 				->where($qb->expr()->eq('id', $qb->createNamedParameter($convId)));
@@ -121,6 +114,16 @@ class ChatService
 			return $m;
 		} catch (\Throwable $e) {
 			$this->db->rollBack();
+			// dedupe race: second insert of same client_uuid → return the
+			// winner row (its transaction already committed — replay is safe)
+			if ($e instanceof DbException
+				&& $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
+				&& $clientUuid !== null && $clientUuid !== '') {
+				$existing = $this->messages->findByDedupe($convId, $actor, $clientUuid);
+				if ($existing !== null) {
+					return $existing;
+				}
+			}
 			throw $e;
 		}
 	}

@@ -14,12 +14,17 @@ use OCA\PortalCheck\Db\OrgMapper;
 use OCA\PortalCheck\Exception\ApiException;
 use OCA\PortalCheck\Exception\NotFoundException;
 use OCA\PortalCheck\Exception\ValidationException;
+use OCP\DB\Exception as DbException;
 
 /**
  * Client organisations (Mandat/Kunde/Objekt): CRUD, state machine
  * (active|offboarded), app-enablement against portalClients slots.
  * Enablement is licence-gated and fail-closed only on NEW enablement —
  * a shrunk key never revokes existing enabled orgs (US-P15 AC-3, NN-P10).
+ *
+ * unique-conflict:ok the ->update() sites in setAppEnabled()/offboard() only
+ * SET app_on/state/updated_at — never the unique ref column. The ref-bearing
+ * writes (create/update) carry REASON_UNIQUE catches mapped to 'ref taken'.
  */
 class OrgService
 {
@@ -70,7 +75,15 @@ class OrgService
 		$o->setCreatedBy($actor);
 		$o->setCreatedAt($now);
 		$o->setUpdatedAt($now);
-		$o = $this->orgs->insert($o);
+		try {
+			$o = $this->orgs->insert($o);
+		} catch (DbException $e) {
+			// ref race: concurrent create with the same ref — loser gets the field error
+			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				throw new ValidationException('VALIDATION_FAILED', ['ref' => 'taken']);
+			}
+			throw $e;
+		}
 		$this->audit->log($actor, 'org.create', 'org', (int)$o->getId());
 		return $o;
 	}
@@ -104,7 +117,15 @@ class OrgService
 			$o->setBookUrl($this->validateBookingUrl((string)($fields['bookUrl'] ?? '')));
 		}
 		$o->setUpdatedAt(new \DateTimeImmutable());
-		$this->orgs->update($o);
+		try {
+			$this->orgs->update($o);
+		} catch (DbException $e) {
+			// ref race: two updates converging on the same ref — loser gets the field error
+			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				throw new ValidationException('VALIDATION_FAILED', ['ref' => 'taken']);
+			}
+			throw $e;
+		}
 		return $o;
 	}
 

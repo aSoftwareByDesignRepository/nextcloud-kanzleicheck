@@ -20,6 +20,8 @@ class ReqTplOrgMapper
 	{
 	}
 
+	// unique-conflict:ok ptl_req_tpl_org carries no unique index — replace-set
+	// (delete + insert by template_id) cannot violate a constraint.
 	/** @param list<int> $orgIds */
 	public function setOrgs(int $templateId, array $orgIds): void
 	{

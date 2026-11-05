@@ -90,6 +90,8 @@ class DeviceMapper extends QBMapper
 		return (int)$qb->executeQuery()->fetchOne();
 	}
 
+	// unique-conflict:ok all update sites in this mapper SET revoked_at only —
+	// the unique token_hash column is never rewritten by an update path.
 	public function revokeForIdentity(int $identityId): int
 	{
 		$qb = $this->db->getQueryBuilder();

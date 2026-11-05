@@ -75,6 +75,9 @@ class GdprService
 			if ($i === null) {
 				throw new \OCA\PortalCheck\Exception\NotFoundException();
 			}
+			// unique-conflict:ok the erase rewrite sets email to a per-PK literal
+			// ('erased-<id>@invalid') — two identities can never produce the same
+			// value, so ptl_ident_email_uq is unreachable on this write.
 			$qb = $this->db->getQueryBuilder();
 			$qb->update('ptl_identity')
 				->set('email', $qb->createNamedParameter('erased-' . $identityId . '@invalid'))
