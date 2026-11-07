@@ -110,6 +110,11 @@ class AccessDoorService
 			try {
 				$group = $this->groupManager->get($gid);
 				foreach ($group?->getUsers() ?? [] as $u) {
+					// Deactivated accounts can never receive or act on a
+					// notification — keep the fan-out set to live logins.
+					if (!$u->isEnabled()) {
+						continue;
+					}
 					$uids[$u->getUID()] = true;
 				}
 			} catch (\Throwable $e) {
@@ -117,8 +122,11 @@ class AccessDoorService
 			}
 		}
 		if ($uids === [] && !$this->isRestricted()) {
-			// Open door: every NC user is staff — enumerate
+			// Open door: every enabled NC user is staff — enumerate
 			foreach ($this->userManager->search('', 5000) as $u) {
+				if (!$u->isEnabled()) {
+					continue;
+				}
 				$uids[$u->getUID()] = true;
 			}
 		}

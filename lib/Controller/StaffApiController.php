@@ -618,6 +618,10 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 		$out = [];
 		if ($q !== '') {
 			foreach ($this->userManager->search($q, 20) as $u) {
+				// Staff pickers never offer deactivated accounts — they cannot sign in.
+				if (!$u->isEnabled()) {
+					continue;
+				}
 				$out[] = ['uid' => $u->getUID(), 'displayName' => $u->getDisplayName(), 'email' => $u->getEMailAddress(), 'staff' => $this->door->isStaff($u->getUID())];
 			}
 		}
