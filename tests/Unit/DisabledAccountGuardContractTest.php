@@ -37,4 +37,24 @@ final class DisabledAccountGuardContractTest extends TestCase
 			'AccessDoorService::staffUids must skip deactivated accounts in group AND open-door enumeration'
 		);
 	}
+
+	public function testConfiguredStaffListsSkipDeactivatedAccounts(): void
+	{
+		$src = $this->src('lib/Service/AccessDoorService.php');
+		$this->assertMatchesRegularExpression(
+			'/function staffUids[\s\S]{0,2000}userManager->get\(\$uid\)[\s\S]{0,200}!\$u->isEnabled\(\)/',
+			$src,
+			'AccessDoorService::staffUids must drop deactivated/deleted uids from the configured allowed_users/app_admins lists'
+		);
+	}
+
+	public function testStaffRecipientsFiltersDisabledContactsAndFallsBack(): void
+	{
+		$src = $this->src('lib/Service/NotifyService.php');
+		$this->assertMatchesRegularExpression(
+			'/function staffRecipients[\s\S]{0,2000}!\$user->isEnabled\(\)[\s\S]{0,500}staffUids\(\)/',
+			$src,
+			'NotifyService::staffRecipients must drop disabled/deleted contact uids and fall back to staffUids() when empty'
+		);
+	}
 }

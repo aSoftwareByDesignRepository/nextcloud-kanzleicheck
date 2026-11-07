@@ -11,6 +11,7 @@ use OCA\PortalCheck\Db\MemberMapper;
 use OCA\PortalCheck\Db\NotifyMapper;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\IURLGenerator;
+use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -28,6 +29,7 @@ class NotifyService
 		private readonly MemberMapper $members,
 		private readonly IdentityMapper $identities,
 		private readonly ContactMapper $contacts,
+		private readonly IUserManager $userManager,
 		private readonly AccessDoorService $door,
 		private readonly MailOutboxService $outbox,
 		private readonly SettingsService $settings,
@@ -60,7 +62,18 @@ class NotifyService
 	 */
 	public function staffRecipients(int $orgId): array
 	{
-		$responsible = array_map(static fn($c) => $c['user_id'], $this->contacts->findForOrg($orgId));
+		$responsible = [];
+		foreach ($this->contacts->findForOrg($orgId) as $c) {
+			$uid = (string)$c['user_id'];
+			$user = $this->userManager->get($uid);
+			// Contact rows persist after deactivation/deletion — a dead uid
+			// must neither be notified nor suppress the all-staff fallback
+			// (inactive_recipient_notification_fanout).
+			if ($user === null || !$user->isEnabled()) {
+				continue;
+			}
+			$responsible[] = $uid;
+		}
 		return $responsible !== [] ? $responsible : $this->door->staffUids();
 	}
 

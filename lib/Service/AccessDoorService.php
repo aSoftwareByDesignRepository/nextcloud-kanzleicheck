@@ -105,6 +105,15 @@ class AccessDoorService
 		foreach ($this->settings->getList('app_admins') as $u) {
 			$uids[$u] = true;
 		}
+		// Configured lists hold raw uid strings — a deleted/deactivated
+		// account left in an allowlist must neither be notified nor keep the
+		// open-door enumeration below from firing.
+		foreach (array_keys($uids) as $uid) {
+			$u = $this->userManager->get($uid);
+			if ($u === null || !$u->isEnabled()) {
+				unset($uids[$uid]);
+			}
+		}
 		$gids = array_merge($this->platformRestrictedGroups(), $this->settings->getList('allowed_groups'));
 		foreach (array_unique($gids) as $gid) {
 			try {
