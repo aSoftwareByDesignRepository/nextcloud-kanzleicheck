@@ -40,6 +40,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -723,4 +724,20 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$this->companionOrg((int)$a->getOrgId());
 		return (int)$a->getOrgId();
 	}
+	/** Compact widget snapshot (NH-P2): one doc per sync + serverNow (MH-P18), 60 s/user cache. */
+	#[NoAdminRequired]
+	public function widgetSnapshot(int $orgId): JSONResponse
+	{
+		$uid = \OCP\Server::get(\OCP\IUserSession::class)->getUser()?->getUID();
+		if ($uid === null) return new JSONResponse(['error' => 'unauthenticated'], 401);
+		$cache = \OCP\Server::get(\OCP\ICacheFactory::class)->createDistributed('portalcheck_wsnap');
+		$key = $uid . ':approvals';
+		if (($hit = $cache->get($key)) !== null) return new JSONResponse($hit);
+		$status = $this->approvals($orgId)->getData();
+		$payload = ['status' => $status,
+			'serverNow' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format(\DateTimeInterface::ATOM)];
+		$cache->set($key, $payload, 60);
+		return new JSONResponse($payload);
+	}
+
 }

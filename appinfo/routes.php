@@ -158,4 +158,5 @@ return [
 		['name' => 'ulink#page', 'url' => '/portal/u/{token}', 'verb' => 'GET'],
 		['name' => 'ulink#upload', 'url' => '/portal/api/u/{token}/files', 'verb' => 'POST'],
 	],
+		['name' => 'companion#widgetSnapshot', 'url' => '/api/widget-snapshot/{orgId}', 'verb' => 'GET'],
 ];
