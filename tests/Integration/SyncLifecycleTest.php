@@ -112,6 +112,8 @@ UPDATE oc_appconfig SET configvalue='" . self::$origAdmins . "' WHERE appid='por
 		self::db("DELETE FROM oc_ptl_member WHERE identity_id IN (SELECT id FROM oc_ptl_identity WHERE email='sync@t.invalid');
 DELETE FROM oc_ptl_identity WHERE email='sync@t.invalid';
 DELETE FROM oc_ptl_org WHERE ref='SYNC-1';
+UPDATE oc_ptl_identity SET nc_uid=NULL, nc_uid_mismatch=0 WHERE nc_uid='ptl_atlas_nonstaff';
+DELETE FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e';
 INSERT INTO oc_ptl_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Sync Mandat','SYNC-1','company','active',0,'system:test',NOW(),NOW());
 INSERT INTO oc_ptl_identity (email,display_name,status,created_at) VALUES ('sync@t.invalid','Sync Client','active',NOW());
 INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_ptl_identity i, oc_ptl_org o WHERE i.email='sync@t.invalid' AND o.ref='SYNC-1';");
@@ -162,7 +164,7 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 		$this->assertSame(201, $r['status'], $r['raw']);
 		$this->assertContains($r['json']['data']['binding']['state'], ['active', 'pending_accept']);
 		$bid = (int)$r['json']['data']['binding']['bindingId'];
-		$row = self::db("SELECT share_type,share_with,permissions,uid_initiator FROM oc_share WHERE item_type='folder' AND share_with='ptl_atlas_nonstaff' ORDER BY id DESC LIMIT 1");
+		$row = self::db("SELECT share_type,share_with,permissions,uid_initiator FROM oc_share WHERE item_type='folder' AND share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e' ORDER BY id DESC LIMIT 1");
 		$this->assertNotSame('', $row, 'no oc_share row created');
 		[$type, $with, $perms, $by] = explode("\t", $row);
 		$this->assertSame('0', $type); // user share
@@ -170,10 +172,13 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 		$this->assertSame('15', $perms); // read+update+create+delete — reshare bit (16) absent
 		$this->assertSame('ptl_atlas_e2e', $by); // actor recorded
 		// idempotent second enable → same binding, no duplicate share row
+		// (snapshot compare — a shared dev instance may carry unrelated stale
+		// shares to the same uid, so an absolute count is not a valid premise)
+		$countBefore = self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'");
 		$r2 = self::http('POST', '/apps/portalcheck/api/portal/orgs/' . self::$orgId . '/sync', ['identityId' => self::$identityId]);
 		$this->assertSame($bid, (int)$r2['json']['data']['binding']['bindingId']);
-		$count = self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'");
-		$this->assertSame('1', $count);
+		$countAfter = self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'");
+		$this->assertSame($countBefore, $countAfter);
 		return $bid;
 	}
 
@@ -181,8 +186,10 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 	public function testExternalShareDeletionDetectedThenRepair(int $bid): void
 	{
 		$this->need();
-		// simulate an out-of-band share removal (NN-11 read authority)
-		self::db("DELETE FROM oc_share WHERE share_with='ptl_atlas_nonstaff'");
+		// simulate an out-of-band share removal (NN-11 read authority) —
+		// scoped to THIS binding's share; a blanket uid delete would eat
+		// foreign fixture shares on the shared dev instance
+		self::db("DELETE FROM oc_share WHERE id IN (SELECT share_id FROM oc_ptl_sync WHERE id=$bid)");
 		$r = self::http('GET', '/apps/portalcheck/api/portal/orgs/' . self::$orgId . '/sync');
 		$this->assertSame(200, $r['status']);
 		$binding = $r['json']['data']['bindings'][0] ?? null;
@@ -192,7 +199,7 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 		$r = self::http('POST', '/apps/portalcheck/api/portal/sync/' . $bid . '/repair', []);
 		$this->assertSame(200, $r['status']);
 		$this->assertContains($r['json']['data']['binding']['state'], ['active', 'pending_accept']);
-		$count = self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'");
+		$count = self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'");
 		$this->assertSame('1', $count, 'repair did not recreate the share');
 	}
 
@@ -222,7 +229,7 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 		$this->assertGreaterThan(0, $bid);
 		$r = self::http('DELETE', '/apps/portalcheck/api/portal/sync/' . $bid);
 		$this->assertSame(204, $r['status']);
-		$this->assertSame('0', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'"), 'share row not deleted');
+		$this->assertSame('0', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'"), 'share row not deleted');
 		$this->assertSame('revoked', self::db("SELECT state FROM oc_ptl_sync WHERE id=$bid"));
 		// unbind now allowed (all bindings terminal)
 		$r = self::http('DELETE', '/apps/portalcheck/api/portal/identities/' . self::$identityId . '/nc-bind');
@@ -238,11 +245,11 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 		self::http('PUT', '/apps/portalcheck/api/portal/identities/' . self::$identityId . '/nc-bind', ['ncUid' => 'ptl_atlas_nonstaff', 'acceptMismatch' => '1']);
 		$r = self::http('POST', '/apps/portalcheck/api/portal/orgs/' . self::$orgId . '/sync', ['identityId' => self::$identityId]);
 		$this->assertSame(201, $r['status'], $r['raw']);
-		$this->assertSame('1', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'"));
+		$this->assertSame('1', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'"));
 		// GDPR erase → share revoked, rows gone, nc_uid cleared, NC user alive
 		$r = self::http('DELETE', '/apps/portalcheck/api/portal/identities/' . self::$identityId . '?deleteMessages=1');
 		$this->assertContains($r['status'], [200, 204], $r['raw']);
-		$this->assertSame('0', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'"), 'erase left a dangling share');
+		$this->assertSame('0', self::db("SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND uid_initiator='ptl_atlas_e2e'"), 'erase left a dangling share');
 		$this->assertSame('0', self::db("SELECT COUNT(*) FROM oc_ptl_sync WHERE identity_id=" . self::$identityId));
 		$this->assertSame('1', self::db("SELECT COUNT(*) FROM oc_users WHERE uid='ptl_atlas_nonstaff'"), 'NC user was touched — D-B08 violation');
 	}
