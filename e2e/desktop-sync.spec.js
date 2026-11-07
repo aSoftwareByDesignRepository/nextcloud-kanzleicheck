@@ -108,8 +108,11 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			await shot(page, 'ptl-staff-sync-chip-active');
 			const bid = Number(db(`SELECT id FROM oc_ptl_sync WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
 			expect(bid).toBeGreaterThan(0);
-			const shareRows = db(`SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff' AND permissions=15`);
-			expect(shareRows).toBe('1');
+			// pin the assertion to THIS binding's share row — a shared dev
+			// instance may carry unrelated fixture shares to the same uid
+			const shareId = Number(db(`SELECT share_id FROM oc_ptl_sync WHERE id=${bid}`));
+			expect(shareId).toBeGreaterThan(0);
+			expect(db(`SELECT COUNT(*) FROM oc_share WHERE id=${shareId} AND share_with='ptl_atlas_nonstaff' AND permissions=15`)).toBe('1');
 
 			/* ── toggle off → confirm → revoked, share row deleted ── */
 			await row.locator('button:has-text("Off")').evaluate((el) => el.click());
@@ -118,7 +121,7 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			await off.locator('button', { hasText: /confirm|bestätigen/i }).last().click();
 			await page.waitForTimeout(1500);
 			await expect(row.locator('button:has-text("Set up")')).toBeVisible();
-			expect(db(`SELECT COUNT(*) FROM oc_share WHERE share_with='ptl_atlas_nonstaff'`)).toBe('0');
+			expect(db(`SELECT COUNT(*) FROM oc_share WHERE id=${shareId}`)).toBe('0');
 			expect(db(`SELECT state FROM oc_ptl_sync WHERE id=${bid}`)).toBe('revoked');
 		} finally {
 			/* revoke any leftover share/binding + restore door + drop fixture rows */
