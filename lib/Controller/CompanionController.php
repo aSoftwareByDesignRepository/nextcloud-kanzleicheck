@@ -238,7 +238,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 			(string)$this->request->getParam('clientUuid', '') ?: null,
 			$this->strictId($this->request->getParam('uploadId')));
 		foreach ($this->notifyService->staffRecipients($orgId) as $uid) {
-			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRoute('portalcheck.page.index') . '?view=inbox&org=' . $orgId);
+			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('portalcheck.page.index') . '?view=inbox&org=' . $orgId);
 		}
 		return $this->ok(['message' => ['id' => (int)$m->getId()]], 201);
 	}
