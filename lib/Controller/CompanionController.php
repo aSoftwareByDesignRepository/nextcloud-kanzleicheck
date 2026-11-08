@@ -98,6 +98,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		private readonly ContactMapper $contacts,
 		private readonly IUserManager $userManager,
 		private readonly PresetCatalog $presets,
+		private readonly \OCP\ICacheFactory $cacheFactory,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -724,20 +725,21 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$this->companionOrg((int)$a->getOrgId());
 		return (int)$a->getOrgId();
 	}
-	/** Compact widget snapshot (NH-P2): one doc per sync + serverNow (MH-P18), 60 s/user cache. */
-	#[NoAdminRequired]
+	/** Compact widget snapshot (NH-P2): one doc per sync + serverNow (MH-P18), 60 s/identity+org cache. */
+	#[PublicPage] #[NoCSRFRequired]
 	public function widgetSnapshot(int $orgId): JSONResponse
 	{
-		$uid = \OCP\Server::get(\OCP\IUserSession::class)->getUser()?->getUID();
-		if ($uid === null) return new JSONResponse(['error' => 'unauthenticated'], 401);
-		$cache = \OCP\Server::get(\OCP\ICacheFactory::class)->createDistributed('portalcheck_wsnap');
-		$key = $uid . ':approvals';
+		$identity = $this->identity();
+		$cache = $this->cacheFactory->createDistributed('portalcheck_wsnap');
+		// Identity + org both scope the cache — a per-user key without the
+		// orgId served one org's data to a multi-org member for 60 s.
+		$key = $identity->getId() . ':' . $orgId . ':approvals';
 		if (($hit = $cache->get($key)) !== null) return new JSONResponse($hit);
-		$status = $this->approvals($orgId)->getData();
+		$status = $this->approvals($orgId)->getData()['data'] ?? [];
 		$payload = ['status' => $status,
 			'serverNow' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format(\DateTimeInterface::ATOM)];
-		$cache->set($key, $payload, 60);
-		return new JSONResponse($payload);
+		$cache->set($key, ['success' => true, 'data' => $payload], 60);
+		return $this->ok($payload);
 	}
 
 }

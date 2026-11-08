@@ -154,9 +154,12 @@ return [
 		['name' => 'companion#formAnswer', 'url' => '/api/companion/v1/forms/{formId}/answers', 'verb' => 'PUT', 'requirements' => ['formId' => '\d+']],
 		['name' => 'companion#formSubmit', 'url' => '/api/companion/v1/forms/{formId}/submit', 'verb' => 'POST', 'requirements' => ['formId' => '\d+']],
 		['name' => 'companion#me', 'url' => '/api/companion/v1/me', 'verb' => 'GET'],
+		// Lives under /api/companion/ so DeviceAuthMiddleware resolves the
+		// companion identity — an /api/* route had no identity source and was
+		// unreachable under both auth modes (audit BUG-5).
+		['name' => 'companion#widgetSnapshot', 'url' => '/api/companion/v1/widget-snapshot/{orgId}', 'verb' => 'GET', 'requirements' => ['orgId' => '\d+']],
 		// upload-link page + upload (public, token)
 		['name' => 'ulink#page', 'url' => '/portal/u/{token}', 'verb' => 'GET'],
 		['name' => 'ulink#upload', 'url' => '/portal/api/u/{token}/files', 'verb' => 'POST'],
 	],
-		['name' => 'companion#widgetSnapshot', 'url' => '/api/widget-snapshot/{orgId}', 'verb' => 'GET'],
 ];
