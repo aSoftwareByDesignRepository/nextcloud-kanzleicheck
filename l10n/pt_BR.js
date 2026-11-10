@@ -195,7 +195,7 @@ OC.L10N.register(
 	"Upload links" : "Links de upload",
 	"Uploaded. Thank you!" : "Enviado. Obrigado!",
 	"Uploading…" : "Enviando…",
-	"Uploads" : "Uploads",
+	"Uploads" : "Envios",
 	"Urgent" : "Urgente",
 	"Valid (days)" : "Validade (dias)",
 	"Waiting" : "Aguardando",
