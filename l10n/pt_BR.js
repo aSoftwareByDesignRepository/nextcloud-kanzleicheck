@@ -232,7 +232,7 @@ OC.L10N.register(
 	"Attachments to this address land in your inbox for review:" : "Os anexos enviados a este endereço chegam à sua caixa de entrada para revisão:",
 	"Book an appointment" : "Agendar uma consulta",
 	"Booking link (\/pub\/o\/slug, optional)" : "Link de agendamento (\/pub\/o\/slug, opcional)",
-	"CSV (email;name;org;kind;ref)" : "CSV (e-mail;nome;org;tipo;ref)",
+	"CSV (email;name;org;kind;ref)" : "CSV (email;name;org;kind;ref)",
 	"Check" : "Verificar",
 	"Choose an industry preset in Settings." : "Escolha uma predefinição de setor nas Configurações.",
 	"Client details" : "Detalhes do cliente",

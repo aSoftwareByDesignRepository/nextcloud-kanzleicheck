@@ -52,7 +52,7 @@
   "Book an appointment": "Randevu alın",
   "Booking link": "Randevu bağlantısı",
   "Booking link (/pub/o/slug, optional)": "Randevu bağlantısı (/pub/o/slug, isteğe bağlı)",
-  "CSV (email;name;org;kind;ref)": "CSV (e-posta;ad;kurum;tür;ref)",
+  "CSV (email;name;org;kind;ref)": "CSV (email;name;org;kind;ref)",
   "Cancel": "İptal",
   "Cancelled — a reason is required.": "İptal edildi — bir gerekçe gerekli.",
   "Cancelled.": "İptal edildi.",

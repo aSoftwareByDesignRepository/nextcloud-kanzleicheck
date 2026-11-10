@@ -231,7 +231,7 @@
 		"Attachments to this address land in your inbox for review:": "Les pièces jointes envoyées à cette adresse arrivent dans votre boîte de réception pour examen :",
 		"Book an appointment": "Prendre rendez-vous",
 		"Booking link (/pub/o/slug, optional)": "Lien de réservation (/pub/o/slug, facultatif)",
-		"CSV (email;name;org;kind;ref)": "CSV (email ; nom ; org ; type ; réf)",
+		"CSV (email;name;org;kind;ref)": "CSV (email;name;org;kind;ref)",
 		"Check": "Vérifier",
 		"Choose an industry preset in Settings.": "Choisissez un préréglage de secteur dans les Paramètres.",
 		"Client details": "Détails du client",

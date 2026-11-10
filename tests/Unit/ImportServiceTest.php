@@ -66,6 +66,20 @@ class ImportServiceTest extends TestCase
 		$this->assertSame('x@y.de', $rows[0]['email']);
 	}
 
+	public function testDocumentedAliasHeadersResolveToCanonical(): void
+	{
+		// The UI documents "CSV (email;name;org;kind;ref)" — the shorthand
+		// header row must produce the same canonical keys plan/apply read,
+		// otherwise a documented file previews green then silently skips.
+		$rows = ImportService::parse("email;name;org;kind;ref\nmax@example.de;Max;Muster GmbH;private;M-1\n");
+		$this->assertCount(1, $rows);
+		$this->assertSame('Muster GmbH', $rows[0]['org_name']);
+		$this->assertSame('M-1', $rows[0]['org_ref']);
+		$this->assertSame('Max', $rows[0]['display_name']);
+		$this->assertSame('max@example.de', $rows[0]['email']);
+		$this->assertSame('private', $rows[0]['kind']);
+	}
+
 	public function testRaggedRowsAligned(): void
 	{
 		// row shorter than header → missing keys padded with ''

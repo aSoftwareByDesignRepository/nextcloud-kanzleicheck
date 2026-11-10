@@ -232,7 +232,7 @@ OC.L10N.register(
 	"Attachments to this address land in your inbox for review:" : "Vedhæftede filer til denne adresse lander i din indbakke til gennemgang:",
 	"Book an appointment" : "Book en tid",
 	"Booking link (\/pub\/o\/slug, optional)" : "Bookinglink (\/pub\/o\/slug, valgfrit)",
-	"CSV (email;name;org;kind;ref)" : "CSV (e-mail;navn;org;type;ref)",
+	"CSV (email;name;org;kind;ref)" : "CSV (email;name;org;kind;ref)",
 	"Check" : "Kontrollér",
 	"Choose an industry preset in Settings." : "Vælg et brancheforvalg under Indstillinger.",
 	"Client details" : "Klientdetaljer",

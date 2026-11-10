@@ -319,7 +319,8 @@ class StaffApiController extends Controller implements \OCA\PortalCheck\Contract
 			$ref = trim((string)($r['org_ref'] ?? ''));
 			$org = $ref !== '' ? $this->orgs->findByRef($ref) : null;
 			if ($org === null) {
-				$org = $this->orgService->create($this->staffUid, $orgName, $ref !== '' ? $ref : null);
+				$kind = trim((string)($r['kind'] ?? '')) ?: 'company';
+				$org = $this->orgService->create($this->staffUid, $orgName, $ref !== '' ? $ref : null, $kind);
 			}
 			$identity = $this->identities->upsert($email, (string)($r['display_name'] ?? $email));
 			$this->identities->addMembership((int)$identity->getId(), (int)$org->getId(), $this->staffUid);

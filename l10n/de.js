@@ -53,7 +53,7 @@ OC.L10N.register(
 	"Book an appointment" : "Termin buchen",
 	"Booking link" : "Buchungslink",
 	"Booking link (\/pub\/o\/slug, optional)" : "Buchungslink (z. B. \/pub\/o\/mein-link)",
-	"CSV (email;name;org;kind;ref)" : "CSV (E-Mail;Name;Mandant;Art;Referenz)",
+	"CSV (email;name;org;kind;ref)" : "CSV (email;name;org;kind;ref)",
 	"Cancel" : "Abbrechen",
 	"Cancelled — a reason is required." : "Abgebrochen — ein Grund ist nötig.",
 	"Cancelled." : "Abgebrochen.",

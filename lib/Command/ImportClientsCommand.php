@@ -82,7 +82,8 @@ class ImportClientsCommand extends Command
 				$ref = trim((string)($r['org_ref'] ?? ''));
 				$org = $ref !== '' ? $this->orgs->findByRefPublic($ref) : null;
 				if ($org === null) {
-					$org = $this->orgs->create('system:import', $orgName, $ref !== '' ? $ref : null);
+					$kind = trim((string)($r['kind'] ?? '')) ?: 'company';
+					$org = $this->orgs->create('system:import', $orgName, $ref !== '' ? $ref : null, $kind);
 				}
 				$isNew = $this->identities->activeByEmail($email) === null;
 				$identity = $this->identities->upsert($email, (string)($r['display_name'] ?? $email));

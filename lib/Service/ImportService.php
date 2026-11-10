@@ -14,6 +14,18 @@ class ImportService
 {
 	public const MAX_ROWS = 5000;
 
+	/**
+	 * Documented shorthand headers (the format the import UI shows, e.g.
+	 * "CSV (email;name;org;kind;ref)") mapped to their canonical column
+	 * names. Resolved once at the parse boundary so the dry-run plan and
+	 * every apply path see identical keys.
+	 */
+	private const HEADER_ALIASES = [
+		'org' => 'org_name',
+		'ref' => 'org_ref',
+		'name' => 'display_name',
+	];
+
 	/** Parse CSV text → rows of [org_name, org_ref, email, display_name]. */
 	public static function parse(string $csv): array
 	{
@@ -30,7 +42,10 @@ class ImportService
 		$header = null;
 		while (($r = fgetcsv($fh, 0, $delim)) !== false) {
 			if ($header === null) {
-				$header = array_map(static fn($h) => strtolower(trim((string)$h)), $r);
+				$header = array_map(static function ($h) {
+					$k = strtolower(trim((string)$h));
+					return self::HEADER_ALIASES[$k] ?? $k;
+				}, $r);
 				continue;
 			}
 			$row = array_combine(array_pad($header, count($r), ''), array_pad($r, count($header), ''));
