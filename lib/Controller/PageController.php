@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace OCA\PortalCheck\Controller;
 
 use OCA\PortalCheck\AppInfo\Application;
+use OCA\PortalCheck\ConfigTransfer\TransferReceiptStore;
 use OCA\PortalCheck\Service\AccessDoorService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\IGroupManager;
 use OCP\IRequest;
+use OCP\IUserSession;
+use OCP\Util;
 
 /** Staff app shell — access door enforced by StaffAccessMiddleware. */
 class PageController extends Controller implements \OCA\PortalCheck\Contracts\StaffContextAware
@@ -28,6 +32,9 @@ class PageController extends Controller implements \OCA\PortalCheck\Contracts\St
 		string $appName,
 		IRequest $request,
 		private readonly AccessDoorService $door,
+		private readonly TransferReceiptStore $transferReceipts,
+		private readonly IGroupManager $groupManager,
+		private readonly IUserSession $userSession,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -43,6 +50,19 @@ class PageController extends Controller implements \OCA\PortalCheck\Contracts\St
 	#[NoCSRFRequired]
 	public function settings(string $section = ''): TemplateResponse
 	{
+		// 'transfer' is a dedicated server-rendered page (synced pack part),
+		// not a card inside the settings SPA — app admins only.
+		if ($section === 'transfer' && $this->staffIsAdmin) {
+			$uid = $this->staffUid !== ''
+				? $this->staffUid
+				: (string)($this->userSession->getUser()?->getUID() ?? '');
+			Util::addTranslations(Application::APP_ID);
+			return new TemplateResponse(Application::APP_ID, 'transfer', [
+				'appId' => Application::APP_ID,
+				'isSystemAdmin' => $uid !== '' && $this->groupManager->isAdmin($uid),
+				'transferLastReceipt' => $this->transferReceipts->lastReceipt(),
+			]);
+		}
 		return $this->index();
 	}
 

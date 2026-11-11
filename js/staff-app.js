@@ -687,6 +687,9 @@ async function vSettings(){
     status(rr.success?t('Saved.'):(rr.message||t('Error')));
   },true));
   body.appendChild(door);
+  // config & data transfer — dedicated server-rendered page (synced part)
+  const xfer=h('<div class="ptl-card"><h2>'+esc(t('Transfer configuration'))+'</h2><p class="ptl-muted">'+esc(t('Copy all settings, catalogues and business data between a test and a production instance — one encrypted file, dry-run before anything is written.'))+'</p><div class="ptl-actions"><a class="ptl-btn" href="'+esc(base+'/settings/transfer')+'">'+esc(t('Open transfer'))+'</a></div></div>').firstElementChild;
+  body.appendChild(xfer);
   // license + diagnostics
   const l=await get('/api/portal/license');
   if(seq!==VIEW_SEQ)return;

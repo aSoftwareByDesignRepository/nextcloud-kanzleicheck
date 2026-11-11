@@ -105,5 +105,8 @@ und jedes Team, das externe Kunden betreut.
 	</repair-steps>
 	<commands>
 		<command>OCA\PortalCheck\Command\ImportClientsCommand</command>
+		<command>OCA\PortalCheck\Command\ConfigExportCommand</command>
+		<command>OCA\PortalCheck\Command\ConfigImportCommand</command>
+		<command>OCA\PortalCheck\Command\ConfigReconcileCommand</command>
 	</commands>
 </info>

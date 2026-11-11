@@ -78,6 +78,12 @@ return [
 		['name' => 'staffApi#syncRepair', 'url' => '/api/portal/sync/{bid}/repair', 'verb' => 'POST', 'requirements' => ['bid' => '\d+']],
 		['name' => 'staffApi#syncRevoke', 'url' => '/api/portal/sync/{bid}', 'verb' => 'DELETE', 'requirements' => ['bid' => '\d+']],
 		['name' => 'staffApi#searchUsers', 'url' => '/api/portal/users/search', 'verb' => 'GET'],
+		// ── Config & data transfer (test → production) ──────────────────
+		['name' => 'transfer_api#status', 'url' => '/api/admin/transfer/status', 'verb' => 'GET'],
+		['name' => 'transfer_api#export', 'url' => '/api/admin/transfer/export', 'verb' => 'POST'],
+		['name' => 'transfer_api#preview', 'url' => '/api/admin/transfer/preview', 'verb' => 'POST'],
+		['name' => 'transfer_api#apply', 'url' => '/api/admin/transfer/apply', 'verb' => 'POST'],
+		['name' => 'transfer_api#reconcile', 'url' => '/api/admin/transfer/reconcile', 'verb' => 'POST'],
 		// client portal pages (guest)
 		['name' => 'portal#login', 'url' => '/portal/login', 'verb' => 'GET'],
 		['name' => 'portal#index', 'url' => '/portal', 'verb' => 'GET'],
