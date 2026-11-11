@@ -64,7 +64,7 @@ class Application extends App implements IBootstrap
 				$c->get(\Psr\Log\LoggerInterface::class),
 			);
 		});
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferPendingStore::class, fn ($c) => new \OCA\PortalCheck\ConfigTransfer\TransferPendingStore($c->get(IRootFolder::class), $c->get(\OCP\IConfig::class), 'portalcheck'));
+		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferPendingStore::class, fn ($c) => new \OCA\PortalCheck\ConfigTransfer\TransferPendingStore($c->get(IRootFolder::class), $c->get(\OCP\IConfig::class), 'portalcheck', $c->get(\Psr\Log\LoggerInterface::class)));
 		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferReceiptStore::class, fn ($c) => new \OCA\PortalCheck\ConfigTransfer\TransferReceiptStore($c->get(\OCP\IConfig::class), 'portalcheck'));
 		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferService::class, function ($c): \OCA\PortalCheck\ConfigTransfer\TransferService {
 			return new \OCA\PortalCheck\ConfigTransfer\TransferService(
