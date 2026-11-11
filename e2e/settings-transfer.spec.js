@@ -88,6 +88,19 @@ test.describe('settings transfer surface', () => {
 		await expect(page.locator('#ptl-transfer-report-file')).not.toBeEmpty();
 		await expect(page.locator('#ptl-transfer-report-groups')).not.toBeEmpty();
 
+		// rendered-placeholder contract: no vsprintf residue (%d, %s, %1$s)
+		// may reach the admin — window.t expands {name} tokens only, so the
+		// t() helper interpolates positional params itself. Locale-safe:
+		// assert absence of residue + presence of interpolated digits, never
+		// English copy.
+		const residue = /%(?:\d+\$)?[sd]/;
+		await expect(page.locator('#ptl-transfer-report-verdict')).not.toContainText(residue);
+		await expect(page.locator('#ptl-transfer-report-verdict')).toContainText(/\d/);
+		await expect(page.locator('#ptl-transfer-report-file')).not.toContainText(residue);
+		await expect(page.locator('#ptl-transfer-report-file')).toContainText(/\d/);
+		await expect(page.locator('#ptl-transfer-report-groups')).not.toContainText(residue);
+		await expect(page.locator('#ptl-transfer-report-groups')).toContainText(/\d/);
+
 		// Escape closes (dialog-level receiver, host handlers can't swallow it)
 		await page.keyboard.press('Escape');
 		await expect(report).not.toBeVisible();
@@ -99,6 +112,8 @@ test.describe('settings transfer surface', () => {
 		await page.locator('#ptl-transfer-confirm').click();
 		const progress = page.locator('#ptl-transfer-progress');
 		await expect(progress).toBeVisible({ timeout: 10000 });
+		// progress phase line interpolates 'Phase: %s' — no raw % residue
+		await expect(page.locator('#ptl-transfer-progress-text')).not.toContainText(/%(?:\d+\$)?[sd]/);
 
 		const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
 		expect(jobId).toMatch(/^\d+$/);
