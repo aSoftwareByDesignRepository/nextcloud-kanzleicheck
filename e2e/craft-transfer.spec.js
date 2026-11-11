@@ -153,6 +153,35 @@ test.describe('craft transfer', () => {
 		const w = await token.evaluate((el) => el.getBoundingClientRect().width);
 		expect(w, `token input ${Math.round(w)}px still on the NC-core 130px pin`).toBeGreaterThan(140);
 
+		// required_field_or_step_undiscoverable (visual r29): the report
+		// dialog's footer — token row + Cancel + Apply import — must paint
+		// INSIDE the dialog's client box at every viewport. The shell must
+		// never be the scroller: .ptl-dialog__body absorbs the overflow.
+		const assertDialogFooterPainted = async (where) => {
+			const g = await report.evaluate((d) => {
+				const cs = getComputedStyle(d);
+				const r = d.getBoundingClientRect();
+				const bt = parseFloat(cs.borderTopWidth) || 0;
+				const bl = parseFloat(cs.borderLeftWidth) || 0;
+				const client = { top: r.top + bt, left: r.left + bl, bottom: r.top + bt + d.clientHeight, right: r.left + bl + d.clientWidth };
+				const f = d.querySelector('.ptl-dialog__footer').getBoundingClientRect();
+				const a = d.querySelector('#ptl-transfer-confirm').getBoundingClientRect();
+				return { client, dScrollH: d.scrollHeight, dClientH: d.clientHeight,
+					footer: { top: f.top, bottom: f.bottom, left: f.left, right: f.right },
+					apply: { top: a.top, bottom: a.bottom, left: a.left, right: a.right } };
+			});
+			for (const [name, box] of Object.entries({ footer: g.footer, apply: g.apply })) {
+				expect(box.bottom, `${where}: ${name} bottom ${Math.round(box.bottom)} hangs below dialog client box ${Math.round(g.client.bottom)}`).toBeLessThanOrEqual(g.client.bottom + 0.5);
+				expect(box.top, `${where}: ${name} top above dialog client box`).toBeGreaterThanOrEqual(g.client.top - 0.5);
+				expect(box.right, `${where}: ${name} right outside dialog client box`).toBeLessThanOrEqual(g.client.right + 0.5);
+				expect(box.left, `${where}: ${name} left outside dialog client box`).toBeGreaterThanOrEqual(g.client.left - 0.5);
+			}
+			expect(g.dScrollH - g.dClientH,
+				`${where}: dialog shell scrolls (scrollHeight ${g.dScrollH} > clientHeight ${g.dClientH}) — .ptl-dialog__body must absorb the overflow`)
+				.toBeLessThanOrEqual(1);
+		};
+		await assertDialogFooterPainted('1280');
+
 		// Dialog-open sweep — the contract scans dialog[open] in the same pass.
 		// listAllow: .ptl-transfer-group uls are mono-font machine-name manifest
 		// readouts inside <details> disclosures — marker-less by design (the
@@ -167,6 +196,7 @@ test.describe('craft transfer', () => {
 		await shot(page, 'ptl-staff-transfer-replace-confirm-light-1280');
 		await page.setViewportSize({ width: 375, height: 812 });
 		await page.waitForTimeout(300);
+		await assertDialogFooterPainted('375');
 		await shot(page, 'ptl-staff-transfer-replace-confirm-light-375');
 		// Never apply — replace is destructive; close the dialog instead.
 		await page.keyboard.press('Escape');
