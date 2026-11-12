@@ -72,6 +72,50 @@ async function assertToastCloseArmored(page) {
 	expect(m.hostY + m.hostH).toBeLessThanOrEqual(m.vpH + 1);
 }
 
+/** native_dialog_margin_reset_uncentered: NC core's reset stylesheet
+ * zeroes the UA 'margin:auto' that centers a top-layer <dialog>, so the
+ * pack re-declares it on .ptl-dialog — and the ≤480px media query
+ * re-asserts margin:0 for the full-bleed sheet (donor selector is
+ * element+class dialog.ptl-dialog at 0,1,1). Assert painted geometry,
+ * not only the declaration: ≥481px the dialog must sit centered with
+ * symmetric margins, ≤480px it must be a full-bleed sheet. */
+async function assertDialogGeometry(dlg, mode) {
+	const g = await dlg.evaluate((d) => {
+		const cs = getComputedStyle(d);
+		const r = d.getBoundingClientRect();
+		let declared = false;
+		for (const sheet of document.styleSheets) {
+			try {
+				for (const rule of sheet.cssRules) {
+					if ((rule.selectorText || '').includes('.ptl-dialog')
+						&& /(^|[;\s])margin:\s*auto/.test(rule.cssText || '')) declared = true;
+				}
+			} catch { /* cross-origin sheet */ }
+		}
+		return {
+			vw: window.innerWidth, vh: window.innerHeight,
+			left: r.left, right: r.right, top: r.top,
+			width: r.width, height: r.height,
+			marginLeft: cs.marginLeft, marginRight: cs.marginRight,
+			declared,
+		};
+	});
+	expect(g.declared, 'no live stylesheet declares margin:auto on .ptl-dialog — core reset anchors the dialog top-left').toBe(true);
+	if (mode === 'centered') {
+		const hGap = g.vw - g.width;
+		const vGap = g.vh - g.height;
+		expect(Math.abs(g.left - hGap / 2), `dialog left ${Math.round(g.left)} vs symmetric margin ${Math.round(hGap / 2)}`).toBeLessThanOrEqual(2);
+		expect(Math.abs((g.vw - g.right) - hGap / 2)).toBeLessThanOrEqual(2);
+		expect(Math.abs(g.top - vGap / 2), `dialog top ${Math.round(g.top)} vs symmetric margin ${Math.round(vGap / 2)}`).toBeLessThanOrEqual(4);
+		expect(g.left, 'dialog anchored at viewport left edge — core margin reset won').toBeGreaterThan(100);
+	} else {
+		expect(g.left, `full-bleed sheet left ${Math.round(g.left)} ≠ 0`).toBeLessThanOrEqual(1);
+		expect(Math.abs(g.width - g.vw), `full-bleed sheet width ${Math.round(g.width)} ≠ viewport ${g.vw}`).toBeLessThanOrEqual(2);
+		expect(g.marginLeft, 'full-bleed sheet keeps a side margin').toBe('0px');
+		expect(g.marginRight).toBe('0px');
+	}
+}
+
 test.describe('craft transfer', () => {
 	test.skip(!authed, 'no creds');
 
@@ -112,6 +156,7 @@ test.describe('craft transfer', () => {
 		const report = page.locator('#ptl-transfer-report');
 		await expect(report).toBeVisible({ timeout: 30000 });
 		await expect(page.locator('#ptl-transfer-report-verdict')).toContainText(/\d/);
+		await assertDialogGeometry(report, 'centered');
 		await shot(page, 'ptl-staff-transfer-report-dialog-light-1280');
 
 		// apply → progress dialog stays open while the job waits queued
@@ -243,6 +288,7 @@ test.describe('craft transfer', () => {
 				.toBeLessThanOrEqual(1);
 		};
 		await assertDialogFooterPainted('1280');
+		await assertDialogGeometry(report, 'centered');
 
 		// Dialog-open sweep — the contract scans dialog[open] in the same pass.
 		// listAllow: .ptl-transfer-group uls are mono-font machine-name manifest
@@ -259,6 +305,7 @@ test.describe('craft transfer', () => {
 		await page.setViewportSize({ width: 375, height: 812 });
 		await page.waitForTimeout(300);
 		await assertDialogFooterPainted('375');
+		await assertDialogGeometry(report, 'fullbleed');
 		await shot(page, 'ptl-staff-transfer-replace-confirm-light-375');
 		// Never apply — replace is destructive; close the dialog instead.
 		await page.keyboard.press('Escape');
