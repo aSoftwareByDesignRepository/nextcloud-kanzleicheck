@@ -67,3 +67,11 @@
 .ptl-toast--error{border-left-color:var(--color-error-text,var(--ptl-danger-ink,#cc4646));}
 .ptl-toast--warning{border-left-color:var(--color-warning-text,#c98600);}
 .ptl-toast__close{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;cursor:pointer;padding:8px;min-height:44px;min-width:44px;box-sizing:border-box;line-height:1;font:inherit;color:inherit;}
+/* Overlay close-control armor — the toast stack mounts on document.body
+ * (outside #app-content.ptl-app), so the bare 0-1-0 class rule above loses
+ * to core's button:not(.button-vue) repaint (width / pale fill / border /
+ * padding / margin). Overlay-scoped selectors pin every repainted property
+ * !important (overlay_toast_button_armor_gap; donor shape: whistlecheck
+ * .wc-toasts button.wc-toast__close). */
+.ptl-toasts button.ptl-toast__close,
+#ptl-toasts button.ptl-toast__close{width:auto !important;margin:0 !important;margin-inline-start:auto !important;padding:8px !important;background:transparent !important;border:0 !important;min-width:44px;min-height:44px;}

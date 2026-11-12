@@ -34,6 +34,44 @@ async function shot(page, name) {
 	await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: false });
 }
 
+/** overlay_toast_button_armor_gap: the toast dismiss is a bare
+ * <button class="ptl-toast__close"> mounted on document.body inside
+ * #ptl-toasts — NC core's button repaint (width:130px + pale fill +
+ * border at 0-1-1, margin-inline-start:0 at 0-2-1) must not reach it.
+ * Assert the painted geometry is the declared transparent ~44px
+ * icon-close docked at the toast's inline-end on one row — not the
+ * collapsed ~128px pale core-skin block wrapped to a second row.
+ * Donor shape: whistlecheck assertToastCloseArmored (wc-vis-r13-01). */
+async function assertToastCloseArmored(page) {
+	const close = page.locator('.ptl-toast.ptl-toast--error .ptl-toast__close').first();
+	await expect(close).toBeVisible();
+	const m = await close.evaluate((el) => {
+		const r = el.getBoundingClientRect();
+		const cs = getComputedStyle(el);
+		const host = el.closest('.ptl-toast').getBoundingClientRect();
+		return {
+			x: r.x, y: r.y, w: r.width, h: r.height,
+			hostX: host.x, hostY: host.y, hostW: host.width, hostH: host.height,
+			vpH: window.innerHeight,
+			bg: cs.backgroundColor, bw: cs.borderWidth,
+		};
+	});
+	expect(m.bg, 'dismiss keeps transparent background (no pale core skin)')
+		.toBe('rgba(0, 0, 0, 0)');
+	expect(m.bw, 'dismiss keeps border:0').toBe('0px');
+	expect(m.w, 'dismiss ≈44px — core width:130px repaint would blow it out')
+		.toBeLessThanOrEqual(56);
+	expect(m.w).toBeGreaterThanOrEqual(40);
+	expect(m.h).toBeGreaterThanOrEqual(40);
+	expect(m.h).toBeLessThanOrEqual(64);
+	// inline-end dock + single row: glyph sits in the toast's trailing half
+	// and inside its height (the collapsed block wrapped to a second row)
+	expect(m.x + m.w / 2).toBeGreaterThan(m.hostX + m.hostW / 2);
+	expect(m.y + m.h).toBeLessThanOrEqual(m.hostY + m.hostH + 1);
+	// the stack clears the bottom viewport edge (safe-area floor)
+	expect(m.hostY + m.hostH).toBeLessThanOrEqual(m.vpH + 1);
+}
+
 test.describe('craft transfer', () => {
 	test.skip(!authed, 'no creds');
 
@@ -65,6 +103,7 @@ test.describe('craft transfer', () => {
 		// toast, not only the visually-hidden live region (OC.Notification is
 		// gone from NC≥31 bundles — the old bridge silently no-ops there).
 		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await assertToastCloseArmored(page);
 		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
 		await shot(page, 'ptl-staff-transfer-fileerror-light-1280');
 
@@ -128,6 +167,7 @@ test.describe('craft transfer', () => {
 		});
 		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
 		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await assertToastCloseArmored(page);
 		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
 		await shot(page, 'ptl-staff-transfer-fileerror-light-375');
 	});
