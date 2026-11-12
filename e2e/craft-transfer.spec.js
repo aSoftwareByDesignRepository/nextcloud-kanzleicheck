@@ -61,7 +61,11 @@ test.describe('craft transfer', () => {
 			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
 		});
 		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
-		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty({ timeout: 30000 });
+		// dead_platform_toast_api: the failure must reach a VISIBLE app-owned
+		// toast, not only the visually-hidden live region (OC.Notification is
+		// gone from NC≥31 bundles — the old bridge silently no-ops there).
+		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
 		await shot(page, 'ptl-staff-transfer-fileerror-light-1280');
 
 		// correct passphrase → preview → report dialog (interpolated counters)
@@ -101,13 +105,31 @@ test.describe('craft transfer', () => {
 		await shot(page, 'ptl-staff-transfer-after-apply-light-1280');
 	});
 
-	test('staff transfer surface mobile 375', async ({ page }) => {
+	test('staff transfer surface mobile 375', async ({ page, request }) => {
+		const { username, password } = creds();
+		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+
 		await page.setViewportSize({ width: 375, height: 812 });
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
 		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
 		await page.waitForTimeout(600);
 		await shot(page, 'ptl-staff-transfer-light-375');
+
+		// dead_platform_toast_api at narrow width: a failed preview must paint
+		// a visible .ptl-toast--error (not only the hidden live region).
+		const exp = await request.post(`${BASE}${APP}/api/admin/transfer/export`, {
+			headers: { Authorization: auth, 'OCS-APIRequest': 'true' }, data: { passphrase: PASS },
+		});
+		expect(exp.status()).toBe(200);
+		const bytes = await exp.body();
+		await page.locator('#ptl-transfer-file').setInputFiles({
+			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
+		});
+		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
+		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
+		await shot(page, 'ptl-staff-transfer-fileerror-light-375');
 	});
 
 	test('staff transfer replace-confirm token row wide (cramped_form_controls)', async ({ page, request }) => {
