@@ -18,7 +18,7 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\ConfigTransfer;
+namespace OCA\KanzleiCheck\ConfigTransfer;
 
 interface ConfigTransferHooks
 {

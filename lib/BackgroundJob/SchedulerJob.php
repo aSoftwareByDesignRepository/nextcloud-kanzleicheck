@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\BackgroundJob;
+namespace OCA\KanzleiCheck\BackgroundJob;
 
-use OCA\PortalCheck\Db\Approval;
-use OCA\PortalCheck\Db\ApprovalMapper;
-use OCA\PortalCheck\Db\DocRequestMapper;
-use OCA\PortalCheck\Db\IdentityMapper;
-use OCA\PortalCheck\Db\JobCursorMapper;
-use OCA\PortalCheck\Db\MemberMapper;
-use OCA\PortalCheck\Db\NotifyMapper;
-use OCA\PortalCheck\Service\DocumentService;
-use OCA\PortalCheck\Db\ReqItemMapper;
-use OCA\PortalCheck\Db\ReqRemindMapper;
-use OCA\PortalCheck\Db\ReqTemplateMapper;
-use OCA\PortalCheck\Db\ReqTplOrgMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Service\ActorResolver;
-use OCA\PortalCheck\Service\MailOutboxService;
-use OCA\PortalCheck\Service\RequestService;
-use OCA\PortalCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Db\Approval;
+use OCA\KanzleiCheck\Db\ApprovalMapper;
+use OCA\KanzleiCheck\Db\DocRequestMapper;
+use OCA\KanzleiCheck\Db\IdentityMapper;
+use OCA\KanzleiCheck\Db\JobCursorMapper;
+use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Db\NotifyMapper;
+use OCA\KanzleiCheck\Service\DocumentService;
+use OCA\KanzleiCheck\Db\ReqItemMapper;
+use OCA\KanzleiCheck\Db\ReqRemindMapper;
+use OCA\KanzleiCheck\Db\ReqTemplateMapper;
+use OCA\KanzleiCheck\Db\ReqTplOrgMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\Service\MailOutboxService;
+use OCA\KanzleiCheck\Service\RequestService;
+use OCA\KanzleiCheck\Service\SettingsService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\IDBConnection;
@@ -31,7 +31,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Scheduler (ZF-06): hourly TimedJob, NC lock, 30 s budget, persisted cursor.
  * Work: recurring templates → requests (idempotent per period), reminders
- * (ptl_req_remind claim before outbox — ZF-03), approval void sweep,
+ * (kzc_req_remind claim before outbox — ZF-03), approval void sweep,
  * pending_kinds mail flush.
  */
 class SchedulerJob extends TimedJob
@@ -68,7 +68,7 @@ private readonly DocumentService $docs,
 	protected function run($argument): void
 	{
 		try {
-			$this->lock->acquireLock('portalcheck_scheduler', ILockingProvider::LOCK_EXCLUSIVE, 'portalcheck scheduler');
+			$this->lock->acquireLock('kanzleicheck_scheduler', ILockingProvider::LOCK_EXCLUSIVE, 'kanzleicheck scheduler');
 		} catch (\Throwable) {
 			return; // another node owns it
 		}
@@ -81,7 +81,7 @@ private readonly DocumentService $docs,
 			$this->flushPendingMails();
 			$this->cursors->set('scheduler', (string)time());
 		} finally {
-			$this->lock->releaseLock('portalcheck_scheduler', ILockingProvider::LOCK_EXCLUSIVE);
+			$this->lock->releaseLock('kanzleicheck_scheduler', ILockingProvider::LOCK_EXCLUSIVE);
 		}
 	}
 
@@ -90,9 +90,9 @@ private readonly DocumentService $docs,
 		// best-effort: intake poll is one scheduler stage; its failure must not
 		// block recurrences/reminders/outbox flush in the same run.
 		try {
-			\OCP\Server::get(\OCA\PortalCheck\Service\IntakeMailService::class)->poll(50);
+			\OCP\Server::get(\OCA\KanzleiCheck\Service\IntakeMailService::class)->poll(50);
 		} catch (\Throwable $e) {
-			$this->logger->warning('portalcheck intake poll failed', ['e' => $e->getMessage()]);
+			$this->logger->warning('kanzleicheck intake poll failed', ['e' => $e->getMessage()]);
 		}
 	}
 
@@ -136,7 +136,7 @@ private readonly DocumentService $docs,
 				} catch (\Throwable $e) {
 					// best-effort: a single org's failed recurrence must not abort the
 					// batch; the next period run re-attempts (periodKey dedups).
-					$this->logger->warning('portalcheck recurrence skipped', ['tpl' => (int)$tpl->getId(), 'org' => $orgId, 'e' => $e->getMessage()]);
+					$this->logger->warning('kanzleicheck recurrence skipped', ['tpl' => (int)$tpl->getId(), 'org' => $orgId, 'e' => $e->getMessage()]);
 					continue;
 				}
 			}
@@ -181,7 +181,7 @@ private readonly DocumentService $docs,
 					}
 					$this->outbox->enqueue($identity->getEmail(), 'remind',
 						'remind:' . $r->getId() . ':' . $ymd . ':' . $m->getIdentityId(),
-						['deadline' => $r->getDeadline()?->format('d.m.Y'), 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')],
+						['deadline' => $r->getDeadline()?->format('d.m.Y'), 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('kanzleicheck.portal.index')],
 						$identity->getLocale() ?? 'de');
 				}
 			}
@@ -204,7 +204,7 @@ private readonly DocumentService $docs,
 				$this->voidCheck($a);
 			} catch (\Throwable $e) {
 				// best-effort: cursor already advanced — log so a persistently-failing approval stays observable
-				$this->logger->warning('portalcheck approval void failed', ['approval' => (int)$a->getId(), 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck approval void failed', ['approval' => (int)$a->getId(), 'e' => $e->getMessage()]);
 			}
 		}
 		if ($count < self::BATCH) {
@@ -234,7 +234,7 @@ private readonly DocumentService $docs,
 	private function void(Approval $a, string $reason): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_approval')
+		$qb->update('kzc_approval')
 			->set('state', $qb->createNamedParameter('void'))
 			->set('reason', $qb->createNamedParameter($reason))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$a->getId())))
@@ -254,7 +254,7 @@ private readonly DocumentService $docs,
 				$what = in_array('message', $kinds, true) ? 'message' : ($kinds[0] ?? 'update');
 				$this->outbox->enqueue($identity->getEmail(), 'notice',
 					'notice:' . $row['identity_id'] . ':' . $row['org_id'] . ':' . time(),
-					['what' => $what, 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')],
+					['what' => $what, 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('kanzleicheck.portal.index')],
 					$identity->getLocale() ?? 'de');
 			}
 		}

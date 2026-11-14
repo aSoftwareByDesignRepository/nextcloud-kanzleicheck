@@ -2,7 +2,7 @@
 /**
  * ATLAS_VERTICAL_SCROLL_CONTRACT — the staff shell must live inside NC's
  * #app-content scrollport so tall views reach their last row.
- * Guards ptl-c5 (nc_content_scroll_container_bypass): a template mounted
+ * Guards kzc-c5 (nc_content_scroll_container_bypass): a template mounted
  * directly under #content{overflow:clip} truncates every below-fold row.
  * Seeds a unique org cohort so the list overflows deterministically, then
  * asserts the last row is reachable at desktop and phone heights.
@@ -11,7 +11,7 @@ const { test, expect } = require('@playwright/test');
 const { assertAtlasVerticalScrollReachable } = require('../../_shared/e2e/atlas-vertical-scroll-contract');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const authed = hasCreds();
 const SEED_N = 20;
 
@@ -48,10 +48,10 @@ test.describe('ATLAS_VERTICAL_SCROLL_CONTRACT', () => {
 			await page.setViewportSize({ width: 1280, height: 640 });
 			await login(page, creds());
 			await page.goto(`${APP}/?view=orgs`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-orglist .ptl-row').first().waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-orglist .kzc-row').first().waitFor({ state: 'visible', timeout: 20000 });
 			await assertAtlasVerticalScrollReachable(page, {
 				scrollport: '#app-content',
-				target: '#ptl-orglist .ptl-row:last-child',
+				target: '#kzc-orglist .kzc-row:last-child',
 				bottomSlopPx: 12,
 			});
 		} finally {
@@ -69,10 +69,10 @@ test.describe('ATLAS_VERTICAL_SCROLL_CONTRACT', () => {
 			await page.setViewportSize({ width: 390, height: 667 });
 			await login(page, creds());
 			await page.goto(`${APP}/?view=orgs`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-orglist .ptl-row').first().waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-orglist .kzc-row').first().waitFor({ state: 'visible', timeout: 20000 });
 			await assertAtlasVerticalScrollReachable(page, {
 				scrollport: '#app-content',
-				target: '#ptl-orglist .ptl-row:last-child',
+				target: '#kzc-orglist .kzc-row:last-child',
 				bottomSlopPx: 16,
 			});
 		} finally {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Db\IntakeHold;
-use OCA\PortalCheck\Db\IntakeHoldMapper;
-use OCA\PortalCheck\Db\IntakeMapper;
-use OCA\PortalCheck\Service\AuditService;
-use OCA\PortalCheck\Service\IntakeService;
-use OCA\PortalCheck\Service\SettingsService;
-use OCA\PortalCheck\Service\TokenService;
+use OCA\KanzleiCheck\Db\IntakeHold;
+use OCA\KanzleiCheck\Db\IntakeHoldMapper;
+use OCA\KanzleiCheck\Db\IntakeMapper;
+use OCA\KanzleiCheck\Service\AuditService;
+use OCA\KanzleiCheck\Service\IntakeService;
+use OCA\KanzleiCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Service\TokenService;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -111,10 +111,10 @@ class IntakeAndNotifyTest extends TestCase
 
 	public function testTokenMatchesExactHmacContract(): void
 	{
-		// pin the wire contract: HMAC(secret:nonce, 'ptl-intake:<orgId>')[:16]
+		// pin the wire contract: HMAC(secret:nonce, 'kzc-intake:<orgId>')[:16]
 		$nonce = 'aabbccddee0011223344556677889900';
 		[$svc] = $this->svc(['enabled' => 1, 'token_hash' => $nonce]);
-		$expected = substr(hash_hmac('sha256', 'ptl-intake:7', 's3cr3t:' . $nonce), 0, 16);
+		$expected = substr(hash_hmac('sha256', 'kzc-intake:7', 's3cr3t:' . $nonce), 0, 16);
 		$this->assertSame($expected, $svc->currentToken(7));
 	}
 

@@ -15,10 +15,10 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Tests\Unit\ConfigTransfer;
+namespace OCA\KanzleiCheck\Tests\Unit\ConfigTransfer;
 
-use OCA\PortalCheck\ConfigTransfer\AbstractTransferManifest;
-use OCA\PortalCheck\ConfigTransfer\TransferManifest;
+use OCA\KanzleiCheck\ConfigTransfer\AbstractTransferManifest;
+use OCA\KanzleiCheck\ConfigTransfer\TransferManifest;
 use PHPUnit\Framework\TestCase;
 
 final class TransferManifestContractTest extends TestCase

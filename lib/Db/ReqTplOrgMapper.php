@@ -7,20 +7,20 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_req_tpl_org` — orgs a recurring template targets. */
+/** `kzc_req_tpl_org` — orgs a recurring template targets. */
 class ReqTplOrgMapper
 {
-	public const TABLE = 'ptl_req_tpl_org';
+	public const TABLE = 'kzc_req_tpl_org';
 
 	public function __construct(private readonly IDBConnection $db)
 	{
 	}
 
-	// unique-conflict:ok ptl_req_tpl_org carries no unique index — replace-set
+	// unique-conflict:ok kzc_req_tpl_org carries no unique index — replace-set
 	// (delete + insert by template_id) cannot violate a constraint.
 	/** @param list<int> $orgIds */
 	public function setOrgs(int $templateId, array $orgIds): void

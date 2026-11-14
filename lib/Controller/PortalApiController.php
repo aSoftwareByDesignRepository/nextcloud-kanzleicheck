@@ -2,36 +2,36 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Db\ApprovalMapper;
-use OCA\PortalCheck\Db\ConversationMapper;
-use OCA\PortalCheck\Db\DeviceMapper;
-use OCA\PortalCheck\Db\DocRequestMapper;
-use OCA\PortalCheck\Db\MessageMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Db\PortalFormMapper;
-use OCA\PortalCheck\Db\ReqItemMapper;
-use OCA\PortalCheck\Db\TaskMapper;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Service\ActorResolver;
-use OCA\PortalCheck\Service\ApprovalService;
-use OCA\PortalCheck\Service\ChatService;
-use OCA\PortalCheck\Service\DocumentService;
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\IntakeService;
-use OCA\PortalCheck\Db\NotifyMapper;
-use OCA\PortalCheck\Service\MailOutboxService;
-use OCA\PortalCheck\Service\NotifyService;
-use OCA\PortalCheck\Service\OtpService;
-use OCA\PortalCheck\Service\OrgService;
-use OCA\PortalCheck\Service\PresetCatalog;
-use OCA\PortalCheck\Service\RequestService;
-use OCA\PortalCheck\Service\SettingsService;
-use OCA\PortalCheck\Service\TaskService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Db\ApprovalMapper;
+use OCA\KanzleiCheck\Db\ConversationMapper;
+use OCA\KanzleiCheck\Db\DeviceMapper;
+use OCA\KanzleiCheck\Db\DocRequestMapper;
+use OCA\KanzleiCheck\Db\MessageMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Db\PortalFormMapper;
+use OCA\KanzleiCheck\Db\ReqItemMapper;
+use OCA\KanzleiCheck\Db\TaskMapper;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\Service\ApprovalService;
+use OCA\KanzleiCheck\Service\ChatService;
+use OCA\KanzleiCheck\Service\DocumentService;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\IntakeService;
+use OCA\KanzleiCheck\Db\NotifyMapper;
+use OCA\KanzleiCheck\Service\MailOutboxService;
+use OCA\KanzleiCheck\Service\NotifyService;
+use OCA\KanzleiCheck\Service\OtpService;
+use OCA\KanzleiCheck\Service\OrgService;
+use OCA\KanzleiCheck\Service\PresetCatalog;
+use OCA\KanzleiCheck\Service\RequestService;
+use OCA\KanzleiCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Service\TaskService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -45,15 +45,15 @@ use OCP\IURLGenerator;
  * PortalSessionMiddleware which sets ->portalIdentity. Every org-scoped
  * route checks membership before touching data; every miss is uniform.
  */
-class PortalApiController extends Controller implements \OCA\PortalCheck\Contracts\PortalSessionAware
+class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contracts\PortalSessionAware
 {
 	use ApiTrait;
 
-	/** @var \OCA\PortalCheck\Db\Identity */
+	/** @var \OCA\KanzleiCheck\Db\Identity */
 	public $portalIdentity;
 	public ?string $portalSessionToken = null;
 
-	public function setPortalIdentity(\OCA\PortalCheck\Db\Identity $identity, string $sessionToken): void
+	public function setPortalIdentity(\OCA\KanzleiCheck\Db\Identity $identity, string $sessionToken): void
 	{
 		$this->portalIdentity = $identity;
 		$this->portalSessionToken = $sessionToken;
@@ -84,14 +84,14 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		private readonly PresetCatalog $presets,
 		private readonly SettingsService $settings,
 		private readonly NotifyService $notifyService,
-		private readonly \OCA\PortalCheck\Service\FormService $formService,
+		private readonly \OCA\KanzleiCheck\Service\FormService $formService,
 		private readonly MailOutboxService $mailOutbox,
 		private readonly IURLGenerator $urls,
 	) {
 		parent::__construct($appName, $request);
 	}
 
-	private function org(int $orgId): \OCA\PortalCheck\Db\Org
+	private function org(int $orgId): \OCA\KanzleiCheck\Db\Org
 	{
 		if ($orgId <= 0 || !$this->identities->isMember((int)$this->portalIdentity->getId(), $orgId)) {
 			throw new NotFoundException();
@@ -120,7 +120,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			$conv = $this->convs->findByOrg($oid);
 			$unread = $conv !== null ? $this->chat->unreadCount((int)$conv->getId(), $this->actor()) : 0;
 			$out[] = ['id' => $oid, 'name' => $org->getName(), 'unread' => $unread,
-				'bookingUrl' => \OCP\Server::get(\OCA\PortalCheck\Service\IntegrationService::class)->bookingUrlFor($org)];
+				'bookingUrl' => \OCP\Server::get(\OCA\KanzleiCheck\Service\IntegrationService::class)->bookingUrlFor($org)];
 		}
 		return $this->ok(['orgs' => $out, 'me' => ['id' => (int)$this->portalIdentity->getId(), 'displayName' => $this->portalIdentity->getDisplayName()]]);
 	}
@@ -272,7 +272,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	public function invoices(int $orgId): JSONResponse
 	{
 		$org = $this->org($orgId);
-		$integrations = \OCP\Server::get(\OCA\PortalCheck\Service\IntegrationService::class);
+		$integrations = \OCP\Server::get(\OCA\KanzleiCheck\Service\IntegrationService::class);
 		if (!$integrations->invoiceAvailable() || $org->getPcCustId() === null) {
 			throw new NotFoundException();
 		}
@@ -292,7 +292,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	{
 		$this->org($orgId);
 		$out = [];
-		foreach (\OCP\Server::get(\OCA\PortalCheck\Db\ContactMapper::class)->findForOrg($orgId) as $c) {
+		foreach (\OCP\Server::get(\OCA\KanzleiCheck\Db\ContactMapper::class)->findForOrg($orgId) as $c) {
 			$user = \OCP\Server::get(\OCP\IUserManager::class)->get((string)$c['user_id']);
 			if ($user === null || !$user->isEnabled()) {
 				continue;
@@ -346,9 +346,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	#[PublicPage] #[NoCSRFRequired]
 	public function session(): JSONResponse
 	{
-		$raw = (string)$this->request->getCookie(\OCA\PortalCheck\Middleware\PortalSessionMiddleware::SESSION_COOKIE);
+		$raw = (string)$this->request->getCookie(\OCA\KanzleiCheck\Middleware\PortalSessionMiddleware::SESSION_COOKIE);
 		return $this->ok([
-			'csrf' => (new \OCA\PortalCheck\Service\CsrfService())->tokenFor($raw),
+			'csrf' => (new \OCA\KanzleiCheck\Service\CsrfService())->tokenFor($raw),
 			'identity' => ['id' => (int)$this->portalIdentity->getId(), 'displayName' => $this->portalIdentity->getDisplayName()],
 		]);
 	}
@@ -359,11 +359,11 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	{
 		$org = $this->org($orgId);
 		if (!$this->docs->rootHealthy()) {
-			throw new \OCA\PortalCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
+			throw new \OCA\KanzleiCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
 		}
 		$f = $this->docs->orgFolder((int)$org->getId(), (string)$org->getName(), $org->getFolderId(), $org->getFolderPath());
 		if ($f === null) {
-			throw new \OCA\PortalCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
+			throw new \OCA\KanzleiCheck\Exception\ApiException(503, 'NO_DOCS_ROOT', 'document area unavailable');
 		}
 		// persist the binding once (folder created or rebound)
 		if ($f->getId() !== $org->getFolderId()) {
@@ -378,12 +378,12 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	#[PublicPage] #[NoCSRFRequired]
 	public function upload(int $orgId): JSONResponse
 	{
-		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
+		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\KanzleiCheck\Service\DocumentService::DIR_INBOX);
 		$file = $_FILES['file'] ?? null;
 		if ($file === null || !is_uploaded_file($file['tmp_name'] ?? '')) {
-			throw new \OCA\PortalCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no file');
+			throw new \OCA\KanzleiCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no file');
 		}
-		$uploadSvc = new \OCA\PortalCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
+		$uploadSvc = new \OCA\KanzleiCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
 		$uploadSvc->validateFile($file['tmp_name'], (string)$file['name'], $uploadSvc->maxBytes());
 		$note = $this->request->getParam('note') !== null ? (string)$this->request->getParam('note') : null;
 		$reqItemId = $this->strictId($this->request->getParam('reqItemId'));
@@ -421,7 +421,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		$this->org((int)$row['org_id']);
 		$file = $_FILES['chunk'] ?? null;
 		if ($file === null || !is_uploaded_file($file['tmp_name'] ?? '')) {
-			throw new \OCA\PortalCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no chunk');
+			throw new \OCA\KanzleiCheck\Exception\ApiException(400, 'VALIDATION_FAILED', 'no chunk');
 		}
 		$this->chunkSvc()->putChunk($uploadKey, (int)$row['org_id'], $this->actor(), $index, $file['tmp_name']);
 		return $this->ok(['received' => true]);
@@ -435,9 +435,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new NotFoundException();
 		}
 		$orgId = (int)$row['org_id'];
-		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\PortalCheck\Service\DocumentService::DIR_INBOX);
+		$eingang = $this->docs->ensureSubFolder($this->orgFolder($orgId), \OCA\KanzleiCheck\Service\DocumentService::DIR_INBOX);
 		$res = $this->chunkSvc()->finish($uploadKey, $orgId, $this->actor());
-		$uploadSvc = new \OCA\PortalCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
+		$uploadSvc = new \OCA\KanzleiCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
 		try {
 			$uploadSvc->validateFile($res['tmp'], (string)$row['file_name'], $uploadSvc->maxBytes());
 			$stored = $uploadSvc->store($eingang, $orgId, $this->actor(), $res['tmp'], (string)$row['file_name'], 'portal', null);
@@ -449,9 +449,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 		return $this->ok(['id' => (int)$stored['upload']->getId(), 'duplicate' => $stored['duplicate'] !== null], 201);
 	}
 
-	private function chunkSvc(): \OCA\PortalCheck\Service\ChunkUploadService
+	private function chunkSvc(): \OCA\KanzleiCheck\Service\ChunkUploadService
 	{
-		return \OCP\Server::get(\OCA\PortalCheck\Service\ChunkUploadService::class);
+		return \OCP\Server::get(\OCA\KanzleiCheck\Service\ChunkUploadService::class);
 	}
 
 	// ── devices (revoke own) ─────────────────────────────────────────
@@ -459,7 +459,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	#[PublicPage] #[NoCSRFRequired]
 	public function revokeDevice(int $id): JSONResponse
 	{
-		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\DeviceService::class);
+		$svc = \OCP\Server::get(\OCA\KanzleiCheck\Service\DeviceService::class);
 		if (!$svc->revoke($id, (int)$this->portalIdentity->getId())) {
 			throw new NotFoundException();
 		}
@@ -479,7 +479,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	public function documents(int $orgId): JSONResponse
 	{
 		$folder = $this->orgFolder($orgId);
-		$dir = $this->docs->subFolder($folder, \OCA\PortalCheck\Service\DocumentService::DIR_DOCS);
+		$dir = $this->docs->subFolder($folder, \OCA\KanzleiCheck\Service\DocumentService::DIR_DOCS);
 		$files = [];
 		if ($dir !== null) {
 			foreach ($dir->getDirectoryListing() as $node) {
@@ -501,7 +501,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new ApiException(500, 'READ_FAILED', 'cannot read file');
 		}
 		$resp = new \OCP\AppFramework\Http\StreamResponse($stream);
-		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\PortalCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
+		$resp->addHeader('Content-Disposition', 'attachment; filename="' . \OCA\KanzleiCheck\Service\SafeFilenameService::sanitizeForContentDisposition($node->getName()) . '"');
 		$resp->addHeader('X-Content-Type-Options', 'nosniff');
 		$resp->addHeader('Content-Type', 'application/octet-stream');
 		return $resp;
@@ -528,9 +528,9 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new NotFoundException();
 		}
 		$this->org((int)$form->getOrgId());
-		$tplMapper = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class);
+		$tplMapper = \OCP\Server::get(\OCA\KanzleiCheck\Db\FormTemplateMapper::class);
 		$tpl = $tplMapper->find((int)$form->getTplId());
-		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($formId);
+		$answers = \OCP\Server::get(\OCA\KanzleiCheck\Db\FormAnswerMapper::class)->allForForm($formId);
 		return $this->ok(['form' => [
 			'id' => $formId, 'state' => $form->getState(),
 			'fields' => json_decode((string)($tpl?->getFieldsJson() ?? '[]'), true) ?: [],
@@ -546,7 +546,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new NotFoundException();
 		}
 		$this->org((int)$form->getOrgId());
-		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\FormService::class);
+		$svc = \OCP\Server::get(\OCA\KanzleiCheck\Service\FormService::class);
 		$r = $svc->saveAnswer($this->actor(), $formId, (int)$form->getOrgId(),
 			(string)$this->request->getParam('field', ''),
 			(string)$this->request->getParam('value', ''),
@@ -562,16 +562,16 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 			throw new NotFoundException();
 		}
 		$this->org((int)$form->getOrgId());
-		$svc = \OCP\Server::get(\OCA\PortalCheck\Service\FormService::class);
+		$svc = \OCP\Server::get(\OCA\KanzleiCheck\Service\FormService::class);
 		$svc->submit($this->actor(), $formId, (int)$form->getOrgId());
 		if ($form->getReqItemId() !== null) {
 			try {
-				$item = \OCP\Server::get(\OCA\PortalCheck\Db\ReqItemMapper::class)->find((int)$form->getReqItemId());
+				$item = \OCP\Server::get(\OCA\KanzleiCheck\Db\ReqItemMapper::class)->find((int)$form->getReqItemId());
 				if ($item !== null) {
 					$this->requests->deliverItem($this->actor(), (int)$item->getReqId(), (int)$item->getId());
 				}
 			} catch (\Throwable $e) {
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
 			}
 		}
 		return new JSONResponse(null, 204);
@@ -600,7 +600,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 	private function notifyStaffNewMessage(int $orgId): void
 	{
 		foreach ($this->notifyService->staffRecipients($orgId) as $uid) {
-			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('portalcheck.page.index') . '?view=inbox&org=' . $orgId);
+			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('kanzleicheck.page.index') . '?view=inbox&org=' . $orgId);
 		}
 		$this->notifyService->clientMail($orgId, 'message');
 	}
@@ -613,7 +613,7 @@ class PortalApiController extends Controller implements \OCA\PortalCheck\Contrac
 				['code' => $code, 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->mailOutbox->drain(3);
 		} catch (\Throwable $e) {
-			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck approval OTP mail enqueue failed', ['approval' => $approvalId, 'e' => $e->getMessage()]);
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck approval OTP mail enqueue failed', ['approval' => $approvalId, 'e' => $e->getMessage()]);
 		}
 	}
 }

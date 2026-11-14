@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Db\ContactMapper;
-use OCA\PortalCheck\Db\IdentityMapper;
-use OCA\PortalCheck\Db\MemberMapper;
-use OCA\PortalCheck\Db\NotifyMapper;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Db\ContactMapper;
+use OCA\KanzleiCheck\Db\IdentityMapper;
+use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Db\NotifyMapper;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
@@ -51,7 +51,7 @@ class NotifyService
 			$this->notifications->notify($n);
 		} catch (\Throwable $e) {
 			// best-effort: notification fan-out must never fail the triggering mutation
-			$this->logger->warning('portalcheck staff notify failed', ['e' => $e->getMessage()]);
+			$this->logger->warning('kanzleicheck staff notify failed', ['e' => $e->getMessage()]);
 		}
 	}
 
@@ -90,7 +90,7 @@ class NotifyService
 				$this->outbox->enqueue(
 					$identity->getEmail(), 'notice',
 					'notice:' . $iid . ':' . $orgId . ':' . time(),
-					['what' => $what, 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')],
+					['what' => $what, 'provider' => $this->settings->get('provider_label'), 'portalUrl' => $this->urls->linkToRouteAbsolute('kanzleicheck.portal.index')],
 					$identity->getLocale() ?? 'de'
 				);
 			} else {

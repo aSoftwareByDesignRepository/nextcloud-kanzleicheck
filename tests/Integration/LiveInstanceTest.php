@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Integration;
+namespace OCA\KanzleiCheck\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
 
 /**
  * Live-instance integration suite — exercises the real Docker NC 35 stack
- * at PTL_BASE (default http://localhost:8081). Skips cleanly when the
+ * at KZC_BASE (default http://localhost:8081). Skips cleanly when the
  * instance is unreachable so the suite is CI-safe.
  *
  * These are the same adversarial proofs as tests/Integration/smoke.sh,
@@ -22,9 +22,9 @@ class LiveInstanceTest extends TestCase
 
 	public static function setUpBeforeClass(): void
 	{
-		self::$base = rtrim(getenv('PTL_BASE') ?: 'http://localhost:8081', '/');
-		self::$cookieFile = tempnam(sys_get_temp_dir(), 'ptl_ck_');
-		$code = self::statusOf('/apps/portalcheck/portal/login');
+		self::$base = rtrim(getenv('KZC_BASE') ?: 'http://localhost:8081', '/');
+		self::$cookieFile = tempnam(sys_get_temp_dir(), 'kzc_ck_');
+		$code = self::statusOf('/apps/kanzleicheck/portal/login');
 		if ($code !== 200) {
 			self::$skip = ['reason' => "instance unreachable ($code)"];
 		}
@@ -76,25 +76,25 @@ class LiveInstanceTest extends TestCase
 
 	private static function seed(): void
 	{
-		self::db("DELETE FROM oc_ptl_member WHERE identity_id IN (SELECT id FROM oc_ptl_identity WHERE email='int@test.invalid');
-DELETE FROM oc_ptl_identity WHERE email='int@test.invalid';
-DELETE FROM oc_ptl_org WHERE ref='INT-1';
-INSERT INTO oc_ptl_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Int Mandat','INT-1','company','active',0,'system:test',NOW(),NOW());
-INSERT INTO oc_ptl_identity (email,display_name,status,created_at) VALUES ('int@test.invalid','Int Client','active',NOW());
-INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_ptl_identity i, oc_ptl_org o WHERE i.email='int@test.invalid' AND o.ref='INT-1';");
-		self::db("UPDATE oc_appconfig SET configvalue='1' WHERE appid='portalcheck' AND configkey='allow_http_login'");
+		self::db("DELETE FROM oc_kzc_member WHERE identity_id IN (SELECT id FROM oc_kzc_identity WHERE email='int@test.invalid');
+DELETE FROM oc_kzc_identity WHERE email='int@test.invalid';
+DELETE FROM oc_kzc_org WHERE ref='INT-1';
+INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Int Mandat','INT-1','company','active',0,'system:test',NOW(),NOW());
+INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('int@test.invalid','Int Client','active',NOW());
+INSERT INTO oc_kzc_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_kzc_identity i, oc_kzc_org o WHERE i.email='int@test.invalid' AND o.ref='INT-1';");
+		self::db("UPDATE oc_appconfig SET configvalue='1' WHERE appid='kanzleicheck' AND configkey='allow_http_login'");
 	}
 
 	private static function latestOtp(): string
 	{
-		return self::db("SELECT JSON_UNQUOTE(JSON_EXTRACT(params_json,'\$.code')) FROM oc_ptl_mail_outbox WHERE kind='otp' ORDER BY id DESC LIMIT 1");
+		return self::db("SELECT JSON_UNQUOTE(JSON_EXTRACT(params_json,'\$.code')) FROM oc_kzc_mail_outbox WHERE kind='otp' ORDER BY id DESC LIMIT 1");
 	}
 
 	public function testPublicSurfaces(): void
 	{
 		$this->need();
-		$this->assertSame(200, self::statusOf('/apps/portalcheck/portal/login'));
-		$r = self::http('GET', '/apps/portalcheck/api/companion/v1/bootstrap');
+		$this->assertSame(200, self::statusOf('/apps/kanzleicheck/portal/login'));
+		$r = self::http('GET', '/apps/kanzleicheck/api/companion/v1/bootstrap');
 		$this->assertTrue($r['json']['success']);
 		$this->assertFalse($r['json']['data']['pushAvailable']);
 	}
@@ -102,7 +102,7 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 	public function testUnknownEmailUniform(): void
 	{
 		$this->need();
-		$r = self::http('POST', '/apps/portalcheck/portal/api/auth/send', ['email' => 'nobody@x.invalid']);
+		$r = self::http('POST', '/apps/kanzleicheck/portal/api/auth/send', ['email' => 'nobody@x.invalid']);
 		$this->assertTrue($r['json']['data']['sent'] ?? false);
 		$this->assertSame(202, $r['status']);
 	}
@@ -111,14 +111,14 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 	{
 		$this->need();
 		self::seed();
-		self::http('POST', '/apps/portalcheck/portal/api/auth/send', ['email' => 'int@test.invalid']);
+		self::http('POST', '/apps/kanzleicheck/portal/api/auth/send', ['email' => 'int@test.invalid']);
 		$code = self::latestOtp();
 		$this->assertMatchesRegularExpression('/^\d{6}$/', $code);
-		$r = self::http('POST', '/apps/portalcheck/portal/api/auth/verify', ['email' => 'int@test.invalid', 'code' => $code], [], true);
+		$r = self::http('POST', '/apps/kanzleicheck/portal/api/auth/verify', ['email' => 'int@test.invalid', 'code' => $code], [], true);
 		$this->assertTrue($r['json']['success']);
 		$this->assertNotEmpty($r['json']['data']['csrf']);
 		// orgs scoped
-		$r = self::http('GET', '/apps/portalcheck/portal/api/orgs', null, [], true);
+		$r = self::http('GET', '/apps/kanzleicheck/portal/api/orgs', null, [], true);
 		$this->assertStringContainsString('Int Mandat', $r['raw']);
 		return $code;
 	}
@@ -129,7 +129,7 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 	public function testOtpReplayRejected(string $code): void
 	{
 		$this->need();
-		$r = self::http('POST', '/apps/portalcheck/portal/api/auth/verify', ['email' => 'int@test.invalid', 'code' => $code]);
+		$r = self::http('POST', '/apps/kanzleicheck/portal/api/auth/verify', ['email' => 'int@test.invalid', 'code' => $code]);
 		$this->assertSame('INVALID_CODE', $r['json']['error']);
 	}
 
@@ -137,16 +137,16 @@ INSERT INTO oc_ptl_member (identity_id,org_id,role,created_at,created_by) SELECT
 	{
 		$this->need();
 		// session from the round-trip cookies (testFullAuthRoundTrip ran first via @depends on class order — same cookie file)
-		$r = self::http('POST', '/apps/portalcheck/portal/api/orgs/1/messages', ['body' => 'x'], [], true);
+		$r = self::http('POST', '/apps/kanzleicheck/portal/api/orgs/1/messages', ['body' => 'x'], [], true);
 		$this->assertSame('UNAUTHORIZED', $r['json']['error']);
-		$r = self::http('GET', '/apps/portalcheck/portal/api/orgs/999999/messages', null, [], true);
+		$r = self::http('GET', '/apps/kanzleicheck/portal/api/orgs/999999/messages', null, [], true);
 		$this->assertSame('NOT_FOUND', $r['json']['error']);
 	}
 
 	public function testStaffDoorAnonBlocked(): void
 	{
 		$this->need();
-		$code = self::statusOf('/apps/portalcheck/api/portal/settings');
+		$code = self::statusOf('/apps/kanzleicheck/api/portal/settings');
 		$this->assertContains($code, [401, 403]);
 	}
 }

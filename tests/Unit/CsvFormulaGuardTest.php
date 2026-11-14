@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\CsvFormulaGuard;
+use OCA\KanzleiCheck\Service\CsvFormulaGuard;
 use PHPUnit\Framework\TestCase;
 
 /** CSV formula injection — every lead char that spreadsheets interpret. */

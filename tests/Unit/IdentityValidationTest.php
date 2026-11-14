@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\IdentityService;
 use PHPUnit\Framework\TestCase;
 
 class IdentityValidationTest extends TestCase

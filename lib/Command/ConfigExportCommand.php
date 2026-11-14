@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 /**
- * `occ portalcheck:config:export` — produce the encrypted transfer container.
+ * `occ kanzleicheck:config:export` — produce the encrypted transfer container.
  * Byte-identical format to the UI export (same TransferService pipeline).
  * Passphrase: interactive hidden prompt, --passphrase, or TRANSFER_PASSPHRASE.
  *
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Command;
+namespace OCA\KanzleiCheck\Command;
 
-use OCA\PortalCheck\ConfigTransfer\TransferException;
-use OCA\PortalCheck\ConfigTransfer\TransferService;
+use OCA\KanzleiCheck\ConfigTransfer\TransferException;
+use OCA\KanzleiCheck\ConfigTransfer\TransferService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,8 +33,8 @@ class ConfigExportCommand extends Command
 	protected function configure(): void
 	{
 		$this
-			->setName('portalcheck:config:export')
-			->setDescription('Export PortalCheck configuration + data as one passphrase-encrypted transfer container.')
+			->setName('kanzleicheck:config:export')
+			->setDescription('Export KanzleiCheck configuration + data as one passphrase-encrypted transfer container.')
 			->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Write the container to this file (default: stdout)')
 			->addOption('passphrase', null, InputOption::VALUE_REQUIRED, 'Container passphrase (or TRANSFER_PASSPHRASE env, or interactive prompt)')
 			->addOption('include-secrets', null, InputOption::VALUE_NONE, 'Include secret values inside the encrypted container (default: redact)');

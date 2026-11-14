@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\UploadLink;
-use OCA\PortalCheck\Db\UploadLinkMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Db\UploadLink;
+use OCA\KanzleiCheck\Db\UploadLinkMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
@@ -26,7 +26,7 @@ class UploadLinkService
 	{
 		$label = trim($label);
 		if ($label === '' || mb_strlen($label) > 190) {
-			throw new \OCA\PortalCheck\Exception\ValidationException('VALIDATION_FAILED', ['label' => 'required']);
+			throw new \OCA\KanzleiCheck\Exception\ValidationException('VALIDATION_FAILED', ['label' => 'required']);
 		}
 		$expiryDays = max(1, min(30, $expiryDays));
 		$maxFiles = max(1, min(50, $maxFiles));
@@ -87,7 +87,7 @@ class UploadLinkService
 	public function claimSlot(int $linkId, int $bytes): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_ulink')
+		$qb->update('kzc_ulink')
 			->set('used_files', $qb->createFunction('used_files + 1'))
 			->set('used_bytes', $qb->createFunction('used_bytes + ' . max(0, $bytes)))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($linkId)))
@@ -101,7 +101,7 @@ class UploadLinkService
 	public function revoke(int $linkId, int $orgId): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_ulink')
+		$qb->update('kzc_ulink')
 			->set('revoked_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($linkId)))
 			->andWhere($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)));

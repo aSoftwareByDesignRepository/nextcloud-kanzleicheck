@@ -1,14 +1,14 @@
 (function(){'use strict';
-/* PortalCheck staff SPA: Overview · Messages · Tasks · Requests ·
+/* KanzleiCheck staff SPA: Overview · Messages · Tasks · Requests ·
    Clients · Uploads · Settings. esc() for all user data — no innerHTML. */
-const el=document.getElementById('ptl-staff-view'),base=location.pathname.split('/apps/portalcheck')[0]+'/apps/portalcheck';
-const t=s=>(window.OC&&OC.L10N&&OC.L10N.translate)?OC.L10N.translate('portalcheck',s):s;
+const el=document.getElementById('kzc-staff-view'),base=location.pathname.split('/apps/kanzleicheck')[0]+'/apps/kanzleicheck';
+const t=s=>(window.OC&&OC.L10N&&OC.L10N.translate)?OC.L10N.translate('kanzleicheck',s):s;
 const api=async(u,o)=>{const r=await fetch(base+u,Object.assign({headers:{'Content-Type':'application/json'}},o||{}));if(r.status===204)return{success:true};return r.json().catch(()=>({success:false}));};
 const get=u=>api(u),post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})}),put=(u,b)=>api(u,{method:'PUT',body:JSON.stringify(b||{})}),del=u=>api(u,{method:'DELETE'});
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
 const h=html=>{const t=document.createElement('template');t.innerHTML=html;return t.content.cloneNode(true);};
-const btn=(label,fn,primary)=>{const b=document.createElement('button');b.className='ptl-btn'+(primary?' ptl-btn--primary':'');b.textContent=label;b.onclick=fn;return b;};
-const status=t=>{const s=document.getElementById('ptl-live');if(s)s.textContent=t||'';document.getElementById('ptl-loading')?.remove();};
+const btn=(label,fn,primary)=>{const b=document.createElement('button');b.className='kzc-btn'+(primary?' kzc-btn--primary':'');b.textContent=label;b.onclick=fn;return b;};
+const status=t=>{const s=document.getElementById('kzc-live');if(s)s.textContent=t||'';document.getElementById('kzc-loading')?.remove();};
 let ME_ADMIN=false;
 /* per-loader generation counters — a superseded list fetch must never paint
    over a newer result (stale_response_render_clobber). Module scope so view
@@ -20,18 +20,18 @@ let ORG_SEQ=0,PQ_SEQ=0,VIEW_SEQ=0;
 
 /* native dialog helpers (never window.prompt/confirm) */
 function ask(title,label,okLabel,fields){return new Promise(res=>{
-  const dlg=document.createElement('dialog');dlg.className='ptl-dialog';
-  let inner='<form method="dialog" class="ptl-card"><h2></h2>';
+  const dlg=document.createElement('dialog');dlg.className='kzc-dialog';
+  let inner='<form method="dialog" class="kzc-card"><h2></h2>';
   (fields||[{name:'v',label}]).forEach(f=>{
-    inner+='<label class="ptl-label" for="fd-'+esc(f.name)+'"></label>';
-    inner+=f.type==='select'?'<select id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'">'+(f.options||[]).map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>'
-      :f.type==='textarea'?'<textarea id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" rows="3"></textarea>'
-      :'<input id="fd-'+esc(f.name)+'" class="ptl-input" name="'+esc(f.name)+'" type="'+esc(f.type||'text')+'" '+(f.required?'required':'')+'>';
+    inner+='<label class="kzc-label" for="fd-'+esc(f.name)+'"></label>';
+    inner+=f.type==='select'?'<select id="fd-'+esc(f.name)+'" class="kzc-input" name="'+esc(f.name)+'">'+(f.options||[]).map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('')+'</select>'
+      :f.type==='textarea'?'<textarea id="fd-'+esc(f.name)+'" class="kzc-input" name="'+esc(f.name)+'" rows="3"></textarea>'
+      :'<input id="fd-'+esc(f.name)+'" class="kzc-input" name="'+esc(f.name)+'" type="'+esc(f.type||'text')+'" '+(f.required?'required':'')+'>';
   });
-  inner+='<div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary"></button></div></form>';
+  inner+='<div class="kzc-actions"><button value="" class="kzc-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="kzc-btn kzc-btn--primary"></button></div></form>';
   dlg.innerHTML=inner;dlg.querySelector('h2').textContent=title;
-  dlg.querySelectorAll('.ptl-label').forEach((l,i)=>{const f=(fields||[{label}])[i];l.textContent=f.label;});
-  dlg.querySelector('.ptl-btn--primary').textContent=okLabel;
+  dlg.querySelectorAll('.kzc-label').forEach((l,i)=>{const f=(fields||[{label}])[i];l.textContent=f.label;});
+  dlg.querySelector('.kzc-btn--primary').textContent=okLabel;
   dlg.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();dlg.close('');}});
   dlg.addEventListener('close',()=>{
     if(dlg.returnValue!=='ok'){res(null);dlg.remove();return;}
@@ -40,19 +40,19 @@ function ask(title,label,okLabel,fields){return new Promise(res=>{
   document.body.appendChild(dlg);dlg.showModal();
 });}
 function confirmDlg(title,text){return new Promise(res=>{
-  const dlg=document.createElement('dialog');dlg.className='ptl-dialog';
-  dlg.innerHTML='<form method="dialog" class="ptl-card"><h2></h2><p class="ptl-muted"></p><div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary">'+esc(t('Confirm'))+'</button></div></form>';
-  dlg.querySelector('h2').textContent=title;dlg.querySelector('.ptl-muted').textContent=text;
+  const dlg=document.createElement('dialog');dlg.className='kzc-dialog';
+  dlg.innerHTML='<form method="dialog" class="kzc-card"><h2></h2><p class="kzc-muted"></p><div class="kzc-actions"><button value="" class="kzc-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="kzc-btn kzc-btn--primary">'+esc(t('Confirm'))+'</button></div></form>';
+  dlg.querySelector('h2').textContent=title;dlg.querySelector('.kzc-muted').textContent=text;
   dlg.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();dlg.close('');}});
   dlg.addEventListener('close',()=>{res(dlg.returnValue==='ok');dlg.remove();});
   document.body.appendChild(dlg);dlg.showModal();});}
 
 const NAV=[['overview',t('Overview')],['inbox',t('Messages')],['board',t('Tasks')],['requests',t('Requests')],['orgs',t('Clients')],['uploads',t('Uploads')],['holds',t('Mail review')],['forms',t('Questionnaires')],['people',t('People')],['settings',t('Settings')]];
 function chrome(active,title){
-  el.innerHTML='<nav class="ptl-nav" aria-label="'+esc(t('Sections'))+'">'+NAV.map(([k,l])=>'<button class="ptl-navbtn'+(k===active?' ptl-navbtn--active':'')+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</nav><h1>'+esc(title)+'</h1><div id="ptl-live" role="status" aria-live="polite" class="ptl-status"></div><div id="ptl-body"><p class="ptl-muted" id="ptl-loading" role="status"></p></div>';
-  const ld=document.getElementById('ptl-loading');ld.textContent=t('Loading…');
-  el.querySelectorAll('.ptl-navbtn').forEach(b=>b.onclick=()=>{status(t('Loading…'));VIEWS[b.dataset.v]();});
-  const body=document.getElementById('ptl-body');
+  el.innerHTML='<nav class="kzc-nav" aria-label="'+esc(t('Sections'))+'">'+NAV.map(([k,l])=>'<button class="kzc-navbtn'+(k===active?' kzc-navbtn--active':'')+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</nav><h1>'+esc(title)+'</h1><div id="kzc-live" role="status" aria-live="polite" class="kzc-status"></div><div id="kzc-body"><p class="kzc-muted" id="kzc-loading" role="status"></p></div>';
+  const ld=document.getElementById('kzc-loading');ld.textContent=t('Loading…');
+  el.querySelectorAll('.kzc-navbtn').forEach(b=>b.onclick=()=>{status(t('Loading…'));VIEWS[b.dataset.v]();});
+  const body=document.getElementById('kzc-body');
   // instant feedback on every view switch: clear the loading placeholder on
   // the first real insert (covers success, error and early-return paths).
   const orig=body.appendChild.bind(body);
@@ -71,7 +71,7 @@ async function vOverview(){
   const su=await get('/api/portal/setup');
   if(seq!==VIEW_SEQ)return;
   if(su.success&&su.data&&su.data.setup&&!su.data.setup.done){
-    const coach=h('<div class="ptl-card ptl-coach"><h2>'+esc(t('Initial setup'))+'</h2><ul></ul></div>');
+    const coach=h('<div class="kzc-card kzc-coach"><h2>'+esc(t('Initial setup'))+'</h2><ul></ul></div>');
     const ul=coach.querySelector('ul');
     if(!su.data.setup.preset)ul.appendChild(h('<li>'+esc(t('Choose an industry preset in Settings.'))+'</li>'));
     if(!su.data.setup.docsRoot)ul.appendChild(h('<li>'+esc(t('Set the documents root folder in Settings (create a folder in Files first).'))+'</li>'));
@@ -79,44 +79,44 @@ async function vOverview(){
     body.appendChild(coach);
   }
   const s=r.data.stats;
-  body.appendChild(h('<div class="ptl-stats">'+[
+  body.appendChild(h('<div class="kzc-stats">'+[
     [s.unread,t('Unread messages'),'inbox'],
     [s.newUploads,t('New uploads'),'uploads'],
     [s.overdueRequests,t('Overdue requests'),'requests'],
     [s.openApprovals,t('Open approvals'),'requests'],
-  ].map(([n,l,v])=>'<button class="ptl-stat" data-v="'+v+'"><b>'+n+'</b>'+esc(l)+'</button>').join('')+'</div>'));
-  body.querySelectorAll('.ptl-stat').forEach(b=>b.onclick=()=>VIEWS[b.dataset.v]());
+  ].map(([n,l,v])=>'<button class="kzc-stat" data-v="'+v+'"><b>'+n+'</b>'+esc(l)+'</button>').join('')+'</div>'));
+  body.querySelectorAll('.kzc-stat').forEach(b=>b.onclick=()=>VIEWS[b.dataset.v]());
   const q=r.data.queue||[];
   if(q.length){
     body.appendChild(h('<h2>'+esc(t('Recently active'))+'</h2>'));
-    const list=h('<div class="ptl-list"></div>').firstElementChild;
+    const list=h('<div class="kzc-list"></div>').firstElementChild;
     q.slice(0,8).forEach(c=>{
-      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
+      const row=h('<button class="kzc-row"><b></b><span class="kzc-muted"></span>'+(c.unread?'<span class="kzc-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
       row.setAttribute('aria-label',c.orgName||t('Client'));
-      row.querySelector('b').textContent=c.orgName||t('Client');row.querySelector('.ptl-muted').textContent=c.lastPreview||'';
+      row.querySelector('b').textContent=c.orgName||t('Client');row.querySelector('.kzc-muted').textContent=c.lastPreview||'';
       row.onclick=()=>openConv(c.orgId,c.orgName);list.appendChild(row);
     });
     body.appendChild(list);
-  } else body.appendChild(h('<p class="ptl-muted">'+esc(t('All done — no open items.'))+'</p>'));
+  } else body.appendChild(h('<p class="kzc-muted">'+esc(t('All done — no open items.'))+'</p>'));
 }
 
 /* ── Messages (inbox + thread) ── */
 async function vInbox(mine){
   VIEW_SEQ++;
   const body=chrome('inbox',t('Messages'));
-  const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
-  mineCb.querySelector('#ptl-mine').checked=!!mine;
-  mineCb.querySelector('#ptl-mine').onchange=e=>vInbox(e.target.checked);
+  const mineCb=h('<label class="kzc-check"><input type="checkbox" id="kzc-mine"> '+esc(t('Only my clients'))+'</label>');
+  mineCb.querySelector('#kzc-mine').checked=!!mine;
+  mineCb.querySelector('#kzc-mine').onchange=e=>vInbox(e.target.checked);
   body.appendChild(mineCb);
   const r=await get('/api/portal/inbox'+(mine?'?mine=1':''));
   if(!r.success){body.appendChild(h('<p>'+esc(r.message||t('Error'))+'</p>'));return;}
   const convs=r.data.conversations||[];
-  if(!convs.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No conversations.'))+'</p>'));return;}
-  const list=h('<div class="ptl-list"></div>').firstElementChild;
+  if(!convs.length){body.appendChild(h('<p class="kzc-muted">'+esc(t('No conversations.'))+'</p>'));return;}
+  const list=h('<div class="kzc-list"></div>').firstElementChild;
   convs.forEach(c=>{
-    const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span>'+(c.unread?'<span class="ptl-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
+    const row=h('<button class="kzc-row"><b></b><span class="kzc-muted"></span>'+(c.unread?'<span class="kzc-badge">'+c.unread+'</span>':'')+'</button>').firstElementChild;
     row.querySelector('b').textContent=c.orgName;
-    row.querySelector('.ptl-muted').textContent=(c.lastAuthorName?c.lastAuthorName+': ':'')+(c.lastPreview||'')+(c.state==='archived'?' '+t('(archived)'):'');
+    row.querySelector('.kzc-muted').textContent=(c.lastAuthorName?c.lastAuthorName+': ':'')+(c.lastPreview||'')+(c.state==='archived'?' '+t('(archived)'):'');
     row.onclick=()=>openConv(c.orgId,c.orgName);list.appendChild(row);
   });
   body.appendChild(list);
@@ -138,10 +138,10 @@ async function openConv(orgId,name){
   CONV_ORG=orgId;CONV_LAST=0;
   const gen=++CONV_GEN;
   const body=chrome('inbox',t('Chat')+' — '+name);
-  body.appendChild(h('<div id="ptl-msgs" class="ptl-msgs"></div>'));
-  body.appendChild(h('<form id="ptl-cf" class="ptl-composer"><input id="ptl-cm" class="ptl-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a reply…'))+'"><button class="ptl-btn ptl-btn--primary">'+esc(t('Send'))+'</button></form>'));
-  body.querySelector('#ptl-cf').addEventListener('submit',async e=>{
-    e.preventDefault();const inp=document.getElementById('ptl-cm'),v=inp.value.trim();if(!v)return;
+  body.appendChild(h('<div id="kzc-msgs" class="kzc-msgs"></div>'));
+  body.appendChild(h('<form id="kzc-cf" class="kzc-composer"><input id="kzc-cm" class="kzc-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a reply…'))+'"><button class="kzc-btn kzc-btn--primary">'+esc(t('Send'))+'</button></form>'));
+  body.querySelector('#kzc-cf').addEventListener('submit',async e=>{
+    e.preventDefault();const inp=document.getElementById('kzc-cm'),v=inp.value.trim();if(!v)return;
     const r=await post('/api/portal/orgs/'+orgId+'/messages',{body:v,clientUuid:crypto.randomUUID()});
     // send triggers the pending poll EARLY on the same chain — clear the
     // armed timer first, never invoke a second self-rescheduling chain.
@@ -157,20 +157,20 @@ async function pullConv(gen){
   const r=await get('/api/portal/orgs/'+o+'/messages?after='+CONV_LAST).catch(()=>null);
   if(CONV_BUSY===gen)CONV_BUSY=0;
   if(CONV_WANT){CONV_WANT=false;pullConv(CONV_GEN);return;} // coalesced — one fresh pull under current gen/org
-  const box=document.getElementById('ptl-msgs');
+  const box=document.getElementById('kzc-msgs');
   if(!box||o!==CONV_ORG||gen!==CONV_GEN)return; // view/org switched mid-flight — drop, stop chain
   if(r&&r.success&&r.data){
     (r.data.messages||[]).forEach(m=>{
       if(m.id<=CONV_LAST)return; // already painted — belt dedupe vs overlapping fetches
       CONV_LAST=m.id;
       const mine=m.kind==='staff';
-      const row=h('<div class="ptl-msg'+(mine?' ptl-msg--mine':'')+'"><div class="ptl-msg__body"></div><div class="ptl-msg__meta"></div></div>');
-      row.querySelector('.ptl-msg__body').textContent=m.body;
-      row.querySelector('.ptl-msg__meta').textContent=(m.authorName||m.author)+' · '+new Date(m.createdAt).toLocaleString();
+      const row=h('<div class="kzc-msg'+(mine?' kzc-msg--mine':'')+'"><div class="kzc-msg__body"></div><div class="kzc-msg__meta"></div></div>');
+      row.querySelector('.kzc-msg__body').textContent=m.body;
+      row.querySelector('.kzc-msg__meta').textContent=(m.authorName||m.author)+' · '+new Date(m.createdAt).toLocaleString();
       box.appendChild(row);
     });
     if(r.data.messages.length)box.scrollTop=box.scrollHeight;
-    if(r.data.state==='archived'){document.getElementById('ptl-cf')?.remove();status(t('Conversation archived (read only).'));}
+    if(r.data.state==='archived'){document.getElementById('kzc-cf')?.remove();status(t('Conversation archived (read only).'));}
   }
   CONV_TIMER=setTimeout(()=>{CONV_TIMER=null;pullConv(gen);},15000);
 }
@@ -196,9 +196,9 @@ async function vBoard(){
     status(rr.success?t('Created.'):(rr.message||t('Error')));if(rr.success)vBoard();
   },true));
   const cols=r.data.columns||{};
-  const wrap=h('<div class="ptl-board"></div>').firstElementChild;
+  const wrap=h('<div class="kzc-board"></div>').firstElementChild;
   Object.entries(cols).forEach(([key,col])=>{
-    const c=h('<div class="ptl-col"><h2></h2></div>').firstElementChild;
+    const c=h('<div class="kzc-col"><h2></h2></div>').firstElementChild;
     c.querySelector('h2').textContent=col.label+' ('+col.cards.length+')';
     col.cards.forEach(card=>c.appendChild(taskCard(card)));
     wrap.appendChild(c);
@@ -206,24 +206,24 @@ async function vBoard(){
   body.appendChild(wrap);
 }
 function taskCard(it){
-  const c=h('<div class="ptl-card2"><b></b><div class="ptl-muted"></div><div class="ptl-cardmeta"></div></div>');
+  const c=h('<div class="kzc-card2"><b></b><div class="kzc-muted"></div><div class="kzc-cardmeta"></div></div>');
   c.querySelector('b').textContent=it.title;
-  c.querySelector('.ptl-muted').textContent=it.orgName;
-  const meta=c.querySelector('.ptl-cardmeta');
-  meta.appendChild(h('<span class="ptl-pill ptl-pill--'+esc(it.priority)+'">'+esc(it.priorityLabel||it.priority)+'</span>'));
-  if(it.dueDate)meta.appendChild(h('<span class="ptl-pill'+(it.overdue?' ptl-pill--overdue':'')+'">'+esc(it.dueDate)+(it.overdue?' ⚠':'')+'</span>'));
+  c.querySelector('.kzc-muted').textContent=it.orgName;
+  const meta=c.querySelector('.kzc-cardmeta');
+  meta.appendChild(h('<span class="kzc-pill kzc-pill--'+esc(it.priority)+'">'+esc(it.priorityLabel||it.priority)+'</span>'));
+  if(it.dueDate)meta.appendChild(h('<span class="kzc-pill'+(it.overdue?' kzc-pill--overdue':'')+'">'+esc(it.dueDate)+(it.overdue?' ⚠':'')+'</span>'));
   const move=btn(t('Move…'),async()=>{
     const f=await ask(t('Move to…'),null,t('Move'),[{name:'status',label:t('Status'),type:'select',options:[['new',t('New')],['in_progress',t('In progress')],['waiting',t('Waiting')],['done',t('Done')]]}]);
     if(!f)return;
     const r=await put('/api/portal/tasks/'+it.id+'/move',{status:f.status,revision:it.revision});
     if(r.success)vBoard();else if(r.error==='CONFLICT'){status(t('Changed in the meantime — reloaded.'));vBoard();}else status(r.message||t('Error'));
   });
-  move.className='ptl-btn ptl-btn--sm';meta.appendChild(move);
+  move.className='kzc-btn kzc-btn--sm';meta.appendChild(move);
   const vis=btn(it.visibility==='status'?t('In portal: on'):t('In portal: off'),async()=>{
     const r=await put('/api/portal/tasks/'+it.id,{portalVisibility:it.visibility==='status'?'none':'status',revision:it.revision});
     if(r.success)vBoard();else if(r.error==='CONFLICT')vBoard();else status(r.message||t('Error'));
   },false);
-  vis.className='ptl-btn ptl-btn--sm';meta.appendChild(vis);
+  vis.className='kzc-btn kzc-btn--sm';meta.appendChild(vis);
   return c;
 }
 
@@ -245,45 +245,45 @@ async function vRequests(mine){
     const r=await post('/api/portal/requests',{orgId:+f.orgId,title:f.title,deadline:f.deadline||null,items});
     status(r.success?t('Created.'):(r.message||t('Error')));if(r.success)vRequests();
   },true));
-  const mineCb=h('<label class="ptl-check"><input type="checkbox" id="ptl-mine"> '+esc(t('Only my clients'))+'</label>');
-  mineCb.querySelector('#ptl-mine').checked=!!mine;
-  mineCb.querySelector('#ptl-mine').onchange=e=>vRequests(e.target.checked);
+  const mineCb=h('<label class="kzc-check"><input type="checkbox" id="kzc-mine"> '+esc(t('Only my clients'))+'</label>');
+  mineCb.querySelector('#kzc-mine').checked=!!mine;
+  mineCb.querySelector('#kzc-mine').onchange=e=>vRequests(e.target.checked);
   body.appendChild(mineCb);
   const r=await get('/api/portal/requests'+(mine?'?mine=1':''));
   const reqs=(r.data&&r.data.requests)||[];
-  const list=h('<div class="ptl-list"></div>').firstElementChild;
+  const list=h('<div class="kzc-list"></div>').firstElementChild;
   reqs.forEach(rq=>{
-    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-items"></div></div>');
+    const row=h('<div class="kzc-card"><b></b><div class="kzc-muted"></div><div class="kzc-items"></div></div>');
     row.querySelector('b').textContent=rq.title;
-    row.querySelector('.ptl-muted').textContent=(rq.deadline?t('Deadline')+' '+rq.deadline:t('no deadline'))+(rq.overdue?' — '+t('OVERDUE'):'')+' · '+rq.state+' · '+(rq.items?.accepted??0)+'/'+(rq.items?.total??0)+' '+t('accepted');
-    const items=row.querySelector('.ptl-items');
-    const detail=h('<details class="ptl-items-detail"><summary>'+esc(t('Details'))+'</summary></details>').firstElementChild;
+    row.querySelector('.kzc-muted').textContent=(rq.deadline?t('Deadline')+' '+rq.deadline:t('no deadline'))+(rq.overdue?' — '+t('OVERDUE'):'')+' · '+rq.state+' · '+(rq.items?.accepted??0)+'/'+(rq.items?.total??0)+' '+t('accepted');
+    const items=row.querySelector('.kzc-items');
+    const detail=h('<details class="kzc-items-detail"><summary>'+esc(t('Details'))+'</summary></details>').firstElementChild;
     items.appendChild(detail);
     row.querySelector('details').addEventListener('toggle',async ev=>{
       if(!ev.target.open||ev.target.dataset.loaded)return;
       ev.target.dataset.loaded='1';
-      const itemsList=h('<div class="ptl-itemlist"></div>').firstElementChild;
+      const itemsList=h('<div class="kzc-itemlist"></div>').firstElementChild;
       detail.appendChild(itemsList);
       const dr=await get('/api/portal/requests/'+rq.id);
-      if(!dr.success){itemsList.appendChild(h('<p class="ptl-muted">'+esc(t('Error'))+'</p>'));return;}
+      if(!dr.success){itemsList.appendChild(h('<p class="kzc-muted">'+esc(t('Error'))+'</p>'));return;}
       const d=dr.data.request;
       if(d.state==='open'){
         const closeB=btn(t('Close request'),async()=>{
           if(!(await confirmDlg(t('Close request'),t('Marks the request as done even if items are missing. Continue?'))))return;
           const cr=await post('/api/portal/requests/'+d.id+'/close');if(cr.status===204||cr.success){vRequests(mine);}
         });
-        closeB.className='ptl-btn ptl-btn--sm';itemsList.appendChild(closeB);
+        closeB.className='kzc-btn kzc-btn--sm';itemsList.appendChild(closeB);
       }
       (d.items||[]).forEach(it=>{
-        const ir=h('<div class="ptl-itemrow"><div><b></b><div class="ptl-muted"></div><div class="ptl-itemfiles"></div></div><div class="ptl-itemact"></div></div>');
+        const ir=h('<div class="kzc-itemrow"><div><b></b><div class="kzc-muted"></div><div class="kzc-itemfiles"></div></div><div class="kzc-itemact"></div></div>');
         ir.querySelector('b').textContent=it.label;
-        ir.querySelector('.ptl-muted').textContent=it.state+(it.hint?' · '+it.hint:'')+(it.rejectReason?' — '+t('Rejected')+': '+it.rejectReason:'');
+        ir.querySelector('.kzc-muted').textContent=it.state+(it.hint?' · '+it.hint:'')+(it.rejectReason?' — '+t('Rejected')+': '+it.rejectReason:'');
         (it.files||[]).forEach(fid=>{
-          const a=h('<a class="ptl-file"></a>').firstElementChild;
+          const a=h('<a class="kzc-file"></a>').firstElementChild;
           a.textContent='📎 '+t('file')+' #'+fid;a.href=base+'/api/portal/uploads/'+fid+'/file';
-          ir.querySelector('.ptl-itemfiles').appendChild(a);
+          ir.querySelector('.kzc-itemfiles').appendChild(a);
         });
-        const act=ir.querySelector('.ptl-itemact');
+        const act=ir.querySelector('.kzc-itemact');
         if(it.state==='delivered'){
           act.appendChild(btn(t('Accept'),async()=>{await put('/api/portal/requests/'+d.id+'/items/'+it.id+'/review',{accept:true});vRequests(mine);},true));
           act.appendChild(btn(t('Reject'),async()=>{
@@ -298,7 +298,7 @@ async function vRequests(mine){
     });
     list.appendChild(row);
   });
-  if(!reqs.length)list.appendChild(h('<p class="ptl-muted">'+esc(t('No requests.'))+'</p>'));
+  if(!reqs.length)list.appendChild(h('<p class="kzc-muted">'+esc(t('No requests.'))+'</p>'));
   body.appendChild(list);
 }
 
@@ -329,9 +329,9 @@ async function vOrgs(){
     vOrgs();
   }));
   const q=new URLSearchParams(location.search).get('q')||'';
-  body.appendChild(h('<input id="ptl-q" class="ptl-input" placeholder="'+esc(t('Search…'))+'" value="'+esc(q)+'">'));
-  body.querySelector('#ptl-q').oninput=e=>loadOrgs(e.target.value);
-  body.appendChild(h('<div id="ptl-orglist" class="ptl-list"></div>'));
+  body.appendChild(h('<input id="kzc-q" class="kzc-input" placeholder="'+esc(t('Search…'))+'" value="'+esc(q)+'">'));
+  body.querySelector('#kzc-q').oninput=e=>loadOrgs(e.target.value);
+  body.appendChild(h('<div id="kzc-orglist" class="kzc-list"></div>'));
   loadOrgs(q);
   async function loadOrgs(term){
     const seq=++ORG_SEQ;
@@ -340,13 +340,13 @@ async function vOrgs(){
     renderOrgs(rr.data&&rr.data.orgs||[]);
   }
   function renderOrgs(orgs){
-    const list=document.getElementById('ptl-orglist');if(!list)return;list.innerHTML='';
-    if(!orgs.length){list.appendChild(h('<p class="ptl-muted">'+esc(t('No clients.'))+'</p>'));return;}
+    const list=document.getElementById('kzc-orglist');if(!list)return;list.innerHTML='';
+    if(!orgs.length){list.appendChild(h('<p class="kzc-muted">'+esc(t('No clients.'))+'</p>'));return;}
     orgs.forEach(o=>{
-      const row=h('<button class="ptl-row"><b></b><span class="ptl-muted"></span><span class="ptl-pill"></span></button>').firstElementChild;
+      const row=h('<button class="kzc-row"><b></b><span class="kzc-muted"></span><span class="kzc-pill"></span></button>').firstElementChild;
       row.querySelector('b').textContent=o.name;
-      row.querySelector('.ptl-muted').textContent=[o.ref,o.kind,o.state].filter(Boolean).join(' · ');
-      row.querySelector('.ptl-pill').textContent=o.appOn?t('App on'):t('App off');
+      row.querySelector('.kzc-muted').textContent=[o.ref,o.kind,o.state].filter(Boolean).join(' · ');
+      row.querySelector('.kzc-pill').textContent=o.appOn?t('App on'):t('App off');
       row.onclick=()=>openOrg(o.id);list.appendChild(row);
     });
   }
@@ -357,11 +357,11 @@ async function openOrg(id){
   if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   if(!r.success){status(t('Not found.'));return;}
   const o=r.data.org,body=chrome('orgs',t('Client')+': '+o.name);
-  const info=h('<div class="ptl-card"><div class="ptl-kv"></div><div class="ptl-actions"></div></div>');
-  info.querySelector('.ptl-kv').innerHTML=[
+  const info=h('<div class="kzc-card"><div class="kzc-kv"></div><div class="kzc-actions"></div></div>');
+  info.querySelector('.kzc-kv').innerHTML=[
     [t('Name'),o.name],[t('Reference'),o.ref||'—'],[t('Type'),o.kind],[t('Status'),o.state],[t('App access'),o.appOn?t('active'):t('off')],[t('Booking link'),o.bookUrl||'—'],[t('Intake'),(r.data.intake&&r.data.intake.address)||'—'],
-  ].map(([k,v])=>'<div class="ptl-kvrow"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('');
-  const act=info.querySelector('.ptl-actions');
+  ].map(([k,v])=>'<div class="kzc-kvrow"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('');
+  const act=info.querySelector('.kzc-actions');
   act.appendChild(btn(o.appOn?t('Deactivate app'):t('Activate app'),async()=>{
     const rr=await put('/api/portal/orgs/'+id,{appOn:o.appOn?false:true});
     if(rr.success)openOrg(id);else if(rr.error==='NO_PORTAL_SLOT')status(t('No free app slot (license).'));else status(rr.message||t('Error'));
@@ -373,9 +373,9 @@ async function openOrg(id){
     await openOrg(id);
     if(wn>0){
       // failed share revokes leave live oc_share rows — surface, never silently
-      const w=h('<p class="ptl-chip ptl-chip--warn ptl-warnbar" role="alert"></p>').firstElementChild;
+      const w=h('<p class="kzc-chip kzc-chip--warn kzc-warnbar" role="alert"></p>').firstElementChild;
       w.textContent=t('Offboarded — but')+' '+wn+' '+t('synced share(s) could not be revoked. Open Desktop sync below and revoke them again.');
-      const pb=document.getElementById('ptl-body');if(pb)pb.prepend(w);
+      const pb=document.getElementById('kzc-body');if(pb)pb.prepend(w);
     }else if(rr&&rr.success===false){status(rr.message||t('Error'));}
   }));
   act.appendChild(btn(t('Edit details'),async()=>{
@@ -392,10 +392,10 @@ async function openOrg(id){
   }));
   body.appendChild(info);
   // responsible staff contacts (US-P25)
-  body.appendChild(h('<h2>'+esc(t('Responsible staff'))+'</h2><div id="ptl-resp"></div>'));
-  const resp=document.getElementById('ptl-resp');
+  body.appendChild(h('<h2>'+esc(t('Responsible staff'))+'</h2><div id="kzc-resp"></div>'));
+  const resp=document.getElementById('kzc-resp');
   (r.data.contacts||[]).forEach(c=>{
-    resp.appendChild(h('<div class="ptl-dev"><span>'+esc(c.user_id||c.userId)+'</span></div>'));
+    resp.appendChild(h('<div class="kzc-dev"><span>'+esc(c.user_id||c.userId)+'</span></div>'));
   });
   body.appendChild(btn(t('Set responsible staff'),async()=>{
     const f=await ask(t('Responsible staff'),t('NC user ids (comma-separated, max 5)'),t('Save'));
@@ -404,20 +404,20 @@ async function openOrg(id){
     const rr=await put('/api/portal/orgs/'+id+'/contacts',{userIds:uids});
     status(rr.success||rr.status===204?t('Saved.'):(rr.message||t('Error')));openOrg(id);
   }));
-  body.appendChild(h('<h2>'+esc(t('Contacts'))+'</h2><div id="ptl-members"></div>'));
-  const ml=document.getElementById('ptl-members');
+  body.appendChild(h('<h2>'+esc(t('Contacts'))+'</h2><div id="kzc-members"></div>'));
+  const ml=document.getElementById('kzc-members');
   (r.data.members||[]).forEach(m=>{
-    const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
+    const row=h('<div class="kzc-dev"><span></span></div>').firstElementChild;
     row.querySelector('span').textContent=(m.displayName||m.email)+(m.status!=='active'?' ('+m.status+')':'');
     if(ME_ADMIN&&m.status==='active'){
       const dis=btn(t('Disable'),async()=>{await put('/api/portal/identities/'+m.identityId+'/status',{status:'disabled'});openOrg(id);},false);
-      dis.className='ptl-btn ptl-btn--sm';row.appendChild(dis);
+      dis.className='kzc-btn kzc-btn--sm';row.appendChild(dis);
     }else if(ME_ADMIN&&m.status==='disabled'){
       const en=btn(t('Enable'),async()=>{await put('/api/portal/identities/'+m.identityId+'/status',{status:'active'});openOrg(id);},false);
-      en.className='ptl-btn ptl-btn--sm';row.appendChild(en);
+      en.className='kzc-btn kzc-btn--sm';row.appendChild(en);
     }
     const rm=btn(t('Remove'),async()=>{await del('/api/portal/orgs/'+id+'/members/'+m.identityId);openOrg(id);},false);
-    rm.className='ptl-btn ptl-btn--sm';row.appendChild(rm);ml.appendChild(row);
+    rm.className='kzc-btn kzc-btn--sm';row.appendChild(rm);ml.appendChild(row);
   });
   body.appendChild(btn(t('+ Add contact'),async()=>{
     const f=await ask(t('Add contact'),null,t('Add'),[{name:'email',label:t('E-mail'),type:'email',required:true},{name:'displayName',label:t('Name')}]);
@@ -426,12 +426,12 @@ async function openOrg(id){
     status(rr.success?t('Added.'):(rr.message||t('Error')));if(rr.success)openOrg(id);
   }));
   renderSyncSection(id,body,r.data);
-  body.appendChild(h('<h2>'+esc(t('Upload links'))+'</h2><div id="ptl-ulinks"></div>'));
-  const ul=document.getElementById('ptl-ulinks');
+  body.appendChild(h('<h2>'+esc(t('Upload links'))+'</h2><div id="kzc-ulinks"></div>'));
+  const ul=document.getElementById('kzc-ulinks');
   (r.data.ulinks||[]).forEach(l=>{
-    const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
+    const row=h('<div class="kzc-dev"><span></span></div>').firstElementChild;
     row.querySelector('span').textContent=l.label+' · '+l.usedFiles+'/'+l.maxFiles+(l.revoked?' '+t('(revoked)'):'');
-    if(!l.revoked){const rm=btn(t('Revoke'),async()=>{await del('/api/portal/ulinks/'+l.id);openOrg(id);},false);rm.className='ptl-btn ptl-btn--sm';row.appendChild(rm);}
+    if(!l.revoked){const rm=btn(t('Revoke'),async()=>{await del('/api/portal/ulinks/'+l.id);openOrg(id);},false);rm.className='kzc-btn kzc-btn--sm';row.appendChild(rm);}
     ul.appendChild(row);
   });
   body.appendChild(btn(t('+ Upload link'),async()=>{
@@ -447,28 +447,28 @@ async function openOrg(id){
   }));
   // intake address (US-P24)
   body.appendChild(h('<h2>'+esc(t('E-mail intake'))+'</h2>'));
-  const inRow=h('<div class="ptl-card"><div class="ptl-kvrow"><span>'+esc(t('Address'))+'</span><b id="ptl-ina"></b></div><div class="ptl-actions"></div></div>');
-  inRow.querySelector('#ptl-ina').textContent=(r.data.intake&&r.data.intake.address)||t('disabled');
-  inRow.querySelector('.ptl-actions').appendChild(btn(r.data.intake&&r.data.intake.address?t('Disable'):t('Enable'),async()=>{
+  const inRow=h('<div class="kzc-card"><div class="kzc-kvrow"><span>'+esc(t('Address'))+'</span><b id="kzc-ina"></b></div><div class="kzc-actions"></div></div>');
+  inRow.querySelector('#kzc-ina').textContent=(r.data.intake&&r.data.intake.address)||t('disabled');
+  inRow.querySelector('.kzc-actions').appendChild(btn(r.data.intake&&r.data.intake.address?t('Disable'):t('Enable'),async()=>{
     const rr=await put('/api/portal/orgs/'+id+'/intake',{enabled:!(r.data.intake&&r.data.intake.address)});
     if(rr.success)openOrg(id);else status(rr.message||t('Error'));
   }));
-  inRow.querySelector('.ptl-actions').appendChild(btn(t('Rotate address'),async()=>{
+  inRow.querySelector('.kzc-actions').appendChild(btn(t('Rotate address'),async()=>{
     if(!(await confirmDlg(t('Rotate'),t('The old address stops working immediately. Continue?'))))return;
     await post('/api/portal/orgs/'+id+'/intake/rotate');openOrg(id);
   }));
   body.appendChild(inRow);
   // approvals on documents (US-P23)
-  body.appendChild(h('<h2>'+esc(t('Approvals'))+'</h2><div id="ptl-appr"></div>'));
-  const ap=document.getElementById('ptl-appr');
+  body.appendChild(h('<h2>'+esc(t('Approvals'))+'</h2><div id="kzc-appr"></div>'));
+  const ap=document.getElementById('kzc-appr');
   const ar=await get('/api/portal/orgs/'+id+'/approvals');
   if(seq!==VIEW_SEQ)return;
   if(ar.success&&ar.data){
     (ar.data.approvals||[]).forEach(a=>{
-      const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
+      const row=h('<div class="kzc-dev"><span></span></div>').firstElementChild;
       row.querySelector('span').textContent=a.fileName+' · '+a.state+(a.deadline?' · '+a.deadline:'');
-      if(a.state==='pending'){const w=btn(t('Withdraw'),async()=>{await post('/api/portal/approvals/'+a.id+'/withdraw');openOrg(id);},false);w.className='ptl-btn ptl-btn--sm';row.appendChild(w);}
-      const pf=h('<a class="ptl-btn ptl-btn--sm"></a>').firstElementChild;pf.textContent=t('Proof');pf.href=base+'/api/portal/approvals/'+a.id+'/proof';row.appendChild(pf);
+      if(a.state==='pending'){const w=btn(t('Withdraw'),async()=>{await post('/api/portal/approvals/'+a.id+'/withdraw');openOrg(id);},false);w.className='kzc-btn kzc-btn--sm';row.appendChild(w);}
+      const pf=h('<a class="kzc-btn kzc-btn--sm"></a>').firstElementChild;pf.textContent=t('Proof');pf.href=base+'/api/portal/approvals/'+a.id+'/proof';row.appendChild(pf);
       ap.appendChild(row);
     });
   }
@@ -499,8 +499,8 @@ async function openOrg(id){
   if(r.data.invoiceAvailable){
     body.appendChild(h('<h2>'+esc(t('Invoices'))+'</h2>'));
     const inv=(r.data.invoices)||[];
-    if(!inv.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No invoices.'))+'</p>'));
-    else body.appendChild(h('<div class="ptl-card">'+inv.map(i=>'<div class="ptl-kvrow"><span>'+esc(i.ref||('#'+i.id))+(i.overdue?' ⚠':'')+'</span><b>'+esc(i.status)+'</b></div>').join('')+'</div>'));
+    if(!inv.length)body.appendChild(h('<p class="kzc-muted">'+esc(t('No invoices.'))+'</p>'));
+    else body.appendChild(h('<div class="kzc-card">'+inv.map(i=>'<div class="kzc-kvrow"><span>'+esc(i.ref||('#'+i.id))+(i.overdue?' ⚠':'')+'</span><b>'+esc(i.status)+'</b></div>').join('')+'</div>'));
   }
 }
 
@@ -519,8 +519,8 @@ const SYNC_CHIP={
 };
 function syncChip(state){
   const c=SYNC_CHIP[state]||['muted',()=>state];
-  const el=h('<span class="ptl-chip ptl-chip--'+c[0]+'"><span class="ptl-chip-label"></span></span>').firstElementChild;
-  el.querySelector('.ptl-chip-label').textContent=c[1]();
+  const el=h('<span class="kzc-chip kzc-chip--'+c[0]+'"><span class="kzc-chip-label"></span></span>').firstElementChild;
+  el.querySelector('.kzc-chip-label').textContent=c[1]();
   return el;
 }
 async function syncSetupDialog(orgId,member){
@@ -533,17 +533,17 @@ async function syncSetupDialog(orgId,member){
     if(u){const rr=await api('/api/portal/identities/'+member.identityId+'/nc-bind',{method:'DELETE'});status(rr.success?t('Unlinked.'):(rr.message||t('Error')));openOrg(orgId);}
     return;
   }
-  const dlg=document.createElement('dialog');dlg.className='ptl-dialog';
-  dlg.innerHTML='<form method="dialog" class="ptl-card"><h2>'+esc(t('Set up desktop sync'))+'</h2>'
-    +'<p class="ptl-muted">'+esc(t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.'))+'</p>'
-    +'<label class="ptl-label" for="sd-q">'+esc(t('Nextcloud account'))+'</label><input id="sd-q" class="ptl-input" autocomplete="off"><div id="sd-hits" class="ptl-list"></div><input id="sd-uid" type="hidden">'
-    +'<fieldset class="ptl-fieldset"><legend>'+esc(t('Access'))+'</legend>'
-    +'<label class="ptl-label"><input type="radio" name="sd-perms" value="rw" checked> '+esc(t('Read & write'))+'</label>'
-    +'<label class="ptl-label"><input type="radio" name="sd-perms" value="ro"> '+esc(t('Read only'))+'</label></fieldset>'
-    +'<p id="sd-err" class="ptl-field-error" role="alert" hidden></p>'
-    +'<div class="ptl-actions"><button value="" class="ptl-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="ptl-btn ptl-btn--primary" disabled>'+esc(t('Link & enable'))+'</button></div></form>';
+  const dlg=document.createElement('dialog');dlg.className='kzc-dialog';
+  dlg.innerHTML='<form method="dialog" class="kzc-card"><h2>'+esc(t('Set up desktop sync'))+'</h2>'
+    +'<p class="kzc-muted">'+esc(t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.'))+'</p>'
+    +'<label class="kzc-label" for="sd-q">'+esc(t('Nextcloud account'))+'</label><input id="sd-q" class="kzc-input" autocomplete="off"><div id="sd-hits" class="kzc-list"></div><input id="sd-uid" type="hidden">'
+    +'<fieldset class="kzc-fieldset"><legend>'+esc(t('Access'))+'</legend>'
+    +'<label class="kzc-label"><input type="radio" name="sd-perms" value="rw" checked> '+esc(t('Read & write'))+'</label>'
+    +'<label class="kzc-label"><input type="radio" name="sd-perms" value="ro"> '+esc(t('Read only'))+'</label></fieldset>'
+    +'<p id="sd-err" class="kzc-field-error" role="alert" hidden></p>'
+    +'<div class="kzc-actions"><button value="" class="kzc-btn">'+esc(t('Cancel'))+'</button><button value="ok" class="kzc-btn kzc-btn--primary" disabled>'+esc(t('Link & enable'))+'</button></div></form>';
   document.body.appendChild(dlg);
-  const q=dlg.querySelector('#sd-q'),hits=dlg.querySelector('#sd-hits'),uidI=dlg.querySelector('#sd-uid'),okB=dlg.querySelector('.ptl-btn--primary'),err=dlg.querySelector('#sd-err');
+  const q=dlg.querySelector('#sd-q'),hits=dlg.querySelector('#sd-hits'),uidI=dlg.querySelector('#sd-uid'),okB=dlg.querySelector('.kzc-btn--primary'),err=dlg.querySelector('#sd-err');
   const sug=s.data.suggest;
   let sdSeq=0;
   const fill=async(term)=>{
@@ -552,7 +552,7 @@ async function syncSetupDialog(orgId,member){
     if(seq!==sdSeq||!dlg.isConnected)return; // superseded/closed — never paint stale hits
     hits.innerHTML='';
     ((r.data&&r.data.users)||[]).forEach(u=>{
-      const b=document.createElement('button');b.type='button';b.className='ptl-row';
+      const b=document.createElement('button');b.type='button';b.className='kzc-row';
       b.textContent=u.displayName+' ('+u.uid+')'+(u.email?' — '+u.email:'')+(u.staff?' ⚠ '+t('staff'):'');
       if(u.staff){b.disabled=true;b.title=t('Staff accounts cannot be linked');}
       b.onclick=()=>{uidI.value=u.uid;q.value=u.displayName+' ('+u.uid+')';okB.disabled=false;hits.innerHTML='';};
@@ -592,39 +592,39 @@ async function syncSetupDialog(orgId,member){
 }
 function renderSyncSection(orgId,body,data){
   body.appendChild(h('<h2>'+esc(t('Desktop sync'))+'</h2>'));
-  const sec=h('<div class="ptl-card"><p class="ptl-muted"></p><div class="ptl-sync-list"></div></div>').firstElementChild;
-  sec.querySelector('.ptl-muted').textContent=t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.');
+  const sec=h('<div class="kzc-card"><p class="kzc-muted"></p><div class="kzc-sync-list"></div></div>').firstElementChild;
+  sec.querySelector('.kzc-muted').textContent=t('The client receives their files as a synced folder on their PC — via their existing Nextcloud account.');
   body.appendChild(sec);
-  const list=sec.querySelector('.ptl-sync-list');
+  const list=sec.querySelector('.kzc-sync-list');
   if(!data.doorRestricted){
-    const n=h('<p class="ptl-muted"></p>').firstElementChild;
+    const n=h('<p class="kzc-muted"></p>').firstElementChild;
     n.textContent=t('Desktop sync is unavailable while the access door is open — restrict it under Settings → Access (door).');
     list.appendChild(n);return; // proactive notice (US-S16), no dead-end error
   }
   const bindings={};(data.sync||[]).forEach(b=>bindings[b.identityId]=b);
   const members=(data.members||[]).filter(m=>m.status==='active');
-  if(!members.length){list.appendChild(h('<p class="ptl-muted">'+esc(t('No contacts yet.'))+'</p>'));return;}
+  if(!members.length){list.appendChild(h('<p class="kzc-muted">'+esc(t('No contacts yet.'))+'</p>'));return;}
   members.forEach(m=>{
-    const row=h('<div class="ptl-dev ptl-sync-row"></div>').firstElementChild;
+    const row=h('<div class="kzc-dev kzc-sync-row"></div>').firstElementChild;
     const label=h('<span></span>').firstElementChild;
     label.textContent=(m.displayName||m.email)+(m.ncUid?' — '+(m.ncDisplay||m.ncUid):'');
     row.appendChild(label);
     const b=bindings[m.identityId];
-    const wrap=h('<span class="ptl-actions"></span>').firstElementChild;
+    const wrap=h('<span class="kzc-actions"></span>').firstElementChild;
     if(b){
       wrap.appendChild(syncChip(b.state));
-      if(m.ncUidMismatch){const w=h('<span class="ptl-chip ptl-chip--warn"></span>').firstElementChild;w.textContent=t('e-mail differs');wrap.appendChild(w);}
+      if(m.ncUidMismatch){const w=h('<span class="kzc-chip kzc-chip--warn"></span>').firstElementChild;w.textContent=t('e-mail differs');wrap.appendChild(w);}
       if(ME_ADMIN&&['broken_share','broken_perms'].includes(b.state)){
-        const rp=btn(t('Repair'),async()=>{const rr=await post('/api/portal/sync/'+b.bindingId+'/repair',{});status(rr.success?t('Repaired.'):(rr.message||t('Error')));openOrg(orgId);},true);rp.className='ptl-btn ptl-btn--sm';wrap.appendChild(rp);
+        const rp=btn(t('Repair'),async()=>{const rr=await post('/api/portal/sync/'+b.bindingId+'/repair',{});status(rr.success?t('Repaired.'):(rr.message||t('Error')));openOrg(orgId);},true);rp.className='kzc-btn kzc-btn--sm';wrap.appendChild(rp);
       }
       if(ME_ADMIN){
         const tog=btn(t('Off'),async()=>{
           if(!(await confirmDlg(t('Turn off sync'),t('The client loses folder access via their Nextcloud account. Continue?'))))return;
           const rr=await api('/api/portal/sync/'+b.bindingId,{method:'DELETE'});status(rr.success?t('Sync off.'):(rr.message||t('Error')));openOrg(orgId);
-        });tog.className='ptl-btn ptl-btn--sm';wrap.appendChild(tog);
+        });tog.className='kzc-btn kzc-btn--sm';wrap.appendChild(tog);
       }
     }else if(ME_ADMIN){
-      const st=btn(t('Set up'),()=>syncSetupDialog(orgId,m),true);st.className='ptl-btn ptl-btn--sm';wrap.appendChild(st);
+      const st=btn(t('Set up'),()=>syncSetupDialog(orgId,m),true);st.className='kzc-btn kzc-btn--sm';wrap.appendChild(st);
     }
     row.appendChild(wrap);
     list.appendChild(row);
@@ -637,14 +637,14 @@ async function vUploads(){
   const body=chrome('uploads',t('Inbox — upload queue'));
   const r=await get('/api/portal/uploads');
   const ups=(r.data&&r.data.uploads)||[];
-  if(!ups.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No new uploads.'))+'</p>'));}
-  const list=h('<div class="ptl-list"></div>').firstElementChild;
+  if(!ups.length){body.appendChild(h('<p class="kzc-muted">'+esc(t('No new uploads.'))+'</p>'));}
+  const list=h('<div class="kzc-list"></div>').firstElementChild;
   ups.forEach(u=>{
-    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
+    const row=h('<div class="kzc-card"><b></b><div class="kzc-muted"></div><div class="kzc-actions"></div></div>');
     row.querySelector('b').textContent=u.fileName;
-    row.querySelector('.ptl-muted').textContent=u.orgName+' · '+u.uploader+' · '+u.source+' · '+new Date(u.createdAt).toLocaleString()+(u.duplicate?' · '+t('DUPLICATE'):'')+(u.note?' · '+u.note:'');
-    const act=row.querySelector('.ptl-actions');
-    const dl=h('<a class="ptl-btn"></a>').firstElementChild;dl.textContent=t('Download');dl.href=base+'/api/portal/uploads/'+u.id+'/file';act.appendChild(dl);
+    row.querySelector('.kzc-muted').textContent=u.orgName+' · '+u.uploader+' · '+u.source+' · '+new Date(u.createdAt).toLocaleString()+(u.duplicate?' · '+t('DUPLICATE'):'')+(u.note?' · '+u.note:'');
+    const act=row.querySelector('.kzc-actions');
+    const dl=h('<a class="kzc-btn"></a>').firstElementChild;dl.textContent=t('Download');dl.href=base+'/api/portal/uploads/'+u.id+'/file';act.appendChild(dl);
     act.appendChild(btn(t('Seen'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'eingesehen'});vUploads();}));
     act.appendChild(btn(t('Filed'),async()=>{await put('/api/portal/uploads/'+u.id+'/review',{state:'abgelegt'});vUploads();},true));
     act.appendChild(btn(t('Publish to client'),async()=>{
@@ -663,41 +663,45 @@ async function vSettings(){
   if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   const body=chrome('settings',t('Settings'));
   if(!r.success){
-    body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('No access'))+'</h2><p class="ptl-muted">'+esc(t('Settings are only visible to PortalCheck app admins. Your account is not on the app-admin list.'))+'</p><p class="ptl-muted">'+esc(t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'))+'</p></div>'));
+    body.appendChild(h('<div class="kzc-card"><h2>'+esc(t('No access'))+'</h2><p class="kzc-muted">'+esc(t('Settings are only visible to KanzleiCheck app admins. Your account is not on the app-admin list.'))+'</p><p class="kzc-muted">'+esc(t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'))+'</p></div>'));
+    body.appendChild(h('<div class="kzc-card"><h2>'+esc(t('About this project'))+'</h2><p class="kzc-muted">'+esc(t('Sponsor, open-source license and project links.'))+'</p><div class="kzc-actions"><a class="kzc-btn" href="'+esc(base+'/settings/about')+'">'+esc(t('Open about page'))+'</a></div></div>'));
     return;
   }
   const s=r.data.settings,d=r.data.door;
-  const form=h('<div class="ptl-card"><h2>'+esc(t('General'))+'</h2><label class="ptl-label" for="s-preset">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="ptl-input"></select><label class="ptl-label" for="s-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="ptl-input"><label class="ptl-label" for="s-max">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="ptl-input" type="number"><label class="ptl-label" for="s-ttl">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="ptl-input" type="number"><div class="ptl-actions"></div></div>').firstElementChild;
+  const form=h('<div class="kzc-card"><h2>'+esc(t('General'))+'</h2><label class="kzc-label" for="s-preset">'+esc(t('Industry (preset)'))+'</label><select id="s-preset" class="kzc-input"></select><label class="kzc-label" for="s-label">'+esc(t('Provider name (e-mails)'))+'</label><input id="s-label" class="kzc-input"><label class="kzc-label" for="s-max">'+esc(t('Upload limit (MB)'))+'</label><input id="s-max" class="kzc-input" type="number"><label class="kzc-label" for="s-ttl">'+esc(t('OTP validity (minutes)'))+'</label><input id="s-ttl" class="kzc-input" type="number"><div class="kzc-actions"></div></div>').firstElementChild;
   const sel=form.querySelector('#s-preset');
   r.data.presets.forEach(p=>sel.appendChild(new Option(p,p)));
   sel.value=s.preset;form.querySelector('#s-label').value=s.providerLabel;form.querySelector('#s-max').value=s.uploadMaxMb;form.querySelector('#s-ttl').value=s.otpTtlMin;
-  form.querySelector('.ptl-actions').appendChild(btn(t('Save'),async()=>{
+  form.querySelector('.kzc-actions').appendChild(btn(t('Save'),async()=>{
     const rr=await put('/api/portal/settings',{preset:sel.value,providerLabel:form.querySelector('#s-label').value,uploadMaxMb:+form.querySelector('#s-max').value,otpTtlMin:+form.querySelector('#s-ttl').value});
     status(rr.success?t('Saved.'):(rr.message||t('Error')));
   },true));
   body.appendChild(form);
   // door
-  const door=h('<div class="ptl-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="ptl-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="ptl-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="ptl-label" for="d-users">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="ptl-input"><label class="ptl-label" for="d-admins">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="ptl-input"><div class="ptl-actions"></div></div>').firstElementChild;
+  const door=h('<div class="kzc-card"><h2>'+esc(t('Access (door)'))+'</h2><label class="kzc-label"><input type="checkbox" id="d-restr"> '+esc(t('Restricted (selected groups/users only)'))+'</label><p class="kzc-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p><label class="kzc-label" for="d-users">'+esc(t('Allowed users (comma-separated)'))+'</label><input id="d-users" class="kzc-input"><label class="kzc-label" for="d-admins">'+esc(t('App admins (comma-separated)'))+'</label><input id="d-admins" class="kzc-input"><div class="kzc-actions"></div></div>').firstElementChild;
   door.querySelector('#d-restr').checked=d.restricted;
   door.querySelector('#d-users').value=(d.allowedUsers||[]).join(', ');
   door.querySelector('#d-admins').value=(d.appAdmins||[]).join(', ');
-  door.querySelector('.ptl-actions').appendChild(btn(t('Save door'),async()=>{
+  door.querySelector('.kzc-actions').appendChild(btn(t('Save door'),async()=>{
     const csv=v=>v.split(',').map(x=>x.trim()).filter(Boolean);
     const rr=await put('/api/portal/door',{restricted:door.querySelector('#d-restr').checked,groups:[],users:csv(door.querySelector('#d-users').value),appAdmins:csv(door.querySelector('#d-admins').value)});
     status(rr.success?t('Saved.'):(rr.message||t('Error')));
   },true));
   body.appendChild(door);
   // config & data transfer — dedicated server-rendered page (synced part)
-  const xfer=h('<div class="ptl-card"><h2>'+esc(t('Transfer configuration'))+'</h2><p class="ptl-muted">'+esc(t('Copy all settings, catalogues and business data between a test and a production instance — one encrypted file, dry-run before anything is written.'))+'</p><div class="ptl-actions"><a class="ptl-btn" href="'+esc(base+'/settings/transfer')+'">'+esc(t('Open transfer'))+'</a></div></div>').firstElementChild;
+  const xfer=h('<div class="kzc-card"><h2>'+esc(t('Transfer configuration'))+'</h2><p class="kzc-muted">'+esc(t('Copy all settings, catalogues and business data between a test and a production instance — one encrypted file, dry-run before anything is written.'))+'</p><div class="kzc-actions"><a class="kzc-btn" href="'+esc(base+'/settings/transfer')+'">'+esc(t('Open transfer'))+'</a></div></div>').firstElementChild;
   body.appendChild(xfer);
+  // about this project — sponsor + open source (dedicated page, all staff)
+  const about=h('<div class="kzc-card"><h2>'+esc(t('About this project'))+'</h2><p class="kzc-muted">'+esc(t('Sponsor, open-source license and project links.'))+'</p><div class="kzc-actions"><a class="kzc-btn" href="'+esc(base+'/settings/about')+'">'+esc(t('Open about page'))+'</a></div></div>').firstElementChild;
+  body.appendChild(about);
   // license + diagnostics
   const l=await get('/api/portal/license');
   if(seq!==VIEW_SEQ)return;
   if(l.success&&l.data){
     const lic=l.data.license;
-    body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('License'))+'</h2><p>'+esc(t('Status:'))+' <b>'+esc(lic.status)+'</b> · '+esc(t('Portal clients:'))+' '+lic.usedPortalClients+'/'+lic.portalClients+' · '+esc(t('Mobile seats:'))+' '+(lic.mobileSeats??'—')+'</p><div id="l-actions"></div></div>'));
+    body.appendChild(h('<div class="kzc-card"><h2>'+esc(t('License'))+'</h2><p>'+esc(t('Status:'))+' <b>'+esc(lic.status)+'</b> · '+esc(t('Portal clients:'))+' '+lic.usedPortalClients+'/'+lic.portalClients+' · '+esc(t('Mobile seats:'))+' '+(lic.mobileSeats??'—')+'</p><div id="l-actions"></div></div>'));
     body.querySelector('#l-actions').appendChild(btn(t('Apply license key'),async()=>{
-      const f=await ask(t('PTL2 key'),t('Paste key:'),t('Apply'));
+      const f=await ask(t('KZC2 key'),t('Paste key:'),t('Apply'));
       if(!f)return;
       const rr=await post('/api/portal/license',{key:f.v});
       status(rr.success?t('Applied.'):(rr.message||t('Invalid key')));if(rr.success)vSettings();
@@ -707,7 +711,7 @@ async function vSettings(){
   if(seq!==VIEW_SEQ)return;
   if(diag.success&&diag.data){
     const g=diag.data;
-    body.appendChild(h('<div class="ptl-card"><h2>'+esc(t('Diagnostics'))+'</h2><p>'+esc(t('Cron:'))+' '+(g.cron.stale?'<b>'+esc(t('stale'))+'</b>':esc(t('ok')))+' · '+esc(t('Outbox:'))+' '+g.outbox.pending+' '+t('pending')+' / '+g.outbox.failed+' '+t('failed')+' · '+esc(t('Documents root:'))+' '+(g.docsRoot.healthy?esc(t('ok')):esc(t('broken — configure')))+' · '+esc(t('License:'))+' '+esc(g.license.status)+'</p></div>'));
+    body.appendChild(h('<div class="kzc-card"><h2>'+esc(t('Diagnostics'))+'</h2><p>'+esc(t('Cron:'))+' '+(g.cron.stale?'<b>'+esc(t('stale'))+'</b>':esc(t('ok')))+' · '+esc(t('Outbox:'))+' '+g.outbox.pending+' '+t('pending')+' / '+g.outbox.failed+' '+t('failed')+' · '+esc(t('Documents root:'))+' '+(g.docsRoot.healthy?esc(t('ok')):esc(t('broken — configure')))+' · '+esc(t('License:'))+' '+esc(g.license.status)+'</p></div>'));
   }
 }
 
@@ -717,13 +721,13 @@ async function vHolds(){
   const body=chrome('holds',t('Mail review'));
   const r=await get('/api/portal/intake-holds');
   const holds=(r.data&&r.data.holds)||[];
-  if(!holds.length){body.appendChild(h('<p class="ptl-muted">'+esc(t('No held e-mails.'))+'</p>'));return;}
-  const list=h('<div class="ptl-list"></div>').firstElementChild;
+  if(!holds.length){body.appendChild(h('<p class="kzc-muted">'+esc(t('No held e-mails.'))+'</p>'));return;}
+  const list=h('<div class="kzc-list"></div>').firstElementChild;
   holds.forEach(hh=>{
-    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
+    const row=h('<div class="kzc-card"><b></b><div class="kzc-muted"></div><div class="kzc-actions"></div></div>');
     row.querySelector('b').textContent=t('Hold')+' #'+hh.id+' · '+t('org')+' '+hh.orgId;
-    row.querySelector('.ptl-muted').textContent=new Date(hh.receivedAt).toLocaleString()+' · '+hh.state;
-    const act=row.querySelector('.ptl-actions');
+    row.querySelector('.kzc-muted').textContent=new Date(hh.receivedAt).toLocaleString()+' · '+hh.state;
+    const act=row.querySelector('.kzc-actions');
     if(hh.state==='held'){
       act.appendChild(btn(t('Accept'),async()=>{
         const rr=await post('/api/portal/intake-holds/'+hh.id+'/decide',{action:'accept'});
@@ -759,25 +763,25 @@ async function vForms(){
   const tr=await get('/api/portal/form-templates');
   const tpls=(tr.data&&tr.data.templates)||[];
   body.appendChild(h('<h2>'+esc(t('Templates'))+'</h2>'));
-  if(!tpls.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No templates.'))+'</p>'));
+  if(!tpls.length)body.appendChild(h('<p class="kzc-muted">'+esc(t('No templates.'))+'</p>'));
   tpls.forEach(tp=>{
-    body.appendChild(h('<div class="ptl-card"><b>'+esc(tp.name)+'</b><div class="ptl-muted">'+esc((tp.fields||[]).length)+' '+esc(t('fields'))+'</div></div>'));
+    body.appendChild(h('<div class="kzc-card"><b>'+esc(tp.name)+'</b><div class="kzc-muted">'+esc((tp.fields||[]).length)+' '+esc(t('fields'))+'</div></div>'));
   });
   body.appendChild(h('<h2>'+esc(t('Forms sent'))+'</h2>'));
   const fr=await get('/api/portal/forms');
   const forms=(fr.data&&fr.data.forms)||[];
   const orgs=await get('/api/portal/orgs');
   const orgNames={};(orgs.data&&orgs.data.orgs||[]).forEach(o=>orgNames[o.id]=o.name);
-  if(!forms.length)body.appendChild(h('<p class="ptl-muted">'+esc(t('No forms sent yet.'))+'</p>'));
-  const list=h('<div class="ptl-list"></div>').firstElementChild;
+  if(!forms.length)body.appendChild(h('<p class="kzc-muted">'+esc(t('No forms sent yet.'))+'</p>'));
+  const list=h('<div class="kzc-list"></div>').firstElementChild;
   forms.forEach(f=>{
-    const row=h('<div class="ptl-card"><b></b><div class="ptl-muted"></div><div class="ptl-actions"></div></div>');
+    const row=h('<div class="kzc-card"><b></b><div class="kzc-muted"></div><div class="kzc-actions"></div></div>');
     row.querySelector('b').textContent=(orgNames[f.orgId]||'#'+f.orgId)+' · '+t('Form')+' #'+f.id;
-    row.querySelector('.ptl-muted').textContent=f.state+(f.submittedAt?' · '+new Date(f.submittedAt).toLocaleString():'');
-    const act=row.querySelector('.ptl-actions');
+    row.querySelector('.kzc-muted').textContent=f.state+(f.submittedAt?' · '+new Date(f.submittedAt).toLocaleString():'');
+    const act=row.querySelector('.kzc-actions');
     act.appendChild(btn(t('Answers'),()=>openForm(f.id),true));
     if(f.state==='submitted')act.appendChild(btn(t('Reopen'),async()=>{await post('/api/portal/forms/'+f.id+'/reopen');vForms();}));
-    const csv=h('<a class="ptl-btn ptl-btn--sm"></a>').firstElementChild;csv.textContent='CSV';csv.href=base+'/api/portal/forms/'+f.id+'/export.csv';act.appendChild(csv);
+    const csv=h('<a class="kzc-btn kzc-btn--sm"></a>').firstElementChild;csv.textContent='CSV';csv.href=base+'/api/portal/forms/'+f.id+'/export.csv';act.appendChild(csv);
     list.appendChild(row);
   });
   body.appendChild(list);
@@ -788,10 +792,10 @@ async function openForm(id){
   if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   if(!r.success){status(t('Not found.'));return;}
   const f=r.data.form,body=chrome('forms',t('Form')+' #'+id+' — '+f.name);
-  const card=h('<div class="ptl-card"></div>').firstElementChild;
+  const card=h('<div class="kzc-card"></div>').firstElementChild;
   (f.fields||[]).forEach(fd=>{
     const ans=(f.answers||[]).find(a=>a.key===fd.key);
-    card.appendChild(h('<div class="ptl-kvrow"><span>'+esc(fd.label)+'</span><b>'+esc(ans?String(ans.value):'—')+'</b></div>'));
+    card.appendChild(h('<div class="kzc-kvrow"><span>'+esc(fd.label)+'</span><b>'+esc(ans?String(ans.value):'—')+'</b></div>'));
   });
   body.appendChild(card);
   if(f.state==='submitted')body.appendChild(btn(t('Reopen for the client'),async()=>{await post('/api/portal/forms/'+f.id+'/reopen');openForm(id);}));
@@ -801,33 +805,33 @@ async function openForm(id){
 async function vPeople(){
   VIEW_SEQ++;
   const body=chrome('people',t('People'));
-  if(!ME_ADMIN){body.appendChild(h('<p class="ptl-muted">'+esc(t('App admins only'))+'</p>'));return;}
-  body.appendChild(h('<input id="ptl-pq" class="ptl-input" placeholder="'+esc(t('Search e-mail or name…'))+'">'));
-  body.appendChild(h('<div id="ptl-plist" class="ptl-list"></div>'));
+  if(!ME_ADMIN){body.appendChild(h('<p class="kzc-muted">'+esc(t('App admins only'))+'</p>'));return;}
+  body.appendChild(h('<input id="kzc-pq" class="kzc-input" placeholder="'+esc(t('Search e-mail or name…'))+'">'));
+  body.appendChild(h('<div id="kzc-plist" class="kzc-list"></div>'));
   const render=async q=>{
     const seq=++PQ_SEQ;
     const r=await get('/api/portal/identities?q='+encodeURIComponent(q));
     if(seq!==PQ_SEQ)return; // superseded by a newer load — never paint stale
-    const list=document.getElementById('ptl-plist');if(!list)return;list.innerHTML='';
+    const list=document.getElementById('kzc-plist');if(!list)return;list.innerHTML='';
     (r.data&&r.data.identities||[]).forEach(i=>{
-      const row=h('<div class="ptl-dev"><span></span></div>').firstElementChild;
+      const row=h('<div class="kzc-dev"><span></span></div>').firstElementChild;
       row.querySelector('span').textContent=(i.displayName||'')+' <'+i.email+'>'+(i.status!=='active'?' ('+i.status+')':'');
       const st=btn(i.status==='disabled'?t('Enable'):t('Disable'),async()=>{
-        await put('/api/portal/identities/'+i.id+'/status',{status:i.status==='disabled'?'active':'disabled'});render(document.getElementById('ptl-pq').value);
-      },false);st.className='ptl-btn ptl-btn--sm';row.appendChild(st);
+        await put('/api/portal/identities/'+i.id+'/status',{status:i.status==='disabled'?'active':'disabled'});render(document.getElementById('kzc-pq').value);
+      },false);st.className='kzc-btn kzc-btn--sm';row.appendChild(st);
       const ex=btn(t('Export'),async()=>{
         const rj=await get('/api/portal/identities/'+i.id+'/export');
         const blob=new Blob([JSON.stringify(rj.data??rj,null,2)],{type:'application/json'});
         const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='identity-'+i.id+'.json';a.click();
-      },false);ex.className='ptl-btn ptl-btn--sm';row.appendChild(ex);
+      },false);ex.className='kzc-btn kzc-btn--sm';row.appendChild(ex);
       const er=btn(t('Erase'),async()=>{
         if(!(await confirmDlg(t('Erase person'),t('All personal data is erased permanently. Continue?'))))return;
-        await del('/api/portal/identities/'+i.id);render(document.getElementById('ptl-pq').value);
-      },false);er.className='ptl-btn ptl-btn--sm';row.appendChild(er);
+        await del('/api/portal/identities/'+i.id);render(document.getElementById('kzc-pq').value);
+      },false);er.className='kzc-btn kzc-btn--sm';row.appendChild(er);
       list.appendChild(row);
     });
   };
-  body.querySelector('#ptl-pq').oninput=e=>render(e.target.value);
+  body.querySelector('#kzc-pq').oninput=e=>render(e.target.value);
   render('');
 }
 

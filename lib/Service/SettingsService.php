@@ -7,9 +7,9 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\AppInfo\Application;
+use OCA\KanzleiCheck\AppInfo\Application;
 use OCP\IConfig;
 
 /**
@@ -103,8 +103,8 @@ class SettingsService
 			} catch (\Throwable $e) {
 				// fail closed: a secret we cannot encrypt must never reach the
 				// appconfig table in plaintext — refuse the write instead.
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('portalcheck secret encrypt failed — refusing write', ['key' => $key, 'e' => $e->getMessage()]);
-				throw new \OCA\PortalCheck\Exception\ApiException(500, 'SECRET_ENCRYPT_FAILED', 'secret could not be encrypted — nothing stored');
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('kanzleicheck secret encrypt failed — refusing write', ['key' => $key, 'e' => $e->getMessage()]);
+				throw new \OCA\KanzleiCheck\Exception\ApiException(500, 'SECRET_ENCRYPT_FAILED', 'secret could not be encrypted — nothing stored');
 			}
 		}
 		$this->set($key, $value);

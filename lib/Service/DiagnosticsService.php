@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\JobCursorMapper;
-use OCA\PortalCheck\Db\MailOutboxMapper;
+use OCA\KanzleiCheck\Db\JobCursorMapper;
+use OCA\KanzleiCheck\Db\MailOutboxMapper;
 use OCP\Mail\IMailer;
 
 /** Admin "Portal-Diagnose" data: mail test, outbox, cron age, docs root (§6). */

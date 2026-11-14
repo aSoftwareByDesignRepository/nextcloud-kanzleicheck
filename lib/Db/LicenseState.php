@@ -7,12 +7,12 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\AppFramework\Db\Entity;
 
 /**
- * ``ptl_license_state`` entity.
+ * ``kzc_license_state`` entity.
  *
  * @method int getId()
  * @method void setId(int $id)

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * (COPIED-SOURCES.md). Adjusted: app namespace only.
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 /**
  * Bearer-token mint/verify.
@@ -47,6 +47,6 @@ class TokenService
 	/** HMAC token for intake addresses: 16 chars of an org-bound HMAC. */
 	public function intakeToken(string $secret, int $orgId): string
 	{
-		return substr(hash_hmac('sha256', 'ptl-intake:' . $orgId, $secret), 0, 16);
+		return substr(hash_hmac('sha256', 'kzc-intake:' . $orgId, $secret), 0, 16);
 	}
 }

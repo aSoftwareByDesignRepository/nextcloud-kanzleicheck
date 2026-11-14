@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
 use OCP\AppFramework\Http\JSONResponse;
 

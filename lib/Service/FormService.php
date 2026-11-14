@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\FormAnswerMapper;
-use OCA\PortalCheck\Db\FormTemplate;
-use OCA\PortalCheck\Db\FormTemplateMapper;
-use OCA\PortalCheck\Db\PortalForm;
-use OCA\PortalCheck\Db\PortalFormMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\ConflictException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\FormAnswerMapper;
+use OCA\KanzleiCheck\Db\FormTemplate;
+use OCA\KanzleiCheck\Db\FormTemplateMapper;
+use OCA\KanzleiCheck\Db\PortalForm;
+use OCA\KanzleiCheck\Db\PortalFormMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\ConflictException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\IDBConnection;
 
 /** Questionnaires (US-P28): field schema validation, autosave CAS, submit lock, CSV export. */
@@ -185,7 +185,7 @@ class FormService
 			throw new ValidationException('VALIDATION_FAILED', $errors);
 		}
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_form')
+		$qb->update('kzc_form')
 			->set('state', $qb->createNamedParameter('submitted'))
 			->set('submitted_by', $qb->createNamedParameter($actor))
 			->set('submitted_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
@@ -197,7 +197,7 @@ class FormService
 	public function reopen(int $formId, string $actor): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_form')->set('state', $qb->createNamedParameter('open'))
+		$qb->update('kzc_form')->set('state', $qb->createNamedParameter('open'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($formId)));
 		$qb->executeStatement();
 	}

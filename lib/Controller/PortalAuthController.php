@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Db\MailOutboxMapper;
-use OCA\PortalCheck\Db\OtpMapper;
-use OCA\PortalCheck\Middleware\PortalSessionMiddleware;
-use OCA\PortalCheck\Service\CsrfService;
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\MailOutboxService;
-use OCA\PortalCheck\Service\OtpService;
-use OCA\PortalCheck\Service\PortalSessionService;
-use OCA\PortalCheck\Service\SettingsService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Db\MailOutboxMapper;
+use OCA\KanzleiCheck\Db\OtpMapper;
+use OCA\KanzleiCheck\Middleware\PortalSessionMiddleware;
+use OCA\KanzleiCheck\Service\CsrfService;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\MailOutboxService;
+use OCA\KanzleiCheck\Service\OtpService;
+use OCA\KanzleiCheck\Service\PortalSessionService;
+use OCA\KanzleiCheck\Service\SettingsService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AnonRateLimit;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -36,7 +36,7 @@ class PortalAuthController extends Controller
 {
 	use ApiTrait;
 
-	public const SESSION_COOKIE = 'ptl_session';
+	public const SESSION_COOKIE = 'kzc_session';
 
 	public function __construct(
 		string $appName,
@@ -65,7 +65,7 @@ class PortalAuthController extends Controller
 		$underCap = $email !== '' && $this->otpMapper->countRecentForEmail($email, (new \DateTimeImmutable())->modify('-1 hour')) < 5;
 		if ($deliver && $underCap) {
 			[$code, $magic, ] = $this->otp->issue($email, OtpService::PURPOSE_LOGIN, $ip, true);
-			$portalUrl = $this->urls->linkToRouteAbsolute('portalcheck.portalAuth.magicGet', ['token' => $magic]);
+			$portalUrl = $this->urls->linkToRouteAbsolute('kanzleicheck.portalAuth.magicGet', ['token' => $magic]);
 			$this->outbox->enqueue($email, 'otp', 'otp:' . $email . ':' . hash('sha256', $code),
 				['code' => $code, 'portalUrl' => $portalUrl, 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->drainAsync();
@@ -127,7 +127,7 @@ class PortalAuthController extends Controller
 		$otp = $this->otp->consumeMagic($token);
 		$identity = $otp !== null ? $this->identities->activeByEmail((string)$otp->getEmail()) : null;
 		if ($otp === null || $identity === null || $otp->getPurpose() !== OtpService::PURPOSE_LOGIN) {
-			throw new \OCA\PortalCheck\Exception\NotFoundException();
+			throw new \OCA\KanzleiCheck\Exception\NotFoundException();
 		}
 		return $this->issueSessionResponse((int)$identity->getId(), '/portal');
 	}
@@ -151,7 +151,7 @@ class PortalAuthController extends Controller
 		try {
 			$this->outbox->drain(5);
 		} catch (\Throwable $e) {
-			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck auth OTP drain failed', ['e' => $e->getMessage()]);
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck auth OTP drain failed', ['e' => $e->getMessage()]);
 		}
 	}
 }

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Middleware;
+namespace OCA\KanzleiCheck\Middleware;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\ConflictException;
-use OCA\PortalCheck\Exception\DeviceRevokedException;
-use OCA\PortalCheck\Exception\ForbiddenException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\RateLimitException;
-use OCA\PortalCheck\Exception\UnauthorizedException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\ConflictException;
+use OCA\KanzleiCheck\Exception\DeviceRevokedException;
+use OCA\KanzleiCheck\Exception\ForbiddenException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\RateLimitException;
+use OCA\KanzleiCheck\Exception\UnauthorizedException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -32,7 +32,7 @@ use Psr\Log\LoggerInterface;
  * Page routes (staff UI + portal GETs — every path without `/api/`) never get
  * the JSON envelope: gate failures render the access-denied page, anything
  * else rethrows so core can render its HTML error page. Raw JSON on a page
- * route is a dead surface for humans (ptl-intake-denied-staff).
+ * route is a dead surface for humans (kzc-intake-denied-staff).
  */
 class ApiExceptionMiddleware extends Middleware
 {
@@ -46,7 +46,7 @@ class ApiExceptionMiddleware extends Middleware
 
 	public function afterException(Controller $controller, string $methodName, \Exception $exception): Response
 	{
-		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
+		if (!str_starts_with(get_class($controller), 'OCA\\KanzleiCheck\\')) {
 			throw $exception;
 		}
 		if ($this->isPageRequest()) {
@@ -86,7 +86,7 @@ class ApiExceptionMiddleware extends Middleware
 			}
 			return $r;
 		}
-		$this->logger->error('portalcheck unhandled exception', ['exception' => $exception->getMessage()]);
+		$this->logger->error('kanzleicheck unhandled exception', ['exception' => $exception->getMessage()]);
 		return self::fail(500, 'INTERNAL', 'Something went wrong.');
 	}
 
@@ -128,7 +128,7 @@ class ApiExceptionMiddleware extends Middleware
 		if ($exception instanceof ForbiddenException) {
 			return (new TemplateResponse(Application::APP_ID, 'access-denied', [
 				'title' => $l->t('Access denied'),
-				'message' => $l->t('You do not have access to PortalCheck.'),
+				'message' => $l->t('You do not have access to KanzleiCheck.'),
 				'hint' => $l->t('Next step: ask a Nextcloud administrator to add your account under Settings → Access (door), or to grant you the App Admin role.'),
 				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
 			], 'guest'))->setStatus(Http::STATUS_FORBIDDEN);

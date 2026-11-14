@@ -4,15 +4,15 @@
  */
 (function () {
 	'use strict';
-	const API = window.PortalCheckApi;
-	const M = window.PortalCheckMessaging;
+	const API = window.KanzleiCheckApi;
+	const M = window.KanzleiCheckMessaging;
 	// window.t expands {name} tokens from a vars object only — positional
 	// vsprintf placeholders (%d, %s, %1$s) come back literally. Catalog
 	// strings keep their vsprintf form for the PHP side, so positional
 	// params arrays are interpolated here after translation. Non-array
 	// params keep the named-vars path untouched.
 	const t = (key, params) => {
-		const s = window.t ? window.t('portalcheck', key, (params && !Array.isArray(params)) ? params : {}) : key;
+		const s = window.t ? window.t('kanzleicheck', key, (params && !Array.isArray(params)) ? params : {}) : key;
 		if (!Array.isArray(params) || !params.length) return s;
 		let i = 0;
 		return s.replace(/%%|%(?:\d+\$)?[sd]/g, (m) => {
@@ -22,7 +22,7 @@
 			return (v === undefined || v === null) ? '' : String(v);
 		});
 	};
-	const P = 'ptl';
+	const P = 'kzc';
 	const $ = (id) => document.getElementById(P + '-' + id);
 
 	let pendingId = null;
@@ -128,8 +128,8 @@
 				const a = document.createElement('a');
 				a.href = URL.createObjectURL(blob);
 				a.download = resp.headers.get('Content-Disposition')
-					? (resp.headers.get('Content-Disposition').match(/filename="?([^";]+)"?/) || [])[1] || 'portalcheck-transfer.nctransfer'
-					: 'portalcheck-transfer.nctransfer';
+					? (resp.headers.get('Content-Disposition').match(/filename="?([^";]+)"?/) || [])[1] || 'kanzleicheck-transfer.nctransfer'
+					: 'kanzleicheck-transfer.nctransfer';
 				document.body.appendChild(a); a.click(); a.remove();
 				setTimeout(() => URL.revokeObjectURL(a.href), 30000);
 				polite(t('Transfer file downloaded — store it and the passphrase safely.'));

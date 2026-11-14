@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * PortalCheck wiring for the shared transfer engine.
+ * KanzleiCheck wiring for the shared transfer engine.
  *
  *  - requireTransferAdmin gates on the app's real door-admin role
  *    (AccessDoorService::isAppAdmin — system admins + configured app admins).
@@ -13,19 +13,19 @@ declare(strict_types=1);
  *  - writeMirrored writes the door policy through
  *    AccessDoorService::saveDoor in ONE atomic call — never raw setAppValue
  *    (NN-02); the SYNC_DOOR_BINDINGS_LIVE fail-closed guard rides along.
- *  - createSafetySnapshot returns null: PortalCheck has no snapshot
+ *  - createSafetySnapshot returns null: KanzleiCheck has no snapshot
  *    facility — the Service\UpgradeBackupService stub only carries the
  *    shared LOCK_KEY constant the engine locks against.
  */
 
-namespace OCA\PortalCheck\ConfigTransfer;
+namespace OCA\KanzleiCheck\ConfigTransfer;
 
-use OCA\PortalCheck\Db\SyncBindingMapper;
-use OCA\PortalCheck\Exception\ForbiddenException;
-use OCA\PortalCheck\Service\AccessDoorService;
-use OCA\PortalCheck\Service\AuditService;
-use OCA\PortalCheck\Service\PresetCatalog;
-use OCA\PortalCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Db\SyncBindingMapper;
+use OCA\KanzleiCheck\Exception\ForbiddenException;
+use OCA\KanzleiCheck\Service\AccessDoorService;
+use OCA\KanzleiCheck\Service\AuditService;
+use OCA\KanzleiCheck\Service\PresetCatalog;
+use OCA\KanzleiCheck\Service\SettingsService;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -241,7 +241,7 @@ final class TransferHooks implements ConfigTransferHooks
 
 	public function createSafetySnapshot(string $reason): ?string
 	{
-		// No snapshot facility exists in PortalCheck (UpgradeBackupService
+		// No snapshot facility exists in KanzleiCheck (UpgradeBackupService
 		// stub carries only the shared LOCK_KEY) — nothing to delegate to.
 		return null;
 	}
@@ -271,8 +271,8 @@ final class TransferHooks implements ConfigTransferHooks
 			);
 		} catch (\Throwable $e) {
 			// audit must never fail the transfer itself
-			$this->logger->warning('portalcheck: config transfer audit event failed', [
-				'app' => 'portalcheck',
+			$this->logger->warning('kanzleicheck: config transfer audit event failed', [
+				'app' => 'kanzleicheck',
 				'action' => $action,
 				'exception' => $e,
 			]);

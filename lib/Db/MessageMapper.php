@@ -7,7 +7,7 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\QBMapper;
@@ -18,7 +18,7 @@ class MessageMapper extends QBMapper
 {
 	public function __construct(IDBConnection $db)
 	{
-		parent::__construct($db, 'ptl_message', Message::class);
+		parent::__construct($db, 'kzc_message', Message::class);
 	}
 
 	public function find(int $id): ?Message
@@ -121,7 +121,7 @@ class MessageMapper extends QBMapper
 		return (int)$qb->executeQuery()->fetchOne();
 	}
 
-	// unique-conflict:ok author IS part of ptl_msg_dedupe_uq — but client_uuid
+	// unique-conflict:ok author IS part of kzc_msg_dedupe_uq — but client_uuid
 	// is nulled on the same write, so merged-author rows carry (conv, author,
 	// NULL) keys that MySQL treats as distinct; no collision is reachable.
 	public function anonymizeAuthor(string $actor, string $replacement): int

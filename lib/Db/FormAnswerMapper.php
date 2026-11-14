@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_form_ans` — per-field autosave answers with revision CAS. */
+/** `kzc_form_ans` — per-field autosave answers with revision CAS. */
 class FormAnswerMapper
 {
-	public const TABLE = 'ptl_form_ans';
+	public const TABLE = 'kzc_form_ans';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

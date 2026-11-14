@@ -7,11 +7,11 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Exception;
+namespace OCA\KanzleiCheck\Exception;
 
 /**
  * Field-level input failure — carries a fields map that renders as
- * aria-invalid + inline .ptl-field-error per named control (api-security §5).
+ * aria-invalid + inline .kzc-field-error per named control (api-security §5).
  */
 class ValidationException extends \RuntimeException
 {

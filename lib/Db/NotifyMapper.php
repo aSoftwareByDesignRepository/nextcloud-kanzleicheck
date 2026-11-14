@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_notify` — composite PK (identity_id, org_id), mail throttle + opt-out. */
+/** `kzc_notify` — composite PK (identity_id, org_id), mail throttle + opt-out. */
 class NotifyMapper
 {
-	public const TABLE = 'ptl_notify';
+	public const TABLE = 'kzc_notify';
 
 	public function __construct(private readonly IDBConnection $db)
 	{
@@ -55,7 +55,7 @@ class NotifyMapper
 			$ins->executeStatement();
 		} catch (\Throwable $e) {
 			// concurrent insert won — fine, but keep observable
-			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('portalcheck notify-pref insert skipped', ['identity' => $identityId, 'org' => $orgId, 'e' => $e->getMessage()]);
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('kanzleicheck notify-pref insert skipped', ['identity' => $identityId, 'org' => $orgId, 'e' => $e->getMessage()]);
 			return;
 		}
 	}

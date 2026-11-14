@@ -2,40 +2,40 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\Db\ApprovalMapper;
-use OCA\PortalCheck\Db\ContactMapper;
-use OCA\PortalCheck\Db\ConversationMapper;
-use OCA\PortalCheck\Db\DeviceMapper;
-use OCA\PortalCheck\Db\DocRequestMapper;
-use OCA\PortalCheck\Db\MessageMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Db\PortalFormMapper;
-use OCA\PortalCheck\Db\ReqItemMapper;
-use OCA\PortalCheck\Db\TaskMapper;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Service\ActorResolver;
-use OCA\PortalCheck\Service\ApprovalService;
-use OCA\PortalCheck\Service\ChatService;
-use OCA\PortalCheck\Service\ChunkUploadService;
-use OCA\PortalCheck\Service\DeviceService;
-use OCA\PortalCheck\Service\DocumentService;
-use OCA\PortalCheck\Service\FormService;
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\IntakeService;
-use OCA\PortalCheck\Service\IntegrationService;
-use OCA\PortalCheck\Service\LicenseService;
-use OCA\PortalCheck\Service\MailOutboxService;
-use OCA\PortalCheck\Service\NotifyService;
-use OCA\PortalCheck\Service\OtpService;
-use OCA\PortalCheck\Service\PresetCatalog;
-use OCA\PortalCheck\Service\RequestService;
-use OCA\PortalCheck\Service\SafeFilenameService;
-use OCA\PortalCheck\Service\SettingsService;
-use OCA\PortalCheck\Service\UploadService;
+use OCA\KanzleiCheck\Db\ApprovalMapper;
+use OCA\KanzleiCheck\Db\ContactMapper;
+use OCA\KanzleiCheck\Db\ConversationMapper;
+use OCA\KanzleiCheck\Db\DeviceMapper;
+use OCA\KanzleiCheck\Db\DocRequestMapper;
+use OCA\KanzleiCheck\Db\MessageMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Db\PortalFormMapper;
+use OCA\KanzleiCheck\Db\ReqItemMapper;
+use OCA\KanzleiCheck\Db\TaskMapper;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\Service\ApprovalService;
+use OCA\KanzleiCheck\Service\ChatService;
+use OCA\KanzleiCheck\Service\ChunkUploadService;
+use OCA\KanzleiCheck\Service\DeviceService;
+use OCA\KanzleiCheck\Service\DocumentService;
+use OCA\KanzleiCheck\Service\FormService;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\IntakeService;
+use OCA\KanzleiCheck\Service\IntegrationService;
+use OCA\KanzleiCheck\Service\LicenseService;
+use OCA\KanzleiCheck\Service\MailOutboxService;
+use OCA\KanzleiCheck\Service\NotifyService;
+use OCA\KanzleiCheck\Service\OtpService;
+use OCA\KanzleiCheck\Service\PresetCatalog;
+use OCA\KanzleiCheck\Service\RequestService;
+use OCA\KanzleiCheck\Service\SafeFilenameService;
+use OCA\KanzleiCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Service\UploadService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
@@ -48,18 +48,18 @@ use OCP\IUserManager;
 
 /**
  * Companion API (/api/companion/v1/*). Pair is open (email+code); every
- * other route needs X-PortalCheck-Device → identity via middleware.
+ * other route needs X-KanzleiCheck-Device → identity via middleware.
  * Mirrors the web portal client surface one-to-one (§9.5): every org-
  * scoped read/write verifies membership and misses uniformly.
  */
-class CompanionController extends Controller implements \OCA\PortalCheck\Contracts\CompanionContextAware
+class CompanionController extends Controller implements \OCA\KanzleiCheck\Contracts\CompanionContextAware
 {
 	use ApiTrait;
 
 	public $companionIdentity;
 	public $companionDevice;
 
-	public function setCompanionContext(\OCA\PortalCheck\Db\Identity $identity, \OCA\PortalCheck\Db\Device $device): void
+	public function setCompanionContext(\OCA\KanzleiCheck\Db\Identity $identity, \OCA\KanzleiCheck\Db\Device $device): void
 	{
 		$this->companionIdentity = $identity;
 		$this->companionDevice = $device;
@@ -90,7 +90,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		private readonly UploadService $uploadService,
 		private readonly UploadMapper $uploads,
 		private readonly IntakeService $intake,
-		private readonly \OCA\PortalCheck\Db\NotifyMapper $notify,
+		private readonly \OCA\KanzleiCheck\Db\NotifyMapper $notify,
 		private readonly PortalFormMapper $forms,
 		private readonly FormService $formService,
 		private readonly IntegrationService $integrations,
@@ -118,21 +118,21 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		[$token, $device] = $this->devices->pair((int)$identity->getId(), $name, $platform);
 		$this->outbox->enqueue($identity->getEmail(), 'device', 'device:' . $device->getId(),
 			['deviceName' => $name, 'platform' => $platform, 'time' => (new \DateTimeImmutable())->format('Y-m-d H:i'),
-			 'portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index'), 'provider' => $this->settings->get('provider_label')], 'de');
+			 'portalUrl' => $this->urls->linkToRouteAbsolute('kanzleicheck.portal.index'), 'provider' => $this->settings->get('provider_label')], 'de');
 		return $this->ok(['deviceToken' => $token, 'identity' => ['id' => (int)$identity->getId(), 'displayName' => $identity->getDisplayName()]]);
 	}
 
 	// ── client-role data endpoints (device-token gated) ──────────────
 
-	private function identity(): \OCA\PortalCheck\Db\Identity
+	private function identity(): \OCA\KanzleiCheck\Db\Identity
 	{
 		if ($this->companionIdentity === null) {
-			throw new \OCA\PortalCheck\Exception\UnauthorizedException();
+			throw new \OCA\KanzleiCheck\Exception\UnauthorizedException();
 		}
 		return $this->companionIdentity;
 	}
 
-	private function companionOrg(int $orgId): \OCA\PortalCheck\Db\Org
+	private function companionOrg(int $orgId): \OCA\KanzleiCheck\Db\Org
 	{
 		$identityId = (int)$this->identity()->getId();
 		if ($orgId <= 0 || !$this->identities->isMember($identityId, $orgId)) {
@@ -187,10 +187,10 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$status = $this->license->status();
 		return $this->ok([
 			'role' => $this->companionIdentity !== null ? 'client' : 'unknown',
-			'capabilities' => ['portal' => true, 'portalcheck.companion.min' => 1],
+			'capabilities' => ['portal' => true, 'kanzleicheck.companion.min' => 1],
 			'pushAvailable' => false,
 			'portal' => ['enabled' => $status !== 'expired', 'licenseStatus' => $status, 'orgs' => $orgs],
-			'licensing' => ['status' => $status, 'product' => 'portalcheck'],
+			'licensing' => ['status' => $status, 'product' => 'kanzleicheck'],
 			'server' => ['appVersion' => '0.1.0', 'companionMin' => 1],
 		]);
 	}
@@ -240,7 +240,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 			(string)$this->request->getParam('clientUuid', '') ?: null,
 			$this->strictId($this->request->getParam('uploadId')));
 		foreach ($this->notifyService->staffRecipients($orgId) as $uid) {
-			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('portalcheck.page.index') . '?view=inbox&org=' . $orgId);
+			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('kanzleicheck.page.index') . '?view=inbox&org=' . $orgId);
 		}
 		return $this->ok(['message' => ['id' => (int)$m->getId()]], 201);
 	}
@@ -412,7 +412,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		$this->companionOrg((int)$row['org_id']);
 		// raw request body → temp file (mobile sends bytes, not multipart)
 		$content = fopen('php://input', 'rb');
-		$tmp = tempnam(sys_get_temp_dir(), 'ptl_chk_');
+		$tmp = tempnam(sys_get_temp_dir(), 'kzc_chk_');
 		$out = fopen($tmp, 'wb');
 		if (is_resource($content) && $out !== false) {
 			stream_copy_to_stream($content, $out);
@@ -533,7 +533,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 				['code' => $res['code'], 'provider' => $this->settings->get('provider_label')], 'de');
 			$this->outbox->drain(3);
 		} catch (\Throwable $e) {
-			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck companion approval OTP mail enqueue failed', ['approval' => $id, 'e' => $e->getMessage()]);
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck companion approval OTP mail enqueue failed', ['approval' => $id, 'e' => $e->getMessage()]);
 		}
 		return $this->ok(['sent' => true], 202);
 	}
@@ -655,9 +655,9 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 		if ($form === null) {
 			throw new NotFoundException();
 		}
-		$tplMapper = \OCP\Server::get(\OCA\PortalCheck\Db\FormTemplateMapper::class);
+		$tplMapper = \OCP\Server::get(\OCA\KanzleiCheck\Db\FormTemplateMapper::class);
 		$tpl = $tplMapper->find((int)$form->getTplId());
-		$answers = \OCP\Server::get(\OCA\PortalCheck\Db\FormAnswerMapper::class)->allForForm($formId);
+		$answers = \OCP\Server::get(\OCA\KanzleiCheck\Db\FormAnswerMapper::class)->allForForm($formId);
 		return $this->ok(['form' => [
 			'id' => $formId, 'state' => $form->getState(),
 			'name' => $tpl?->getName() ?? '',
@@ -690,7 +690,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 					$this->requests->deliverItem($this->actor(), (int)$item->getReqId(), (int)$item->getId());
 				}
 			} catch (\Throwable $e) {
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck companion form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck companion form submit auto-deliver failed', ['form' => $formId, 'e' => $e->getMessage()]);
 			}
 		}
 		return new JSONResponse(null, 204);
@@ -730,7 +730,7 @@ class CompanionController extends Controller implements \OCA\PortalCheck\Contrac
 	public function widgetSnapshot(int $orgId): JSONResponse
 	{
 		$identity = $this->identity();
-		$cache = $this->cacheFactory->createDistributed('portalcheck_wsnap');
+		$cache = $this->cacheFactory->createDistributed('kanzleicheck_wsnap');
 		// Identity + org both scope the cache — a per-user key without the
 		// orgId served one org's data to a multi-org member for 60 s.
 		$key = $identity->getId() . ':' . $orgId . ':approvals';

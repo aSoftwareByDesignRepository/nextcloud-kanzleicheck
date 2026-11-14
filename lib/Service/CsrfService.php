@@ -7,28 +7,28 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 /**
  * Double-submit CSRF for portal client routes (AF-02).
  *
  * The session cookie carries ambient authority on public POSTs, so every
  * mutation must prove the caller read a token bound to that session:
- * we issue `ptl_csrf` (JS-readable, SameSite=Lax) whose value is
- * HMAC(sessionToken, 'ptl-csrf'). The client sends it back in
- * `X-PTL-CSRF` (fetch) or the hidden `ptl_csrf` form field.
+ * we issue `kzc_csrf` (JS-readable, SameSite=Lax) whose value is
+ * HMAC(sessionToken, 'kzc-csrf'). The client sends it back in
+ * `X-KZC-CSRF` (fetch) or the hidden `kzc_csrf` form field.
  * A cross-site attacker can't read the session cookie or the token —
  * SameSite=Lax already blocks POST sending of cookies, the token is the
  * second factor for same-site subtleties + non-browser clients.
  */
 class CsrfService
 {
-	public const COOKIE_NAME = 'ptl_csrf';
-	public const HEADER = 'X-PTL-CSRF';
+	public const COOKIE_NAME = 'kzc_csrf';
+	public const HEADER = 'X-KZC-CSRF';
 
 	public function tokenFor(string $sessionToken): string
 	{
-		return hash_hmac('sha256', 'ptl-csrf', $sessionToken);
+		return hash_hmac('sha256', 'kzc-csrf', $sessionToken);
 	}
 
 	public function validate(string $sessionToken, string $presented): bool

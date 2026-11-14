@@ -10,7 +10,7 @@ declare(strict_types=1);
  * (COPIED-SOURCES.md) — static variant for upload paths.
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 /** Filename sanitising for storage + Content-Disposition. */
 class SafeFilenameService

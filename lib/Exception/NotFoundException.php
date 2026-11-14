@@ -7,7 +7,7 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Exception;
+namespace OCA\KanzleiCheck\Exception;
 
 /**
  * Uniform miss — covers "doesn't exist" AND "exists but not yours" (G-01).

@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Approval;
-use OCA\PortalCheck\Db\ApprovalMapper;
-use OCA\PortalCheck\Db\Otp;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\Approval;
+use OCA\KanzleiCheck\Db\ApprovalMapper;
+use OCA\KanzleiCheck\Db\Otp;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\IDBConnection;
 
 /**

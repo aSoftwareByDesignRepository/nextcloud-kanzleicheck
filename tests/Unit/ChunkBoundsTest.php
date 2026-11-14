@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\ChunkUploadService;
+use OCA\KanzleiCheck\Service\ChunkUploadService;
 use PHPUnit\Framework\TestCase;
 
 /** Chunk protocol invariants: caps, id grammar, bounds (AF-17). */

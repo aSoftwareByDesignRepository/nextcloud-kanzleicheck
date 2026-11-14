@@ -21,9 +21,9 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\ConfigTransfer;
+namespace OCA\KanzleiCheck\ConfigTransfer;
 
-use OCA\PortalCheck\Service\UpgradeBackupService;
+use OCA\KanzleiCheck\Service\UpgradeBackupService;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IAppConfig;

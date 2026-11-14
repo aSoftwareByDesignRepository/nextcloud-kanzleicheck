@@ -7,12 +7,12 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 /**
  * Shared upgrade-backup lock contract (family convention).
  *
- * PortalCheck has no snapshot/restore facility — this stub exists so the
+ * KanzleiCheck has no snapshot/restore facility — this stub exists so the
  * synced config-transfer engine (TransferService / TransferApplyJob) can
  * lock against the same family key a backup restore would hold
  * exclusively. If a real snapshot service lands later it must keep this
@@ -20,5 +20,5 @@ namespace OCA\PortalCheck\Service;
  */
 final class UpgradeBackupService
 {
-	public const LOCK_KEY = 'portalcheck-upgrade-backup';
+	public const LOCK_KEY = 'kanzleicheck-upgrade-backup';
 }

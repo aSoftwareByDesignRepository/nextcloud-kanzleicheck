@@ -7,17 +7,17 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Identity;
-use OCA\PortalCheck\Db\IdentityMapper;
-use OCA\PortalCheck\Db\MemberMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Db\SyncBinding;
-use OCA\PortalCheck\Db\SyncBindingMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\Identity;
+use OCA\KanzleiCheck\Db\IdentityMapper;
+use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Db\SyncBinding;
+use OCA\KanzleiCheck\Db\SyncBindingMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\Constants;
 use OCP\DB\Exception as DbException;
 use OCP\Files\Folder;
@@ -37,7 +37,7 @@ use Psr\Log\LoggerInterface;
  * Hard rules:
  *  - Platform state is the only read authority (D-B06): verify() resolves
  *    the live share via IShareManager on every detail read (rate-capped);
- *    ptl_sync.state is a list-view cache only.
+ *    kzc_sync.state is a list-view cache only.
  *  - Reshare bit is never set on any binding share (D-B07) — rw = read +
  *    create + update + delete, ro = read. Verified and normalised.
  *  - enable() is share-first, compensate-on-conflict (D-B13/ADR-Z01): the
@@ -45,7 +45,7 @@ use Psr\Log\LoggerInterface;
  *    deletes the just-created share — a row without a share self-heals
  *    via broken_share, a share without a row is invisible forever.
  *  - Verify/reconcile/job paths are strictly read-only w.r.t. shares
- *    (D-B18, NN-11): they compute state and update the ptl_sync cache row,
+ *    (D-B18, NN-11): they compute state and update the kzc_sync cache row,
  *    they never call orgFolder() (read path must not write — ZF-09) and
  *    never mutate an IShare.
  *  - Bound client accounts never become staff: attach and enable re-check
@@ -81,8 +81,8 @@ class SyncBindingService
 	}
 
 	// unique-conflict:ok the remaining ->update() sites in this file only SET
-	// non-unique columns (nc_uid/origin/mismatch on ptl_identity, folder_id on
-	// ptl_org, state/share_id/verified_at on ptl_sync, revoked_at on ptl_member
+	// non-unique columns (nc_uid/origin/mismatch on kzc_identity, folder_id on
+	// kzc_org, state/share_id/verified_at on kzc_sync, revoked_at on kzc_member
 	// cascades) — the unique keys identity_id+org_id / email / ref are never
 	// rewritten by an update path. The sole insert path (enable) carries the
 	// REASON_UNIQUE catch below with share compensation (ADR-Z01).
@@ -310,7 +310,7 @@ class SyncBindingService
 				try {
 					$this->shareManager->deleteShare($share);
 				} catch (\Throwable $del) {
-					$this->logger->warning('portalcheck sync enable compensation failed', ['e' => $del->getMessage()]);
+					$this->logger->warning('kanzleicheck sync enable compensation failed', ['e' => $del->getMessage()]);
 				}
 				$winner = $this->syncs->findByIdentityAndOrg($identityId, $orgId);
 				if ($winner !== null) {
@@ -406,7 +406,7 @@ class SyncBindingService
 		if ($this->notify === null) {
 			return;
 		}
-		$link = $this->urls->linkToRouteAbsolute('portalcheck.page.index') . '?view=orgs';
+		$link = $this->urls->linkToRouteAbsolute('kanzleicheck.page.index') . '?view=orgs';
 		foreach ($this->notify->staffRecipients((int)$b->getOrgId()) as $uid) {
 			$this->notify->staffNotify($uid, 'portal_sync_break', (int)$b->getOrgId(), $link);
 		}
@@ -439,7 +439,7 @@ class SyncBindingService
 			try {
 				$this->shareManager->deleteShare($share);
 			} catch (\Throwable $e) {
-				$this->logger->warning('portalcheck sync share delete failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck sync share delete failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
 			}
 		}
 	}
@@ -622,7 +622,7 @@ class SyncBindingService
 				$processed++;
 			} catch (\Throwable $e) {
 				$failed++;
-				$this->logger->warning('portalcheck sync offboard cascade failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck sync offboard cascade failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
 			}
 		}
 		return ['processed' => $processed, 'failed' => $failed];
@@ -641,7 +641,7 @@ class SyncBindingService
 					$this->revoke($actor, (int)$b->getId());
 				} catch (\Throwable $e) {
 					// AS-05: erase is never held hostage by filesystem errors
-					$this->logger->warning('portalcheck sync erase revoke failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
+					$this->logger->warning('kanzleicheck sync erase revoke failed', ['binding' => (int)$b->getId(), 'e' => $e->getMessage()]);
 				}
 			}
 		}
@@ -693,7 +693,7 @@ class SyncBindingService
 				$counts['broken']++;
 			}
 		}
-		$this->logger->info('portalcheck sync reconcile run', $counts + ['processed' => $processed]);
+		$this->logger->info('kanzleicheck sync reconcile run', $counts + ['processed' => $processed]);
 		return ['lastId' => $lastId, 'processed' => $processed, 'counts' => $counts];
 	}
 

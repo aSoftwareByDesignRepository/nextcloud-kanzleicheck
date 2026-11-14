@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * ATLAS ptl-c6 — stale_response_render_clobber guard: a superseded list fetch
+ * ATLAS kzc-c6 — stale_response_render_clobber guard: a superseded list fetch
  * must never paint over a newer filtered result. The mount-time unfiltered
- * /api/portal/orgs response is delayed via route interception; the #ptl-q
+ * /api/portal/orgs response is delayed via route interception; the #kzc-q
  * filter fetches ?q= which resolves first and paints the filtered list. Once
  * the stale mount response finally lands, the generation guard must drop it —
  * the list keeps showing exactly the filtered rows.
@@ -10,7 +10,7 @@
 const { test, expect } = require('@playwright/test');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const authed = hasCreds();
 const STALE_DELAY_MS = 1200;
 
@@ -42,16 +42,16 @@ test.describe('staff orgs search stale-response guard (c6)', () => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await login(page, creds());
 			await page.goto(`${APP}/?view=orgs`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-q').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-q').waitFor({ state: 'visible', timeout: 20000 });
 
 			const filtered = page.waitForResponse(
 				(r) => r.url().includes('/api/portal/orgs?q=') && r.request().method() === 'GET',
 				{ timeout: 20000 },
 			);
-			await page.locator('#ptl-q').fill(orgName);
+			await page.locator('#kzc-q').fill(orgName);
 			await filtered;
 
-			const rows = page.locator('#ptl-orglist .ptl-row');
+			const rows = page.locator('#kzc-orglist .kzc-row');
 			await expect(rows).toHaveCount(1);
 			await expect(rows.first()).toContainText(orgName);
 

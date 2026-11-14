@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 

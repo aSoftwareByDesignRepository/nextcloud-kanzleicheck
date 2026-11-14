@@ -7,17 +7,17 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\AppInfo;
+namespace OCA\KanzleiCheck\AppInfo;
 
-use OCA\PortalCheck\Middleware\ApiExceptionMiddleware;
-use OCA\PortalCheck\Middleware\DeviceAuthMiddleware;
-use OCA\PortalCheck\Middleware\PortalSessionMiddleware;
-use OCA\PortalCheck\Middleware\RateLimitMiddleware;
-use OCA\PortalCheck\Middleware\StaffAccessMiddleware;
-use OCA\PortalCheck\Notification\Notifier;
-use OCA\PortalCheck\Repair\UninstallDropTables;
-use OCA\PortalCheck\Service\AccessDoorService;
-use OCA\PortalCheck\Support\NavGate;
+use OCA\KanzleiCheck\Middleware\ApiExceptionMiddleware;
+use OCA\KanzleiCheck\Middleware\DeviceAuthMiddleware;
+use OCA\KanzleiCheck\Middleware\PortalSessionMiddleware;
+use OCA\KanzleiCheck\Middleware\RateLimitMiddleware;
+use OCA\KanzleiCheck\Middleware\StaffAccessMiddleware;
+use OCA\KanzleiCheck\Notification\Notifier;
+use OCA\KanzleiCheck\Repair\UninstallDropTables;
+use OCA\KanzleiCheck\Service\AccessDoorService;
+use OCA\KanzleiCheck\Support\NavGate;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -26,7 +26,7 @@ use OCP\Files\IRootFolder;
 
 class Application extends App implements IBootstrap
 {
-	public const APP_ID = 'portalcheck';
+	public const APP_ID = 'kanzleicheck';
 
 	public function __construct()
 	{
@@ -52,22 +52,22 @@ class Application extends App implements IBootstrap
 		$context->registerNotifierService(Notifier::class);
 
 		// ── Config & data transfer (test → production) ──────────────────
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferManifest::class, fn () => new \OCA\PortalCheck\ConfigTransfer\TransferManifest());
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferHooks::class, function ($c): \OCA\PortalCheck\ConfigTransfer\TransferHooks {
-			return new \OCA\PortalCheck\ConfigTransfer\TransferHooks(
-				$c->get(\OCA\PortalCheck\Service\SettingsService::class),
-				$c->get(\OCA\PortalCheck\Service\AccessDoorService::class),
-				$c->get(\OCA\PortalCheck\Service\AuditService::class),
-				$c->get(\OCA\PortalCheck\Db\SyncBindingMapper::class),
+		$context->registerService(\OCA\KanzleiCheck\ConfigTransfer\TransferManifest::class, fn () => new \OCA\KanzleiCheck\ConfigTransfer\TransferManifest());
+		$context->registerService(\OCA\KanzleiCheck\ConfigTransfer\TransferHooks::class, function ($c): \OCA\KanzleiCheck\ConfigTransfer\TransferHooks {
+			return new \OCA\KanzleiCheck\ConfigTransfer\TransferHooks(
+				$c->get(\OCA\KanzleiCheck\Service\SettingsService::class),
+				$c->get(\OCA\KanzleiCheck\Service\AccessDoorService::class),
+				$c->get(\OCA\KanzleiCheck\Service\AuditService::class),
+				$c->get(\OCA\KanzleiCheck\Db\SyncBindingMapper::class),
 				$c->get(\OCP\IUserManager::class),
 				$c->get(\OCP\IGroupManager::class),
 				$c->get(\Psr\Log\LoggerInterface::class),
 			);
 		});
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferPendingStore::class, fn ($c) => new \OCA\PortalCheck\ConfigTransfer\TransferPendingStore($c->get(IRootFolder::class), $c->get(\OCP\IConfig::class), 'portalcheck', $c->get(\Psr\Log\LoggerInterface::class)));
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferReceiptStore::class, fn ($c) => new \OCA\PortalCheck\ConfigTransfer\TransferReceiptStore($c->get(\OCP\IConfig::class), 'portalcheck'));
-		$context->registerService(\OCA\PortalCheck\ConfigTransfer\TransferService::class, function ($c): \OCA\PortalCheck\ConfigTransfer\TransferService {
-			return new \OCA\PortalCheck\ConfigTransfer\TransferService(
+		$context->registerService(\OCA\KanzleiCheck\ConfigTransfer\TransferPendingStore::class, fn ($c) => new \OCA\KanzleiCheck\ConfigTransfer\TransferPendingStore($c->get(IRootFolder::class), $c->get(\OCP\IConfig::class), 'kanzleicheck', $c->get(\Psr\Log\LoggerInterface::class)));
+		$context->registerService(\OCA\KanzleiCheck\ConfigTransfer\TransferReceiptStore::class, fn ($c) => new \OCA\KanzleiCheck\ConfigTransfer\TransferReceiptStore($c->get(\OCP\IConfig::class), 'kanzleicheck'));
+		$context->registerService(\OCA\KanzleiCheck\ConfigTransfer\TransferService::class, function ($c): \OCA\KanzleiCheck\ConfigTransfer\TransferService {
+			return new \OCA\KanzleiCheck\ConfigTransfer\TransferService(
 				$c->get(\OCP\IDBConnection::class),
 				$c->get(\OCP\IConfig::class),
 				$c->get(\OCP\IUserManager::class),
@@ -77,29 +77,29 @@ class Application extends App implements IBootstrap
 				$c->get(\OCP\Lock\ILockingProvider::class),
 				$c->get(\OCP\IURLGenerator::class),
 				$c->get(\Psr\Log\LoggerInterface::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferManifest::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferHooks::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferPendingStore::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferReceiptStore::class),
-				'portalcheck',
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferManifest::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferHooks::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferPendingStore::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferReceiptStore::class),
+				'kanzleicheck',
 				$c->get(\OCP\IAppConfig::class),
 			);
 		});
-		$context->registerService(\OCA\PortalCheck\BackgroundJob\TransferApplyJob::class, function ($c): \OCA\PortalCheck\BackgroundJob\TransferApplyJob {
-			return new \OCA\PortalCheck\BackgroundJob\TransferApplyJob(
+		$context->registerService(\OCA\KanzleiCheck\BackgroundJob\TransferApplyJob::class, function ($c): \OCA\KanzleiCheck\BackgroundJob\TransferApplyJob {
+			return new \OCA\KanzleiCheck\BackgroundJob\TransferApplyJob(
 				$c->get(\OCP\AppFramework\Utility\ITimeFactory::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferService::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferService::class),
 				$c->get(\OCP\Lock\ILockingProvider::class),
 				$c->get(\OCP\BackgroundJob\IJobList::class),
 				$c->get(\Psr\Log\LoggerInterface::class),
 			);
 		});
-		$context->registerService(\OCA\PortalCheck\Controller\TransferApiController::class, function ($c): \OCA\PortalCheck\Controller\TransferApiController {
-			return new \OCA\PortalCheck\Controller\TransferApiController(
-				'portalcheck',
+		$context->registerService(\OCA\KanzleiCheck\Controller\TransferApiController::class, function ($c): \OCA\KanzleiCheck\Controller\TransferApiController {
+			return new \OCA\KanzleiCheck\Controller\TransferApiController(
+				'kanzleicheck',
 				$c->get(\OCP\IRequest::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferHooks::class),
-				$c->get(\OCA\PortalCheck\ConfigTransfer\TransferService::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferHooks::class),
+				$c->get(\OCA\KanzleiCheck\ConfigTransfer\TransferService::class),
 				$c->get(\OCP\BackgroundJob\IJobList::class),
 				$c->get(\OCP\Security\Bruteforce\IThrottler::class),
 				$c->get(\OCP\IGroupManager::class),
@@ -113,9 +113,9 @@ class Application extends App implements IBootstrap
 		$app = $context->getAppContainer();
 		NavGate::register(
 			$app,
-			'portalcheck.page.index',
+			'kanzleicheck.page.index',
 			'app.svg',
-			'PortalCheck',
+			'KanzleiCheck',
 			10,
 			static fn(string $uid): bool => $app->get(AccessDoorService::class)->isStaff($uid),
 		);

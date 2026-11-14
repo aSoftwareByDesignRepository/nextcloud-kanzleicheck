@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_upload_chunk` — ZF-05 chunk upload sessions (PK upload_id string). */
+/** `kzc_upload_chunk` — ZF-05 chunk upload sessions (PK upload_id string). */
 class UploadChunkMapper
 {
-	public const TABLE = 'ptl_upload_chunk';
+	public const TABLE = 'kzc_upload_chunk';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

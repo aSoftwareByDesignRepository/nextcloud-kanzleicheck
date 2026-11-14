@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * ATLAS web craft capture — transfer settings surfaces. Writes PNGs to
- * .cursor/atlas-farm-v3/artifacts/portalcheck/craft/web/.
+ * .cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web/.
  * Flow: settings/transfer load → uniform file error → real
  * export→preview→report dialog → apply → progress dialog → after-apply.
  * Recaptured after the positional-placeholder t() fix — the rendered
@@ -14,9 +14,9 @@ const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 const { assertAtlasRenderedSurface } = require('../../_shared/e2e/atlas-rendered-surface-contract.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const PASS = 'atlas-e2e-passphrase-2026';
-const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck/craft/web');
+const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -35,20 +35,20 @@ async function shot(page, name) {
 }
 
 /** overlay_toast_button_armor_gap: the toast dismiss is a bare
- * <button class="ptl-toast__close"> mounted on document.body inside
- * #ptl-toasts — NC core's button repaint (width:130px + pale fill +
+ * <button class="kzc-toast__close"> mounted on document.body inside
+ * #kzc-toasts — NC core's button repaint (width:130px + pale fill +
  * border at 0-1-1, margin-inline-start:0 at 0-2-1) must not reach it.
  * Assert the painted geometry is the declared transparent ~44px
  * icon-close docked at the toast's inline-end on one row — not the
  * collapsed ~128px pale core-skin block wrapped to a second row.
  * Donor shape: whistlecheck assertToastCloseArmored (wc-vis-r13-01). */
 async function assertToastCloseArmored(page) {
-	const close = page.locator('.ptl-toast.ptl-toast--error .ptl-toast__close').first();
+	const close = page.locator('.kzc-toast.kzc-toast--error .kzc-toast__close').first();
 	await expect(close).toBeVisible();
 	const m = await close.evaluate((el) => {
 		const r = el.getBoundingClientRect();
 		const cs = getComputedStyle(el);
-		const host = el.closest('.ptl-toast').getBoundingClientRect();
+		const host = el.closest('.kzc-toast').getBoundingClientRect();
 		return {
 			x: r.x, y: r.y, w: r.width, h: r.height,
 			hostX: host.x, hostY: host.y, hostW: host.width, hostH: host.height,
@@ -74,9 +74,9 @@ async function assertToastCloseArmored(page) {
 
 /** native_dialog_margin_reset_uncentered: NC core's reset stylesheet
  * zeroes the UA 'margin:auto' that centers a top-layer <dialog>, so the
- * pack re-declares it on .ptl-dialog — and the ≤480px media query
+ * pack re-declares it on .kzc-dialog — and the ≤480px media query
  * re-asserts margin:0 for the full-bleed sheet (donor selector is
- * element+class dialog.ptl-dialog at 0,1,1). Assert painted geometry,
+ * element+class dialog.kzc-dialog at 0,1,1). Assert painted geometry,
  * not only the declaration: ≥481px the dialog must sit centered with
  * symmetric margins, ≤480px it must be a full-bleed sheet. */
 async function assertDialogGeometry(dlg, mode) {
@@ -87,7 +87,7 @@ async function assertDialogGeometry(dlg, mode) {
 		for (const sheet of document.styleSheets) {
 			try {
 				for (const rule of sheet.cssRules) {
-					if ((rule.selectorText || '').includes('.ptl-dialog')
+					if ((rule.selectorText || '').includes('.kzc-dialog')
 						&& /(^|[;\s])margin:\s*auto/.test(rule.cssText || '')) declared = true;
 				}
 			} catch { /* cross-origin sheet */ }
@@ -100,7 +100,7 @@ async function assertDialogGeometry(dlg, mode) {
 			declared,
 		};
 	});
-	expect(g.declared, 'no live stylesheet declares margin:auto on .ptl-dialog — core reset anchors the dialog top-left').toBe(true);
+	expect(g.declared, 'no live stylesheet declares margin:auto on .kzc-dialog — core reset anchors the dialog top-left').toBe(true);
 	if (mode === 'centered') {
 		const hGap = g.vw - g.width;
 		const vGap = g.vh - g.height;
@@ -134,37 +134,37 @@ test.describe('craft transfer', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
-		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-export-card')).toBeVisible({ timeout: 20000 });
 		await page.waitForTimeout(600);
-		await shot(page, 'ptl-staff-transfer-light-1280');
+		await shot(page, 'kzc-staff-transfer-light-1280');
 
 		// uniform file error — wrong passphrase on a real container
-		await page.locator('#ptl-transfer-file').setInputFiles({
+		await page.locator('#kzc-transfer-file').setInputFiles({
 			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
 		});
-		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
+		await page.locator('#kzc-transfer-import-passphrase').fill('wrong-passphrase-000');
 		// dead_platform_toast_api: the failure must reach a VISIBLE app-owned
 		// toast, not only the visually-hidden live region (OC.Notification is
 		// gone from NC≥31 bundles — the old bridge silently no-ops there).
-		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await expect(page.locator('.kzc-toast--error').first()).toBeVisible({ timeout: 30000 });
 		await assertToastCloseArmored(page);
-		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
-		await shot(page, 'ptl-staff-transfer-fileerror-light-1280');
+		await expect(page.locator('#kzc-transfer-result-live')).not.toBeEmpty();
+		await shot(page, 'kzc-staff-transfer-fileerror-light-1280');
 
 		// correct passphrase → preview → report dialog (interpolated counters)
-		await page.locator('#ptl-transfer-import-passphrase').fill(PASS);
-		const report = page.locator('#ptl-transfer-report');
+		await page.locator('#kzc-transfer-import-passphrase').fill(PASS);
+		const report = page.locator('#kzc-transfer-report');
 		await expect(report).toBeVisible({ timeout: 30000 });
-		await expect(page.locator('#ptl-transfer-report-verdict')).toContainText(/\d/);
+		await expect(page.locator('#kzc-transfer-report-verdict')).toContainText(/\d/);
 		await assertDialogGeometry(report, 'centered');
-		await shot(page, 'ptl-staff-transfer-report-dialog-light-1280');
+		await shot(page, 'kzc-staff-transfer-report-dialog-light-1280');
 
 		// apply → progress dialog stays open while the job waits queued
-		await page.locator('#ptl-transfer-confirm').click();
-		const progress = page.locator('#ptl-transfer-progress');
+		await page.locator('#kzc-transfer-confirm').click();
+		const progress = page.locator('#kzc-transfer-progress');
 		await expect(progress).toBeVisible({ timeout: 10000 });
-		await expect(page.locator('#ptl-transfer-progress-text')).not.toBeEmpty();
-		await shot(page, 'ptl-staff-transfer-progress-light-1280');
+		await expect(page.locator('#kzc-transfer-progress-text')).not.toBeEmpty();
+		await shot(page, 'kzc-staff-transfer-progress-light-1280');
 
 		const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
 		expect(jobId).toMatch(/^\d+$/);
@@ -184,9 +184,9 @@ test.describe('craft transfer', () => {
 
 		// page reloads itself on done — settle, then capture post-apply state
 		await page.waitForLoadState('domcontentloaded');
-		await expect(page.locator('#ptl-transfer-last')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-last')).toBeVisible({ timeout: 20000 });
 		await page.waitForTimeout(600);
-		await shot(page, 'ptl-staff-transfer-after-apply-light-1280');
+		await shot(page, 'kzc-staff-transfer-after-apply-light-1280');
 	});
 
 	test('staff transfer surface mobile 375', async ({ page, request }) => {
@@ -196,25 +196,25 @@ test.describe('craft transfer', () => {
 		await page.setViewportSize({ width: 375, height: 812 });
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
-		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-export-card')).toBeVisible({ timeout: 20000 });
 		await page.waitForTimeout(600);
-		await shot(page, 'ptl-staff-transfer-light-375');
+		await shot(page, 'kzc-staff-transfer-light-375');
 
 		// dead_platform_toast_api at narrow width: a failed preview must paint
-		// a visible .ptl-toast--error (not only the hidden live region).
+		// a visible .kzc-toast--error (not only the hidden live region).
 		const exp = await request.post(`${BASE}${APP}/api/admin/transfer/export`, {
 			headers: { Authorization: auth, 'OCS-APIRequest': 'true' }, data: { passphrase: PASS },
 		});
 		expect(exp.status()).toBe(200);
 		const bytes = await exp.body();
-		await page.locator('#ptl-transfer-file').setInputFiles({
+		await page.locator('#kzc-transfer-file').setInputFiles({
 			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
 		});
-		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
-		await expect(page.locator('.ptl-toast--error').first()).toBeVisible({ timeout: 30000 });
+		await page.locator('#kzc-transfer-import-passphrase').fill('wrong-passphrase-000');
+		await expect(page.locator('.kzc-toast--error').first()).toBeVisible({ timeout: 30000 });
 		await assertToastCloseArmored(page);
-		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty();
-		await shot(page, 'ptl-staff-transfer-fileerror-light-375');
+		await expect(page.locator('#kzc-transfer-result-live')).not.toBeEmpty();
+		await shot(page, 'kzc-staff-transfer-fileerror-light-375');
 	});
 
 	test('staff transfer replace-confirm token row wide (cramped_form_controls)', async ({ page, request }) => {
@@ -232,28 +232,28 @@ test.describe('craft transfer', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
-		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-export-card')).toBeVisible({ timeout: 20000 });
 
 		// Full-form pinned-control sweep (cramped_form_controls): every text
 		// control on the transfer surface must escape the NC-core 130px pin.
 		await assertAtlasRenderedSurface(page, {
-			content: '#ptl-staff-view',
-			navExclude: '.ptl-tabbar, nav',
+			content: '#kzc-staff-view',
+			navExclude: '.kzc-tabbar, nav',
 		});
 
 		// Replace mode -> real preview -> report dialog footer shows the
 		// token row. Preview needs no maintenance mode (a warning callout
 		// renders instead) — the dialog must not be applied.
-		await page.locator('#ptl-transfer-import-form input[type="radio"][value="replace"]').check();
-		await page.locator('#ptl-transfer-file').setInputFiles({
+		await page.locator('#kzc-transfer-import-form input[type="radio"][value="replace"]').check();
+		await page.locator('#kzc-transfer-file').setInputFiles({
 			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
 		});
-		await page.locator('#ptl-transfer-import-passphrase').fill(PASS);
-		const report = page.locator('#ptl-transfer-report');
+		await page.locator('#kzc-transfer-import-passphrase').fill(PASS);
+		const report = page.locator('#kzc-transfer-report');
 		await expect(report).toBeVisible({ timeout: 30000 });
-		const tokenRow = page.locator('#ptl-transfer-replace-confirm');
+		const tokenRow = page.locator('#kzc-transfer-replace-confirm');
 		await expect(tokenRow).toBeVisible();
-		const token = page.locator('#ptl-transfer-replace-token');
+		const token = page.locator('#kzc-transfer-replace-token');
 		await expect(token).toBeVisible();
 
 		// cramped_form_controls fix live: the input escapes the core 130px pin.
@@ -263,7 +263,7 @@ test.describe('craft transfer', () => {
 		// required_field_or_step_undiscoverable (visual r29): the report
 		// dialog's footer — token row + Cancel + Apply import — must paint
 		// INSIDE the dialog's client box at every viewport. The shell must
-		// never be the scroller: .ptl-dialog__body absorbs the overflow.
+		// never be the scroller: .kzc-dialog__body absorbs the overflow.
 		const assertDialogFooterPainted = async (where) => {
 			const g = await report.evaluate((d) => {
 				const cs = getComputedStyle(d);
@@ -271,8 +271,8 @@ test.describe('craft transfer', () => {
 				const bt = parseFloat(cs.borderTopWidth) || 0;
 				const bl = parseFloat(cs.borderLeftWidth) || 0;
 				const client = { top: r.top + bt, left: r.left + bl, bottom: r.top + bt + d.clientHeight, right: r.left + bl + d.clientWidth };
-				const f = d.querySelector('.ptl-dialog__footer').getBoundingClientRect();
-				const a = d.querySelector('#ptl-transfer-confirm').getBoundingClientRect();
+				const f = d.querySelector('.kzc-dialog__footer').getBoundingClientRect();
+				const a = d.querySelector('#kzc-transfer-confirm').getBoundingClientRect();
 				return { client, dScrollH: d.scrollHeight, dClientH: d.clientHeight,
 					footer: { top: f.top, bottom: f.bottom, left: f.left, right: f.right },
 					apply: { top: a.top, bottom: a.bottom, left: a.left, right: a.right } };
@@ -284,29 +284,29 @@ test.describe('craft transfer', () => {
 				expect(box.left, `${where}: ${name} left outside dialog client box`).toBeGreaterThanOrEqual(g.client.left - 0.5);
 			}
 			expect(g.dScrollH - g.dClientH,
-				`${where}: dialog shell scrolls (scrollHeight ${g.dScrollH} > clientHeight ${g.dClientH}) — .ptl-dialog__body must absorb the overflow`)
+				`${where}: dialog shell scrolls (scrollHeight ${g.dScrollH} > clientHeight ${g.dClientH}) — .kzc-dialog__body must absorb the overflow`)
 				.toBeLessThanOrEqual(1);
 		};
 		await assertDialogFooterPainted('1280');
 		await assertDialogGeometry(report, 'centered');
 
 		// Dialog-open sweep — the contract scans dialog[open] in the same pass.
-		// listAllow: .ptl-transfer-group uls are mono-font machine-name manifest
+		// listAllow: .kzc-transfer-group uls are mono-font machine-name manifest
 		// readouts inside <details> disclosures — marker-less by design (the
 		// padding-inline-start is indentation, not lost-marker residue); the
 		// identical rendered state shipped in the r24/r25 report-dialog crafts.
 		await assertAtlasRenderedSurface(page, {
-			content: '#ptl-staff-view',
-			navExclude: '.ptl-tabbar, nav',
-			listAllow: '.ptl-transfer-group',
+			content: '#kzc-staff-view',
+			navExclude: '.kzc-tabbar, nav',
+			listAllow: '.kzc-transfer-group',
 		});
 
-		await shot(page, 'ptl-staff-transfer-replace-confirm-light-1280');
+		await shot(page, 'kzc-staff-transfer-replace-confirm-light-1280');
 		await page.setViewportSize({ width: 375, height: 812 });
 		await page.waitForTimeout(300);
 		await assertDialogFooterPainted('375');
 		await assertDialogGeometry(report, 'fullbleed');
-		await shot(page, 'ptl-staff-transfer-replace-confirm-light-375');
+		await shot(page, 'kzc-staff-transfer-replace-confirm-light-375');
 		// Never apply — replace is destructive; close the dialog instead.
 		await page.keyboard.press('Escape');
 		await expect(report).toBeHidden();

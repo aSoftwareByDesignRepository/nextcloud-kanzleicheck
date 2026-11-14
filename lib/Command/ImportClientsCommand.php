@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Command;
+namespace OCA\KanzleiCheck\Command;
 
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\ImportService;
-use OCA\PortalCheck\Service\OrgService;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\ImportService;
+use OCA\KanzleiCheck\Service\OrgService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/** occ portalcheck:import-clients <file.csv> [--dry-run] [--send-invites] — US-P06. */
+/** occ kanzleicheck:import-clients <file.csv> [--dry-run] [--send-invites] — US-P06. */
 class ImportClientsCommand extends Command
 {
 	public function __construct(
 		private readonly OrgService $orgs,
 		private readonly IdentityService $identities,
 		private readonly ImportService $import,
-		private readonly \OCA\PortalCheck\Service\MailOutboxService $outbox,
+		private readonly \OCA\KanzleiCheck\Service\MailOutboxService $outbox,
 		private readonly \OCP\IURLGenerator $urls,
 	) {
 		parent::__construct();
@@ -28,7 +28,7 @@ class ImportClientsCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('portalcheck:import-clients')
+		$this->setName('kanzleicheck:import-clients')
 			->setDescription('Import client orgs and contact e-mails from CSV (org_name, org_ref, email, display_name)')
 			->addArgument('file', InputArgument::REQUIRED, 'CSV file path')
 			->addOption('dry-run', null, InputOption::VALUE_NONE, 'plan only, no writes')
@@ -53,7 +53,7 @@ class ImportClientsCommand extends Command
 			$output->writeln('<error>' . $e->getMessage() . '</error>');
 			return 1;
 		}
-		$sync = \OCP\Server::get(\OCA\PortalCheck\Service\SyncBindingService::class);
+		$sync = \OCP\Server::get(\OCA\KanzleiCheck\Service\SyncBindingService::class);
 		if ($input->getOption('dry-run')) {
 			$plan = $this->import->plan($rows, $this->orgs, $this->identities, fn(string $u, string $e): string => $sync->classifyNcUid($u, $e));
 			foreach ($plan as $p) {
@@ -101,14 +101,14 @@ class ImportClientsCommand extends Command
 							$synced++;
 						} catch (\Throwable $e) {
 							$syncBlocked++;
-							$code = $e instanceof \OCA\PortalCheck\Exception\ApiException ? $e->getErrorCode() : 'sync_failed';
+							$code = $e instanceof \OCA\KanzleiCheck\Exception\ApiException ? $e->getErrorCode() : 'sync_failed';
 							$output->writeln('<comment>line ' . $line . ': sync failed (' . $code . ') for ' . $email . '</comment>');
 						}
 					}
 				}
 				if ($isNew && $input->getOption('send-invites')) {
 					$this->outbox->enqueue($email, 'invite', 'invite:' . $email,
-						['portalUrl' => $this->urls->linkToRouteAbsolute('portalcheck.portal.index')], 'de');
+						['portalUrl' => $this->urls->linkToRouteAbsolute('kanzleicheck.portal.index')], 'de');
 					$invites++;
 				}
 				$applied++;

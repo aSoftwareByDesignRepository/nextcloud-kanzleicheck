@@ -7,17 +7,17 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\LicenseState;
-use OCA\PortalCheck\Db\LicenseStateMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\License\Ptl2Codec;
+use OCA\KanzleiCheck\Db\LicenseState;
+use OCA\KanzleiCheck\Db\LicenseStateMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\License\Kzc2Codec;
 use OCP\IDBConnection;
 
 /**
- * PTL2 licensing (SPEC §9.7, LICENSE-PTL2-SPEC).
+ * KZC2 licensing (SPEC §9.7, LICENSE-KZC2-SPEC).
  *
  * - Web routes are NEVER gated (NN-P06).
  * - Companion staff role: seat-gated (LICENSE_REQUIRED/EXPIRED/NO_MOBILE_SEAT).
@@ -40,14 +40,14 @@ class LicenseService
 
 	public function apply(string $wireKey, string $actor): LicenseState
 	{
-		$parsed = Ptl2Codec::parseAndVerify($wireKey);
+		$parsed = Kzc2Codec::parseAndVerify($wireKey);
 		if ($parsed === null) {
-			throw new ApiException(400, 'VALIDATION_FAILED', Ptl2Codec::classifyError($wireKey));
+			throw new ApiException(400, 'VALIDATION_FAILED', Kzc2Codec::classifyError($wireKey));
 		}
 		$p = $parsed['payload'];
 		$s = new LicenseState();
 		$s->setKeyFingerprint(hash('sha256', $parsed['payloadB64'] . '.' . $parsed['signatureB64']));
-		$s->setPayloadJson(Ptl2Codec::canonicalJson($p));
+		$s->setPayloadJson(Kzc2Codec::canonicalJson($p));
 		$s->setSignatureB64($parsed['signatureB64']);
 		$s->setCustomerId($p['customerId']);
 		$s->setValidUntil($p['validUntil']);
@@ -71,7 +71,7 @@ class LicenseService
 			return 'none';
 		}
 		$today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-		if (Ptl2Codec::isValidOn($s->getValidUntil(), $today)) {
+		if (Kzc2Codec::isValidOn($s->getValidUntil(), $today)) {
 			return 'valid';
 		}
 		$graceEnd = (new \DateTimeImmutable($s->getValidUntil()))->modify('+' . self::GRACE_DAYS . ' days')->format('Y-m-d');
@@ -88,7 +88,7 @@ class LicenseService
 		$this->db->beginTransaction();
 		try {
 			$qb = $this->db->getQueryBuilder();
-			$qb->select('portal_clients')->from('ptl_license_state')
+			$qb->select('portal_clients')->from('kzc_license_state')
 				->where($qb->expr()->eq('id', $qb->createNamedParameter(LicenseStateMapper::SINGLETON_ID)))
 				->forUpdate();
 			$cap = $qb->executeQuery()->fetchOne();

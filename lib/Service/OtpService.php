@@ -7,16 +7,16 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Copied from bookingcheck@31c2669e70 lib/Service/OtpService.php
- * (COPIED-SOURCES.md). PortalCheck changes:
+ * (COPIED-SOURCES.md). KanzleiCheck changes:
  *  - purpose binding (AF-08): every OTP is scoped to 'login', 'pair' or
  *    'approve:<id>' — a code for one purpose can never satisfy another.
  *  - verify() returns the Otp row id on success (approvals bind otp_id).
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Otp;
-use OCA\PortalCheck\Db\OtpMapper;
+use OCA\KanzleiCheck\Db\Otp;
+use OCA\KanzleiCheck\Db\OtpMapper;
 use OCP\IDBConnection;
 
 /**
@@ -97,7 +97,7 @@ class OtpService
 			return null;
 		}
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_otp')->set('attempts', $qb->createFunction('attempts + 1'))
+		$qb->update('kzc_otp')->set('attempts', $qb->createFunction('attempts + 1'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$row->getId())))
 			->andWhere($qb->expr()->lt('attempts', $qb->createNamedParameter(self::MAX_ATTEMPTS)))
 			->andWhere($qb->expr()->isNull('used_at'));
@@ -123,7 +123,7 @@ class OtpService
 	private function consume(int $id): bool
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_otp')->set('used_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
+		$qb->update('kzc_otp')->set('used_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($id)))
 			->andWhere($qb->expr()->isNull('used_at'));
 		return $qb->executeStatement() === 1;

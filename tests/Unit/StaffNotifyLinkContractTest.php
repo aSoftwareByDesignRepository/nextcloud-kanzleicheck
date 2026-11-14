@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +36,7 @@ final class StaffNotifyLinkContractTest extends TestCase
 			$this->assertGreaterThan(0, $calls, "$rel must contain staffNotify call sites to pin");
 		}
 		$this->assertStringContainsString(
-			'linkToRouteAbsolute(\'portalcheck.page.index\')',
+			'linkToRouteAbsolute(\'kanzleicheck.page.index\')',
 			$this->src('lib/Service/SyncBindingService.php'),
 			'portal_sync_break link must stay absolute'
 		);

@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 /**
- * `occ portalcheck:config:import` — validate → mandatory dry-run report →
+ * `occ kanzleicheck:config:import` — validate → mandatory dry-run report →
  * optional --apply (replace additionally needs --confirm-replace). Same
  * TransferService pipeline as the web path — no second implementation.
  *
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Command;
+namespace OCA\KanzleiCheck\Command;
 
-use OCA\PortalCheck\ConfigTransfer\TransferException;
-use OCA\PortalCheck\ConfigTransfer\TransferService;
+use OCA\KanzleiCheck\ConfigTransfer\TransferException;
+use OCA\KanzleiCheck\ConfigTransfer\TransferService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,8 +34,8 @@ class ConfigImportCommand extends Command
 	protected function configure(): void
 	{
 		$this
-			->setName('portalcheck:config:import')
-			->setDescription('Validate a transfer container, print the dry-run report, optionally apply it. Raw `occ config:import` bypasses validation and mirror reconcile — do not use it; see portalcheck:config:reconcile to heal.')
+			->setName('kanzleicheck:config:import')
+			->setDescription('Validate a transfer container, print the dry-run report, optionally apply it. Raw `occ config:import` bypasses validation and mirror reconcile — do not use it; see kanzleicheck:config:reconcile to heal.')
 			->addArgument('file', InputArgument::REQUIRED, 'Path to the .nctransfer container')
 			->addOption('passphrase', null, InputOption::VALUE_REQUIRED, 'Container passphrase (or TRANSFER_PASSPHRASE env, or interactive prompt)')
 			->addOption('mode', null, InputOption::VALUE_REQUIRED, 'merge (default) or replace', TransferService::MODE_MERGE)
@@ -95,7 +95,7 @@ class ConfigImportCommand extends Command
 
 	private function printReport(SymfonyStyle $io, array $report): void
 	{
-		$io->title('PortalCheck — transfer dry run (' . ($report['mode'] ?? 'merge') . ')');
+		$io->title('KanzleiCheck — transfer dry run (' . ($report['mode'] ?? 'merge') . ')');
 		$file = $report['file'] ?? [];
 		$io->text(sprintf(
 			'Exported from %s at %s (app %s, schema %s)',

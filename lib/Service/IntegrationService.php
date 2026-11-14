@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 use OCP\App\IAppManager;
 
@@ -82,7 +82,7 @@ class IntegrationService
 		}
 	}
 
-	public function bookingUrlFor(?\OCA\PortalCheck\Db\Org $org): ?string
+	public function bookingUrlFor(?\OCA\KanzleiCheck\Db\Org $org): ?string
 	{
 		$url = $org?->getBookUrl();
 		return ($url !== null && $url !== '') ? $url : null;

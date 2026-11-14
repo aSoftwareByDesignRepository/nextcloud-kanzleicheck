@@ -7,11 +7,11 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Device;
-use OCA\PortalCheck\Db\DeviceMapper;
-use OCA\PortalCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Db\Device;
+use OCA\KanzleiCheck\Db\DeviceMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
@@ -85,7 +85,7 @@ class DeviceService
 			return null;
 		}
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_device')
+		$qb->update('kzc_device')
 			->set('last_used_at', $qb->createNamedParameter($now, 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$row->getId())));
 		$qb->executeStatement();
@@ -95,7 +95,7 @@ class DeviceService
 	public function revoke(int $deviceId, int $identityId = 0): bool
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_device')
+		$qb->update('kzc_device')
 			->set('revoked_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($deviceId)))
 			->andWhere($qb->expr()->isNull('revoked_at'));

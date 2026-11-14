@@ -2,96 +2,96 @@
 
 /* Layout primitives the template relies on — defined here so the pack is
    self-contained even in apps whose own CSS names them differently. */
-.ptl-section__header { margin: 0 0 var(--ptl-space-4, 16px); }
-.ptl-section__sub { color: var(--color-text-maxcontrast, #6b6b6b); margin: var(--ptl-space-1, 4px) 0 0; }
-.ptl-form-row { margin: 0 0 var(--ptl-space-4, 16px); }
+.kzc-section__header { margin: 0 0 var(--kzc-space-4, 16px); }
+.kzc-section__sub { color: var(--color-text-maxcontrast, #6b6b6b); margin: var(--kzc-space-1, 4px) 0 0; }
+.kzc-form-row { margin: 0 0 var(--kzc-space-4, 16px); }
 /* The transfer forms are wrap-flex containers at ≥1024 and column stacks
-   below (.ptl-form is app css). Direct children are flex items — and a
+   below (.kzc-form is app css). Direct children are flex items — and a
    fieldset cannot shrink below its content width (Blink/WebKit fieldset
    quirk), dragging sibling rows out with it. Pin every direct child of the
    two transfer forms to a real full-width column so label and hint text
    wraps inside the sheet on narrow viewports instead of clipping mid-word
-   at its right edge. Scoped by form id — .ptl-form/.ptl-form-row are
+   at its right edge. Scoped by form id — .kzc-form/.kzc-form-row are
    app-wide classes that also mark up deliberate side-by-side filter rows. */
-#ptl-transfer-export-form > *,
-#ptl-transfer-import-form > * {
+#kzc-transfer-export-form > *,
+#kzc-transfer-import-form > * {
 	min-width: 0;
 	width: 100%;
 	box-sizing: border-box;
 }
-.ptl-form-row > label,
-.ptl-form-row legend { display: block; font-weight: 600; margin-bottom: var(--ptl-space-1, 4px); }
-.ptl-form-row input[type="password"],
-.ptl-form-row input[type="text"] {
+.kzc-form-row > label,
+.kzc-form-row legend { display: block; font-weight: 600; margin-bottom: var(--kzc-space-1, 4px); }
+.kzc-form-row input[type="password"],
+.kzc-form-row input[type="text"] {
 	padding: 8px 12px;
-	border: 1px solid var(--ptl-form-border, var(--color-border-maxcontrast, #767676));
-	border-radius: var(--ptl-radius-md, 8px);
+	border: 1px solid var(--kzc-form-border, var(--color-border-maxcontrast, #767676));
+	border-radius: var(--kzc-radius-md, 8px);
 	background: var(--color-main-background, #fff);
 	color: var(--color-main-text, #222);
 	box-sizing: border-box;
 }
-.ptl-form-row input:focus-visible {
+.kzc-form-row input:focus-visible {
 	outline: 2px solid var(--color-primary-element, #0082c9);
 	outline-offset: 1px;
 }
 /* Replace-confirm token: bare text input in the dialog footer — NC core
    pins input[type=text] to 130px, dwarfing it inside the ~40rem dialog.
    Give it a real measure (cramped_form_controls r44). */
-.ptl-form-row #ptl-transfer-replace-token {
+.kzc-form-row #kzc-transfer-replace-token {
 	width: 100%;
 	max-width: 20rem;
 	min-height: 44px;
 }
-.ptl-form-row__hint { color: var(--color-text-maxcontrast, #6b6b6b); font-size: .92em; margin: var(--ptl-space-1, 4px) 0 0; }
-.ptl-actions { margin-top: var(--ptl-space-3, 12px); }
+.kzc-form-row__hint { color: var(--color-text-maxcontrast, #6b6b6b); font-size: .92em; margin: var(--kzc-space-1, 4px) 0 0; }
+.kzc-actions { margin-top: var(--kzc-space-3, 12px); }
 
-.ptl-input-group {
+.kzc-input-group {
 	display: flex;
-	gap: var(--ptl-space-2, 8px);
+	gap: var(--kzc-space-2, 8px);
 	align-items: center;
 	flex-wrap: wrap;
 }
-.ptl-input-group input[type="password"],
-.ptl-input-group input[type="text"] {
+.kzc-input-group input[type="password"],
+.kzc-input-group input[type="text"] {
 	flex: 1 1 18rem;
 	min-height: 44px;
 }
-.ptl-transfer-strength { min-height: 1.2em; }
-.ptl-transfer-last { margin: 0 0 var(--ptl-space-4, 16px); }
-.ptl-fieldset { border: 0; padding: 0; margin: 0 0 var(--ptl-space-3, 12px); }
-.ptl-fieldset legend { font-weight: 600; padding: 0 0 var(--ptl-space-2, 8px); }
+.kzc-transfer-strength { min-height: 1.2em; }
+.kzc-transfer-last { margin: 0 0 var(--kzc-space-4, 16px); }
+.kzc-fieldset { border: 0; padding: 0; margin: 0 0 var(--kzc-space-3, 12px); }
+.kzc-fieldset legend { font-weight: 600; padding: 0 0 var(--kzc-space-2, 8px); }
 /* Mode choice cards — DESIGN-SYSTEM §3.6.5a (the AZC azc-choice-card
    recipe): one labelled card per option, title + hint copy, checked =
    primary border + tint, destructive = --danger. The whole card is the
    hit target; bare radio rows + red text are banned for this control. */
-.ptl-choice-cards {
+.kzc-choice-cards {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: var(--ptl-space-3, 12px);
+	gap: var(--kzc-space-3, 12px);
 	width: 100%;
 	min-width: 0;
 }
 @media (min-width: 520px) {
-	.ptl-choice-cards { grid-template-columns: 1fr 1fr; }
+	.kzc-choice-cards { grid-template-columns: 1fr 1fr; }
 }
-.ptl-choice-card {
+.kzc-choice-card {
 	display: flex;
 	align-items: flex-start;
-	gap: var(--ptl-space-3, 12px);
+	gap: var(--kzc-space-3, 12px);
 	width: 100%;
 	min-width: 0;
 	min-height: 48px;
 	margin: 0;
-	padding: var(--ptl-space-4, 16px);
-	border: 2px solid var(--ptl-form-border, var(--color-border-maxcontrast, #767676));
-	border-radius: var(--ptl-radius-md, 8px);
+	padding: var(--kzc-space-4, 16px);
+	border: 2px solid var(--kzc-form-border, var(--color-border-maxcontrast, #767676));
+	border-radius: var(--kzc-radius-md, 8px);
 	background: var(--color-main-background, #fff);
 	box-sizing: border-box;
 	cursor: pointer;
 	user-select: none;
 	text-align: start;
 }
-.ptl-choice-card > input[type="radio"] {
+.kzc-choice-card > input[type="radio"] {
 	/* Beat NC core input width/min-height clickable-area defaults */
 	flex: 0 0 1.25rem;
 	width: 1.25rem;
@@ -105,7 +105,7 @@
 	padding: 0;
 	accent-color: var(--color-primary-element, #0082c9);
 }
-.ptl-choice-card__copy {
+.kzc-choice-card__copy {
 	display: flex;
 	flex-direction: column;
 	gap: 0.15rem;
@@ -113,66 +113,66 @@
 	flex: 1 1 auto;
 	line-height: 1.3;
 }
-.ptl-choice-card__title {
+.kzc-choice-card__title {
 	font-size: 1.05em;
 	font-weight: 700;
 	line-height: 1.3;
 	color: var(--color-main-text, #222);
 }
-.ptl-choice-card__hint {
+.kzc-choice-card__hint {
 	font-size: .92em;
 	line-height: 1.4;
 	color: var(--color-text-maxcontrast, #6b6b6b);
 }
-.ptl-choice-card:not(:has(> input[type="radio"]:disabled)):hover {
+.kzc-choice-card:not(:has(> input[type="radio"]:disabled)):hover {
 	border-color: var(--color-primary-element, #0082c9);
 }
-.ptl-choice-card:focus-within {
+.kzc-choice-card:focus-within {
 	outline: 2px solid var(--color-primary-element, #0082c9);
 	outline-offset: 2px;
 }
-.ptl-choice-card:has(> input[type="radio"]:checked) {
+.kzc-choice-card:has(> input[type="radio"]:checked) {
 	border-color: var(--color-primary-element, #0082c9);
 	background: color-mix(in srgb, var(--color-primary-element, #0082c9) 8%, var(--color-main-background, #fff));
 }
-.ptl-choice-card:has(> input[type="radio"]:checked) .ptl-choice-card__hint {
+.kzc-choice-card:has(> input[type="radio"]:checked) .kzc-choice-card__hint {
 	color: var(--color-main-text, #222);
 }
-.ptl-choice-card--danger .ptl-choice-card__title {
+.kzc-choice-card--danger .kzc-choice-card__title {
 	color: var(--color-error-text, var(--color-element-error, #e9322d));
 }
-.ptl-choice-card--danger:not(:has(> input[type="radio"]:disabled)):hover {
+.kzc-choice-card--danger:not(:has(> input[type="radio"]:disabled)):hover {
 	border-color: var(--color-element-error, #e9322d);
 }
-.ptl-choice-card--danger:has(> input[type="radio"]:checked) {
+.kzc-choice-card--danger:has(> input[type="radio"]:checked) {
 	border-color: var(--color-element-error, #e9322d);
 	background: color-mix(in srgb, var(--color-element-error, #e9322d) 10%, var(--color-main-background, #fff));
 }
-.ptl-choice-card:has(> input[type="radio"]:disabled) {
+.kzc-choice-card:has(> input[type="radio"]:disabled) {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
-.ptl-choice-card:has(> input[type="radio"]:disabled) input { cursor: not-allowed; }
+.kzc-choice-card:has(> input[type="radio"]:disabled) input { cursor: not-allowed; }
 @media (forced-colors: active) {
-	.ptl-choice-card { border-color: ButtonBorder; }
-	.ptl-choice-card:has(> input[type="radio"]:checked) { outline: 2px solid Highlight; }
+	.kzc-choice-card { border-color: ButtonBorder; }
+	.kzc-choice-card:has(> input[type="radio"]:checked) { outline: 2px solid Highlight; }
 }
 /* NC core pins input[type=file] to width:auto (inputs.css, 0-1-1) — the
    intrinsic ~320px min-size overflows narrow sheets. check-shell
    form-controls.css re-pins it at #content.app-* #app-content level (2-2-1)
-   which loads AFTER this file, so the extra .ptl-form-row class hop (2-3-1)
+   which loads AFTER this file, so the extra .kzc-form-row class hop (2-3-1)
    is needed for the 100% column width to land regardless of sheet order. */
-#content #app-content .ptl-form-row input[type="file"].ptl-file-input {
+#content #app-content .kzc-form-row input[type="file"].kzc-file-input {
 	min-height: 44px;
-	padding: var(--ptl-space-2, 8px);
-	border: 1px dashed var(--ptl-form-border, var(--color-border-maxcontrast, var(--color-border, #c8c8c8)));
-	border-radius: var(--ptl-radius-md, 8px);
+	padding: var(--kzc-space-2, 8px);
+	border: 1px dashed var(--kzc-form-border, var(--color-border-maxcontrast, var(--color-border, #c8c8c8)));
+	border-radius: var(--kzc-radius-md, 8px);
 	width: 100%;
 	box-sizing: border-box;
 }
-.ptl-dialog {
+.kzc-dialog {
 	border: 1px solid var(--color-border, #c8c8c8);
-	border-radius: var(--ptl-radius-lg, 12px);
+	border-radius: var(--kzc-radius-lg, 12px);
 	padding: 0;
 	/* NC core reset (server.css/styles.css 'html,body,…,dialog,…{margin:0}')
 	   collapses the UA 'margin:auto' that centers a top-layer <dialog>;
@@ -198,56 +198,56 @@
    { display:block }) — an author rule that beats the UA closed-dialog
    rule, so a static <dialog> renders inline in the page flow until
    showModal(). Re-hide the closed state here. */
-dialog.ptl-dialog:not([open]) {
+dialog.kzc-dialog:not([open]) {
 	display: none !important;
 }
-.ptl-dialog::backdrop { background: color-mix(in srgb, var(--color-main-text, #222) 45%, transparent); }
+.kzc-dialog::backdrop { background: color-mix(in srgb, var(--color-main-text, #222) 45%, transparent); }
 /* min-height:0 lets the body shrink below its content height so it becomes
    the scroller; without it flex min-height:auto keeps the body content-sized
    and the footer overflows the shell again. 65vh stays the body's own cap. */
-.ptl-dialog__body {
+.kzc-dialog__body {
 	flex: 1 1 auto;
 	min-height: 0;
-	padding: var(--ptl-space-5, 20px);
+	padding: var(--kzc-space-5, 20px);
 	max-height: 65vh;
 	overflow: auto;
 }
-.ptl-dialog__footer {
+.kzc-dialog__footer {
 	flex: 0 0 auto;
-	padding: var(--ptl-space-4, 16px) var(--ptl-space-5, 20px);
+	padding: var(--kzc-space-4, 16px) var(--kzc-space-5, 20px);
 	border-top: 1px solid var(--color-border, #c8c8c8);
 	display: flex;
 	flex-direction: column;
-	gap: var(--ptl-space-3, 12px);
+	gap: var(--kzc-space-3, 12px);
 }
-.ptl-dialog__footer .ptl-actions { display: flex; gap: var(--ptl-space-3, 12px); justify-content: flex-end; }
-.ptl-transfer-report__verdict { font-size: 1.05rem; font-weight: 600; }
-.ptl-transfer-report__verdict.is-danger { color: var(--color-error-text, var(--color-element-error, var(--color-error))); }
-.ptl-transfer-group { margin: var(--ptl-space-2, 8px) 0; }
-.ptl-transfer-group summary {
+.kzc-dialog__footer .kzc-actions { display: flex; gap: var(--kzc-space-3, 12px); justify-content: flex-end; }
+.kzc-transfer-report__verdict { font-size: 1.05rem; font-weight: 600; }
+.kzc-transfer-report__verdict.is-danger { color: var(--color-error-text, var(--color-element-error, var(--color-error))); }
+.kzc-transfer-group { margin: var(--kzc-space-2, 8px) 0; }
+.kzc-transfer-group summary {
 	cursor: pointer;
 	min-height: 44px;
 	display: flex;
 	align-items: center;
 	font-weight: 600;
 }
-.ptl-transfer-group.is-security summary {
+.kzc-transfer-group.is-security summary {
 	color: var(--color-error-text, var(--color-element-error, var(--color-error)));
 }
-.ptl-transfer-group ul { margin: 0 0 var(--ptl-space-2, 8px); padding-inline-start: 1.5rem; }
-.ptl-transfer-group li { padding: 2px 0; font-family: var(--ptl-mono, monospace); font-size: .92em; word-break: break-all; }
-.ptl-callout--warning {
+.kzc-transfer-group ul { margin: 0 0 var(--kzc-space-2, 8px); padding-inline-start: 1.5rem; }
+.kzc-transfer-group li { padding: 2px 0; font-family: var(--kzc-mono, monospace); font-size: .92em; word-break: break-all; }
+.kzc-callout--warning {
 	border-inline-start: 4px solid var(--color-warning, #eca700);
-	padding: var(--ptl-space-2, 8px) var(--ptl-space-3, 12px);
+	padding: var(--kzc-space-2, 8px) var(--kzc-space-3, 12px);
 	background: color-mix(in srgb, var(--color-warning, #eca700) 12%, var(--color-main-background, #fff));
-	border-radius: var(--ptl-radius-sm, 6px);
+	border-radius: var(--kzc-radius-sm, 6px);
 }
 progress {
 	width: 100%;
 	height: 1.25rem;
 	accent-color: var(--color-primary-element, #0082c9);
 }
-.ptl-visually-hidden {
+.kzc-visually-hidden {
 	position: absolute !important;
 	width: 1px; height: 1px;
 	clip: rect(0 0 0 0);
@@ -256,14 +256,14 @@ progress {
 }
 @media (max-width: 480px) {
 	/* Element+class selector: app stylesheets commonly pin
-	   'dialog.ptl-dialog { max-width: … }' unified-dialog rules at
+	   'dialog.kzc-dialog { max-width: … }' unified-dialog rules at
 	   specificity (0,1,1); a bare class here (0,1,0) could never
 	   override them and the sheet would stay capped on phones. */
-	dialog.ptl-dialog { max-width: 100vw; margin: 0; border-radius: 0; }
-	.ptl-dialog__body { padding: var(--ptl-space-4, 16px); }
-	.ptl-dialog__footer .ptl-actions { flex-direction: column; }
-	.ptl-dialog__footer .ptl-btn { width: 100%; min-height: 48px; }
+	dialog.kzc-dialog { max-width: 100vw; margin: 0; border-radius: 0; }
+	.kzc-dialog__body { padding: var(--kzc-space-4, 16px); }
+	.kzc-dialog__footer .kzc-actions { flex-direction: column; }
+	.kzc-dialog__footer .kzc-btn { width: 100%; min-height: 48px; }
 }
 @media (prefers-reduced-motion: reduce) {
-	.ptl-dialog { transition: none; }
+	.kzc-dialog { transition: none; }
 }

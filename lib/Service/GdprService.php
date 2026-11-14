@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\IdentityMapper;
-use OCA\PortalCheck\Db\MemberMapper;
-use OCA\PortalCheck\Db\MessageMapper;
-use OCA\PortalCheck\Db\NotifyMapper;
-use OCA\PortalCheck\Db\DeviceMapper;
-use OCA\PortalCheck\Db\PortalSessionMapper;
-use OCA\PortalCheck\Db\OtpMapper;
+use OCA\KanzleiCheck\Db\IdentityMapper;
+use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Db\MessageMapper;
+use OCA\KanzleiCheck\Db\NotifyMapper;
+use OCA\KanzleiCheck\Db\DeviceMapper;
+use OCA\KanzleiCheck\Db\PortalSessionMapper;
+use OCA\KanzleiCheck\Db\OtpMapper;
 use OCP\IDBConnection;
 
 /** GDPR export/erase/offboard (US-P19). Never touches NC user accounts (NN-P02/P14). */
@@ -27,7 +27,7 @@ class GdprService
 		private readonly IDBConnection $db,
 		private readonly AuditService $audit,
 		private readonly ?SyncBindingService $syncBindings = null,
-		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncMapper = null,
+		private readonly ?\OCA\KanzleiCheck\Db\SyncBindingMapper $syncMapper = null,
 	) {
 	}
 
@@ -36,13 +36,13 @@ class GdprService
 	{
 		$i = $this->identities->find($identityId);
 		if ($i === null) {
-			throw new \OCA\PortalCheck\Exception\NotFoundException();
+			throw new \OCA\KanzleiCheck\Exception\NotFoundException();
 		}
 		$members = array_map(static fn($m) => ['orgId' => (int)$m->getOrgId(), 'role' => $m->getRole(), 'createdAt' => $m->getCreatedAt()->format('c')], $this->members->findByIdentity($identityId));
 		$devices = array_map(static fn($d) => ['name' => $d->getDeviceName(), 'platform' => $d->getPlatform(), 'pairedAt' => $d->getCreatedAt()->format('c'), 'lastUsedAt' => $d->getLastUsedAt()->format('c')], $this->devices->findByIdentity($identityId));
 		$msgs = [];
 		$qb = $this->db->getQueryBuilder();
-		$qb->select('id', 'conv_id', 'body', 'created_at')->from('ptl_message')
+		$qb->select('id', 'conv_id', 'body', 'created_at')->from('kzc_message')
 			->where($qb->expr()->eq('author', $qb->createNamedParameter(ActorResolver::portal($identityId))));
 		foreach ($qb->executeQuery()->fetchAll() ?: [] as $r) {
 			$msgs[] = ['id' => (int)$r['id'], 'convId' => (int)$r['conv_id'], 'body' => $r['body'], 'createdAt' => $r['created_at']];
@@ -73,13 +73,13 @@ class GdprService
 		try {
 			$i = $this->identities->find($identityId);
 			if ($i === null) {
-				throw new \OCA\PortalCheck\Exception\NotFoundException();
+				throw new \OCA\KanzleiCheck\Exception\NotFoundException();
 			}
 			// unique-conflict:ok the erase rewrite sets email to a per-PK literal
 			// ('erased-<id>@invalid') — two identities can never produce the same
-			// value, so ptl_ident_email_uq is unreachable on this write.
+			// value, so kzc_ident_email_uq is unreachable on this write.
 			$qb = $this->db->getQueryBuilder();
-			$qb->update('ptl_identity')
+			$qb->update('kzc_identity')
 				->set('email', $qb->createNamedParameter('erased-' . $identityId . '@invalid'))
 				->set('display_name', $qb->createNamedParameter('Gelöschter Kontakt'))
 				->set('status', $qb->createNamedParameter('erased'))
@@ -88,12 +88,12 @@ class GdprService
 			$this->sessions->revokeForIdentity($identityId);
 			$this->devices->revokeForIdentity($identityId);
 			$qb = $this->db->getQueryBuilder();
-			$qb->delete('ptl_otp')->where($qb->expr()->eq('email', $qb->createNamedParameter($i->getEmail())));
+			$qb->delete('kzc_otp')->where($qb->expr()->eq('email', $qb->createNamedParameter($i->getEmail())));
 			$qb->executeStatement();
 			$this->notify->deleteForIdentity($identityId);
 			if ($deleteMessages) {
 				$qb = $this->db->getQueryBuilder();
-				$qb->delete('ptl_message')->where($qb->expr()->eq('author', $qb->createNamedParameter(ActorResolver::portal($identityId))));
+				$qb->delete('kzc_message')->where($qb->expr()->eq('author', $qb->createNamedParameter(ActorResolver::portal($identityId))));
 				$qb->executeStatement();
 			}
 			$this->db->commit();

@@ -1,4 +1,4 @@
-# PHPStan config for portalcheck app
+# PHPStan config for kanzleicheck app
 # Run: ./vendor/bin/phpstan analyse -c phpstan.neon.dist lib/
 # With Nextcloud bootstrap (requires DB driver): ./vendor/bin/phpstan analyse -c phpstan.neon.dist -a phpstan-bootstrap.php lib/
 
@@ -60,7 +60,7 @@ parameters:
         - '~expects OCP\\IUser\|null, string given~'
         # NC35 deprecates IAppContainer in favour of ContainerInterface —
         # NavGate is a synced shared pack; the runtime object still is one.
-        - '~Parameter #1 \$container of static method OCA\\PortalCheck\\Support\\NavGate::register\(\) expects OCP\\AppFramework\\IAppContainer~'
+        - '~Parameter #1 \$container of static method OCA\\KanzleiCheck\\Support\\NavGate::register\(\) expects OCP\\AppFramework\\IAppContainer~'
         # Defensive nullsafe calls on schema-NOT-NULL getters.
         - '~Using nullsafe method call on non-nullable type~'
         # Iterable value-type docblocks — family convention tracks these as

@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_req_file` — uploads attached to request items. */
+/** `kzc_req_file` — uploads attached to request items. */
 class ReqFileMapper
 {
-	public const TABLE = 'ptl_req_file';
+	public const TABLE = 'kzc_req_file';
 
 	public function __construct(private readonly IDBConnection $db)
 	{
@@ -31,7 +31,7 @@ class ReqFileMapper
 			$qb->executeStatement();
 		} catch (\Throwable $e) {
 			// already attached — idempotent, but log so unexpected failures stay observable
-			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('portalcheck req-file attach skipped', ['item' => $itemId, 'upload' => $uploadId, 'e' => $e->getMessage()]);
+			\OCP\Server::get(\Psr\Log\LoggerInterface::class)->info('kanzleicheck req-file attach skipped', ['item' => $itemId, 'upload' => $uploadId, 'e' => $e->getMessage()]);
 			return;
 		}
 	}

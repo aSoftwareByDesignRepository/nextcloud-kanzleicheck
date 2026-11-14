@@ -7,7 +7,7 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Migration;
+namespace OCA\KanzleiCheck\Migration;
 
 use Closure;
 use OCP\DB\ISchemaWrapper;
@@ -15,7 +15,7 @@ use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
 /**
- * Initial PortalCheck schema (SPEC v2.1.0 §9.2 + LICENSE-PTL2-SPEC §5).
+ * Initial KanzleiCheck schema (SPEC v2.1.0 §9.2 + LICENSE-KZC2-SPEC §5).
  *
  * Every table carries a short PK name and guarded creation; index names stay
  * ≤30 chars for Oracle-style identifier rules. No DB foreign keys — cross-table
@@ -28,8 +28,8 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
 
-		if (!$schema->hasTable('ptl_org')) {
-			$t = $schema->createTable('ptl_org');
+		if (!$schema->hasTable('kzc_org')) {
+			$t = $schema->createTable('kzc_org');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('name', 'string', ['notnull' => true, 'length' => 190]);
 			$t->addColumn('ref', 'string', ['notnull' => false, 'length' => 64]);
@@ -44,13 +44,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('updated_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_org_pk');
-			$t->addUniqueIndex(['ref'], 'ptl_org_ref_uq');
-			$t->addIndex(['state'], 'ptl_org_state_idx');
+			$t->setPrimaryKey(['id'], 'kzc_org_pk');
+			$t->addUniqueIndex(['ref'], 'kzc_org_ref_uq');
+			$t->addIndex(['state'], 'kzc_org_state_idx');
 		}
 
-		if (!$schema->hasTable('ptl_identity')) {
-			$t = $schema->createTable('ptl_identity');
+		if (!$schema->hasTable('kzc_identity')) {
+			$t = $schema->createTable('kzc_identity');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('email', 'string', ['notnull' => true, 'length' => 254]);
 			$t->addColumn('display_name', 'string', ['notnull' => true, 'length' => 190]);
@@ -58,25 +58,25 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('locale', 'string', ['notnull' => false, 'length' => 16]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('last_login_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_ident_pk');
-			$t->addUniqueIndex(['email'], 'ptl_ident_email_uq');
+			$t->setPrimaryKey(['id'], 'kzc_ident_pk');
+			$t->addUniqueIndex(['email'], 'kzc_ident_email_uq');
 		}
 
-		if (!$schema->hasTable('ptl_member')) {
-			$t = $schema->createTable('ptl_member');
+		if (!$schema->hasTable('kzc_member')) {
+			$t = $schema->createTable('kzc_member');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('identity_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('role', 'string', ['notnull' => true, 'length' => 16, 'default' => 'member']);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
-			$t->setPrimaryKey(['id'], 'ptl_mem_pk');
-			$t->addUniqueIndex(['identity_id', 'org_id'], 'ptl_mem_uq');
-			$t->addIndex(['org_id'], 'ptl_mem_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_mem_pk');
+			$t->addUniqueIndex(['identity_id', 'org_id'], 'kzc_mem_uq');
+			$t->addIndex(['org_id'], 'kzc_mem_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_otp')) {
-			$t = $schema->createTable('ptl_otp');
+		if (!$schema->hasTable('kzc_otp')) {
+			$t = $schema->createTable('kzc_otp');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('email', 'string', ['notnull' => true, 'length' => 254]);
 			$t->addColumn('purpose', 'string', ['notnull' => true, 'length' => 32, 'default' => 'login']);
@@ -87,13 +87,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('expires_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('used_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('ip_hash', 'string', ['notnull' => false, 'length' => 64]);
-			$t->setPrimaryKey(['id'], 'ptl_otp_pk');
-			$t->addIndex(['email', 'purpose'], 'ptl_otp_email_idx');
-			$t->addIndex(['magic_hash'], 'ptl_otp_magic_idx');
+			$t->setPrimaryKey(['id'], 'kzc_otp_pk');
+			$t->addIndex(['email', 'purpose'], 'kzc_otp_email_idx');
+			$t->addIndex(['magic_hash'], 'kzc_otp_magic_idx');
 		}
 
-		if (!$schema->hasTable('ptl_session')) {
-			$t = $schema->createTable('ptl_session');
+		if (!$schema->hasTable('kzc_session')) {
+			$t = $schema->createTable('kzc_session');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('token_hash', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('identity_id', 'bigint', ['notnull' => true]);
@@ -103,13 +103,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('last_seen_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('ua_short', 'string', ['notnull' => false, 'length' => 190]);
 			$t->addColumn('revoked_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_sess_pk');
-			$t->addUniqueIndex(['token_hash'], 'ptl_sess_tok_uq');
-			$t->addIndex(['identity_id'], 'ptl_sess_ident_idx');
+			$t->setPrimaryKey(['id'], 'kzc_sess_pk');
+			$t->addUniqueIndex(['token_hash'], 'kzc_sess_tok_uq');
+			$t->addIndex(['identity_id'], 'kzc_sess_ident_idx');
 		}
 
-		if (!$schema->hasTable('ptl_device')) {
-			$t = $schema->createTable('ptl_device');
+		if (!$schema->hasTable('kzc_device')) {
+			$t = $schema->createTable('kzc_device');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('identity_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('token_hash', 'string', ['notnull' => true, 'length' => 64]);
@@ -119,34 +119,34 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('last_used_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('abs_expires_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('revoked_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_dev_pk');
-			$t->addUniqueIndex(['token_hash'], 'ptl_dev_tok_uq');
-			$t->addIndex(['identity_id'], 'ptl_dev_ident_idx');
+			$t->setPrimaryKey(['id'], 'kzc_dev_pk');
+			$t->addUniqueIndex(['token_hash'], 'kzc_dev_tok_uq');
+			$t->addIndex(['identity_id'], 'kzc_dev_ident_idx');
 		}
 
-		if (!$schema->hasTable('ptl_notify')) {
-			$t = $schema->createTable('ptl_notify');
+		if (!$schema->hasTable('kzc_notify')) {
+			$t = $schema->createTable('kzc_notify');
 			$t->addColumn('identity_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('mails_enabled', 'boolean', ['notnull' => false, 'default' => true]);
 			$t->addColumn('last_mail_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('pending_kinds', 'string', ['notnull' => false, 'length' => 64]);
-			$t->setPrimaryKey(['identity_id', 'org_id'], 'ptl_notify_pk');
+			$t->setPrimaryKey(['identity_id', 'org_id'], 'kzc_notify_pk');
 		}
 
-		if (!$schema->hasTable('ptl_conv')) {
-			$t = $schema->createTable('ptl_conv');
+		if (!$schema->hasTable('kzc_conv')) {
+			$t = $schema->createTable('kzc_conv');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('state', 'string', ['notnull' => true, 'length' => 16, 'default' => 'open']);
 			$t->addColumn('last_message_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_conv_pk');
-			$t->addUniqueIndex(['org_id'], 'ptl_conv_org_uq');
+			$t->setPrimaryKey(['id'], 'kzc_conv_pk');
+			$t->addUniqueIndex(['org_id'], 'kzc_conv_org_uq');
 		}
 
-		if (!$schema->hasTable('ptl_message')) {
-			$t = $schema->createTable('ptl_message');
+		if (!$schema->hasTable('kzc_message')) {
+			$t = $schema->createTable('kzc_message');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('conv_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('author', 'string', ['notnull' => true, 'length' => 64]);
@@ -156,21 +156,21 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('file_id', 'bigint', ['notnull' => false]);
 			$t->addColumn('upload_id', 'bigint', ['notnull' => false]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_msg_pk');
-			$t->addUniqueIndex(['conv_id', 'author', 'client_uuid'], 'ptl_msg_dedupe_uq');
-			$t->addIndex(['conv_id', 'id'], 'ptl_msg_conv_idx');
+			$t->setPrimaryKey(['id'], 'kzc_msg_pk');
+			$t->addUniqueIndex(['conv_id', 'author', 'client_uuid'], 'kzc_msg_dedupe_uq');
+			$t->addIndex(['conv_id', 'id'], 'kzc_msg_conv_idx');
 		}
 
-		if (!$schema->hasTable('ptl_read')) {
-			$t = $schema->createTable('ptl_read');
+		if (!$schema->hasTable('kzc_read')) {
+			$t = $schema->createTable('kzc_read');
 			$t->addColumn('conv_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('actor', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('last_read_id', 'bigint', ['notnull' => true, 'default' => 0]);
-			$t->setPrimaryKey(['conv_id', 'actor'], 'ptl_read_pk');
+			$t->setPrimaryKey(['conv_id', 'actor'], 'kzc_read_pk');
 		}
 
-		if (!$schema->hasTable('ptl_upload')) {
-			$t = $schema->createTable('ptl_upload');
+		if (!$schema->hasTable('kzc_upload')) {
+			$t = $schema->createTable('kzc_upload');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('uploader', 'string', ['notnull' => true, 'length' => 64]);
@@ -185,13 +185,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('reviewed_by', 'string', ['notnull' => false, 'length' => 64]);
 			$t->addColumn('reviewed_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_upl_pk');
-			$t->addIndex(['org_id', 'sha256'], 'ptl_upl_hash_idx');
-			$t->addIndex(['org_id', 'state'], 'ptl_upl_state_idx');
+			$t->setPrimaryKey(['id'], 'kzc_upl_pk');
+			$t->addIndex(['org_id', 'sha256'], 'kzc_upl_hash_idx');
+			$t->addIndex(['org_id', 'state'], 'kzc_upl_state_idx');
 		}
 
-		if (!$schema->hasTable('ptl_audit')) {
-			$t = $schema->createTable('ptl_audit');
+		if (!$schema->hasTable('kzc_audit')) {
+			$t = $schema->createTable('kzc_audit');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('actor', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('action', 'string', ['notnull' => true, 'length' => 48]);
@@ -199,13 +199,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('target_id', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('detail', 'text', ['notnull' => false]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_audit_pk');
-			$t->addIndex(['target_type', 'target_id'], 'ptl_audit_tgt_idx');
-			$t->addIndex(['created_at'], 'ptl_audit_time_idx');
+			$t->setPrimaryKey(['id'], 'kzc_audit_pk');
+			$t->addIndex(['target_type', 'target_id'], 'kzc_audit_tgt_idx');
+			$t->addIndex(['created_at'], 'kzc_audit_time_idx');
 		}
 
-		if (!$schema->hasTable('ptl_task')) {
-			$t = $schema->createTable('ptl_task');
+		if (!$schema->hasTable('kzc_task')) {
+			$t = $schema->createTable('kzc_task');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('title', 'string', ['notnull' => true, 'length' => 190]);
@@ -220,13 +220,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('assignee', 'string', ['notnull' => false, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('updated_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_task_pk');
-			$t->addIndex(['status', 'org_id'], 'ptl_task_board_idx');
-			$t->addIndex(['due_date'], 'ptl_task_due_idx');
+			$t->setPrimaryKey(['id'], 'kzc_task_pk');
+			$t->addIndex(['status', 'org_id'], 'kzc_task_board_idx');
+			$t->addIndex(['due_date'], 'kzc_task_due_idx');
 		}
 
-		if (!$schema->hasTable('ptl_req')) {
-			$t = $schema->createTable('ptl_req');
+		if (!$schema->hasTable('kzc_req')) {
+			$t = $schema->createTable('kzc_req');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('title', 'string', ['notnull' => true, 'length' => 190]);
@@ -242,13 +242,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('closed_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_req_pk');
-			$t->addUniqueIndex(['template_id', 'org_id', 'period_key'], 'ptl_req_period_uq');
-			$t->addIndex(['org_id', 'state'], 'ptl_req_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_req_pk');
+			$t->addUniqueIndex(['template_id', 'org_id', 'period_key'], 'kzc_req_period_uq');
+			$t->addIndex(['org_id', 'state'], 'kzc_req_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_req_item')) {
-			$t = $schema->createTable('ptl_req_item');
+		if (!$schema->hasTable('kzc_req_item')) {
+			$t = $schema->createTable('kzc_req_item');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('req_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('position', 'smallint', ['notnull' => true, 'default' => 0]);
@@ -262,19 +262,19 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('delivered_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('reviewed_by', 'string', ['notnull' => false, 'length' => 64]);
 			$t->addColumn('reviewed_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_req_item_pk');
-			$t->addIndex(['req_id'], 'ptl_req_item_req_idx');
+			$t->setPrimaryKey(['id'], 'kzc_req_item_pk');
+			$t->addIndex(['req_id'], 'kzc_req_item_req_idx');
 		}
 
-		if (!$schema->hasTable('ptl_req_file')) {
-			$t = $schema->createTable('ptl_req_file');
+		if (!$schema->hasTable('kzc_req_file')) {
+			$t = $schema->createTable('kzc_req_file');
 			$t->addColumn('item_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('upload_id', 'bigint', ['notnull' => true]);
-			$t->setPrimaryKey(['item_id', 'upload_id'], 'ptl_req_file_pk');
+			$t->setPrimaryKey(['item_id', 'upload_id'], 'kzc_req_file_pk');
 		}
 
-		if (!$schema->hasTable('ptl_req_tpl')) {
-			$t = $schema->createTable('ptl_req_tpl');
+		if (!$schema->hasTable('kzc_req_tpl')) {
+			$t = $schema->createTable('kzc_req_tpl');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('name', 'string', ['notnull' => true, 'length' => 190]);
 			$t->addColumn('preset', 'string', ['notnull' => false, 'length' => 32]);
@@ -287,26 +287,26 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('active', 'boolean', ['notnull' => false, 'default' => true]);
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_req_tpl_pk');
+			$t->setPrimaryKey(['id'], 'kzc_req_tpl_pk');
 		}
 
-		if (!$schema->hasTable('ptl_req_tpl_org')) {
-			$t = $schema->createTable('ptl_req_tpl_org');
+		if (!$schema->hasTable('kzc_req_tpl_org')) {
+			$t = $schema->createTable('kzc_req_tpl_org');
 			$t->addColumn('template_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
-			$t->setPrimaryKey(['template_id', 'org_id'], 'ptl_req_tpl_org_pk');
-			$t->addIndex(['org_id'], 'ptl_req_tpl_org_o_idx');
+			$t->setPrimaryKey(['template_id', 'org_id'], 'kzc_req_tpl_org_pk');
+			$t->addIndex(['org_id'], 'kzc_req_tpl_org_o_idx');
 		}
 
-		if (!$schema->hasTable('ptl_req_remind')) {
-			$t = $schema->createTable('ptl_req_remind');
+		if (!$schema->hasTable('kzc_req_remind')) {
+			$t = $schema->createTable('kzc_req_remind');
 			$t->addColumn('req_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('remind_on', 'date', ['notnull' => true]);
-			$t->setPrimaryKey(['req_id', 'remind_on'], 'ptl_req_remind_pk');
+			$t->setPrimaryKey(['req_id', 'remind_on'], 'kzc_req_remind_pk');
 		}
 
-		if (!$schema->hasTable('ptl_approval')) {
-			$t = $schema->createTable('ptl_approval');
+		if (!$schema->hasTable('kzc_approval')) {
+			$t = $schema->createTable('kzc_approval');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('file_id', 'bigint', ['notnull' => true]);
@@ -324,21 +324,21 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('otp_id', 'bigint', ['notnull' => false]);
 			$t->addColumn('requested_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('requested_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_appr_pk');
-			$t->addIndex(['org_id', 'state'], 'ptl_appr_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_appr_pk');
+			$t->addIndex(['org_id', 'state'], 'kzc_appr_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_intake')) {
-			$t = $schema->createTable('ptl_intake');
+		if (!$schema->hasTable('kzc_intake')) {
+			$t = $schema->createTable('kzc_intake');
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('enabled', 'boolean', ['notnull' => false, 'default' => false]);
 			$t->addColumn('token_hash', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('rotated_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['org_id'], 'ptl_intake_pk');
+			$t->setPrimaryKey(['org_id'], 'kzc_intake_pk');
 		}
 
-		if (!$schema->hasTable('ptl_intake_hold')) {
-			$t = $schema->createTable('ptl_intake_hold');
+		if (!$schema->hasTable('kzc_intake_hold')) {
+			$t = $schema->createTable('kzc_intake_hold');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('msg_hash', 'string', ['notnull' => true, 'length' => 64]);
@@ -347,33 +347,33 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('state', 'string', ['notnull' => true, 'length' => 16, 'default' => 'held']);
 			$t->addColumn('reviewed_by', 'string', ['notnull' => false, 'length' => 64]);
 			$t->addColumn('reviewed_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_ihold_pk');
-			$t->addIndex(['org_id', 'state'], 'ptl_ihold_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_ihold_pk');
+			$t->addIndex(['org_id', 'state'], 'kzc_ihold_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_contact')) {
-			$t = $schema->createTable('ptl_contact');
+		if (!$schema->hasTable('kzc_contact')) {
+			$t = $schema->createTable('kzc_contact');
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('user_id', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('role_label', 'string', ['notnull' => false, 'length' => 80]);
 			$t->addColumn('show_phone', 'boolean', ['notnull' => false, 'default' => false]);
 			$t->addColumn('show_email', 'boolean', ['notnull' => false, 'default' => true]);
 			$t->addColumn('position', 'smallint', ['notnull' => true, 'default' => 0]);
-			$t->setPrimaryKey(['org_id', 'user_id'], 'ptl_contact_pk');
+			$t->setPrimaryKey(['org_id', 'user_id'], 'kzc_contact_pk');
 		}
 
-		if (!$schema->hasTable('ptl_form_tpl')) {
-			$t = $schema->createTable('ptl_form_tpl');
+		if (!$schema->hasTable('kzc_form_tpl')) {
+			$t = $schema->createTable('kzc_form_tpl');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('name', 'string', ['notnull' => true, 'length' => 190]);
 			$t->addColumn('fields_json', 'text', ['notnull' => true]);
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_form_tpl_pk');
+			$t->setPrimaryKey(['id'], 'kzc_form_tpl_pk');
 		}
 
-		if (!$schema->hasTable('ptl_form')) {
-			$t = $schema->createTable('ptl_form');
+		if (!$schema->hasTable('kzc_form')) {
+			$t = $schema->createTable('kzc_form');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('tpl_id', 'bigint', ['notnull' => true]);
@@ -382,23 +382,23 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('submitted_by', 'string', ['notnull' => false, 'length' => 64]);
 			$t->addColumn('submitted_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_form_pk');
-			$t->addIndex(['org_id', 'state'], 'ptl_form_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_form_pk');
+			$t->addIndex(['org_id', 'state'], 'kzc_form_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_form_ans')) {
-			$t = $schema->createTable('ptl_form_ans');
+		if (!$schema->hasTable('kzc_form_ans')) {
+			$t = $schema->createTable('kzc_form_ans');
 			$t->addColumn('form_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('field_key', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('value', 'text', ['notnull' => false]);
 			$t->addColumn('revision', 'integer', ['notnull' => true, 'default' => 1]);
 			$t->addColumn('updated_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('updated_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['form_id', 'field_key'], 'ptl_form_ans_pk');
+			$t->setPrimaryKey(['form_id', 'field_key'], 'kzc_form_ans_pk');
 		}
 
-		if (!$schema->hasTable('ptl_ulink')) {
-			$t = $schema->createTable('ptl_ulink');
+		if (!$schema->hasTable('kzc_ulink')) {
+			$t = $schema->createTable('kzc_ulink');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('label', 'string', ['notnull' => true, 'length' => 190]);
@@ -412,13 +412,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('revoked_at', 'datetime', ['notnull' => false]);
 			$t->addColumn('created_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_ulink_pk');
-			$t->addUniqueIndex(['token_hash'], 'ptl_ulink_tok_uq');
-			$t->addIndex(['org_id'], 'ptl_ulink_org_idx');
+			$t->setPrimaryKey(['id'], 'kzc_ulink_pk');
+			$t->addUniqueIndex(['token_hash'], 'kzc_ulink_tok_uq');
+			$t->addIndex(['org_id'], 'kzc_ulink_org_idx');
 		}
 
-		if (!$schema->hasTable('ptl_mail_outbox')) {
-			$t = $schema->createTable('ptl_mail_outbox');
+		if (!$schema->hasTable('kzc_mail_outbox')) {
+			$t = $schema->createTable('kzc_mail_outbox');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('idem_key', 'string', ['notnull' => true, 'length' => 255]);
 			$t->addColumn('kind', 'string', ['notnull' => true, 'length' => 32]);
@@ -432,13 +432,13 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('next_try_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('sent_at', 'datetime', ['notnull' => false]);
-			$t->setPrimaryKey(['id'], 'ptl_outbox_pk');
-			$t->addUniqueIndex(['idem_key'], 'ptl_outbox_idem_uq');
-			$t->addIndex(['state', 'next_try_at'], 'ptl_outbox_due_idx');
+			$t->setPrimaryKey(['id'], 'kzc_outbox_pk');
+			$t->addUniqueIndex(['idem_key'], 'kzc_outbox_idem_uq');
+			$t->addIndex(['state', 'next_try_at'], 'kzc_outbox_due_idx');
 		}
 
-		if (!$schema->hasTable('ptl_upload_chunk')) {
-			$t = $schema->createTable('ptl_upload_chunk');
+		if (!$schema->hasTable('kzc_upload_chunk')) {
+			$t = $schema->createTable('kzc_upload_chunk');
 			$t->addColumn('upload_id', 'string', ['notnull' => true, 'length' => 36]);
 			$t->addColumn('org_id', 'bigint', ['notnull' => true]);
 			$t->addColumn('actor', 'string', ['notnull' => true, 'length' => 64]);
@@ -449,20 +449,20 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('state', 'string', ['notnull' => true, 'length' => 16, 'default' => 'receiving']);
 			$t->addColumn('created_at', 'datetime', ['notnull' => true]);
 			$t->addColumn('last_chunk_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['upload_id'], 'ptl_chunk_pk');
-			$t->addIndex(['last_chunk_at'], 'ptl_chunk_idle_idx');
+			$t->setPrimaryKey(['upload_id'], 'kzc_chunk_pk');
+			$t->addIndex(['last_chunk_at'], 'kzc_chunk_idle_idx');
 		}
 
-		if (!$schema->hasTable('ptl_job_cursor')) {
-			$t = $schema->createTable('ptl_job_cursor');
+		if (!$schema->hasTable('kzc_job_cursor')) {
+			$t = $schema->createTable('kzc_job_cursor');
 			$t->addColumn('job', 'string', ['notnull' => true, 'length' => 32]);
 			$t->addColumn('cursor', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('updated_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['job'], 'ptl_jcur_pk');
+			$t->setPrimaryKey(['job'], 'kzc_jcur_pk');
 		}
 
-		if (!$schema->hasTable('ptl_license_state')) {
-			$t = $schema->createTable('ptl_license_state');
+		if (!$schema->hasTable('kzc_license_state')) {
+			$t = $schema->createTable('kzc_license_state');
 			$t->addColumn('id', 'integer', ['notnull' => true]);
 			$t->addColumn('key_fingerprint', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('payload_json', 'text', ['notnull' => true]);
@@ -473,17 +473,17 @@ class Version1000Date202611020000 extends SimpleMigrationStep
 			$t->addColumn('portal_clients', 'integer', ['notnull' => true, 'default' => 0]);
 			$t->addColumn('applied_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('applied_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_lic_pk');
+			$t->setPrimaryKey(['id'], 'kzc_lic_pk');
 		}
 
-		if (!$schema->hasTable('ptl_mobile_seat')) {
-			$t = $schema->createTable('ptl_mobile_seat');
+		if (!$schema->hasTable('kzc_mobile_seat')) {
+			$t = $schema->createTable('kzc_mobile_seat');
 			$t->addColumn('id', 'bigint', ['autoincrement' => true, 'notnull' => true]);
 			$t->addColumn('user_id', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('assigned_by', 'string', ['notnull' => true, 'length' => 64]);
 			$t->addColumn('assigned_at', 'datetime', ['notnull' => true]);
-			$t->setPrimaryKey(['id'], 'ptl_mseat_pk');
-			$t->addUniqueIndex(['user_id'], 'ptl_mseat_user_uq');
+			$t->setPrimaryKey(['id'], 'kzc_mseat_pk');
+			$t->addUniqueIndex(['user_id'], 'kzc_mseat_user_uq');
 		}
 
 		return $schema;

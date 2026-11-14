@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Exception\ValidationException;
-use OCA\PortalCheck\Service\ImportService;
+use OCA\KanzleiCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Service\ImportService;
 use PHPUnit\Framework\TestCase;
 
 class ImportServiceTest extends TestCase

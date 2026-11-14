@@ -7,10 +7,10 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\MailOutbox;
-use OCA\PortalCheck\Db\MailOutboxMapper;
+use OCA\KanzleiCheck\Db\MailOutbox;
+use OCA\KanzleiCheck\Db\MailOutboxMapper;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 use OCP\Mail\IMailer;
@@ -58,7 +58,7 @@ class MailOutboxService
 		}
 		if (!$discard && !in_array($kind, self::KINDS_NO_CAP, true)
 			&& $this->outbox->pendingCount() >= self::MAX_PENDING) {
-			$this->logger->warning('portalcheck outbox cap reached — dropping non-OTP mail', ['kind' => $kind]);
+			$this->logger->warning('kanzleicheck outbox cap reached — dropping non-OTP mail', ['kind' => $kind]);
 			return null;
 		}
 		$now = new \DateTimeImmutable();
@@ -129,7 +129,7 @@ class MailOutboxService
 	private function finish(int $id, string $state): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_mail_outbox')
+		$qb->update('kzc_mail_outbox')
 			->set('state', $qb->createNamedParameter($state))
 			->set('sent_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
@@ -141,18 +141,18 @@ class MailOutboxService
 		$tries++;
 		if ($tries >= self::MAX_TRIES) {
 			$this->finish($id, 'failed');
-			$this->logger->error('portalcheck outbox mail failed permanently', ['id' => $id, 'exception' => $e->getMessage()]);
+			$this->logger->error('kanzleicheck outbox mail failed permanently', ['id' => $id, 'exception' => $e->getMessage()]);
 			return;
 		}
 		$delay = [60, 300, 900, 3600, 3600][$tries - 1] ?? 3600;
 		$next = (new \DateTimeImmutable())->modify('+' . $delay . ' seconds');
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_mail_outbox')
+		$qb->update('kzc_mail_outbox')
 			->set('state', $qb->createNamedParameter('pending'))
 			->set('tries', $qb->createNamedParameter($tries))
 			->set('next_try_at', $qb->createNamedParameter($next, 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
 		$qb->executeStatement();
-		$this->logger->warning('portalcheck outbox mail retry scheduled', ['id' => $id, 'tries' => $tries]);
+		$this->logger->warning('kanzleicheck outbox mail retry scheduled', ['id' => $id, 'tries' => $tries]);
 	}
 }

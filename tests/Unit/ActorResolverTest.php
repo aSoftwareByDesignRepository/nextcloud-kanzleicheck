@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\Service\ActorResolver;
 use PHPUnit\Framework\TestCase;
 
 /** Actor strings: portal:<id> can never collide with an NC uid (':' illegal). */

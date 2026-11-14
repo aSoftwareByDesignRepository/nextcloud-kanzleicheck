@@ -7,9 +7,9 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\AppInfo\Application;
+use OCA\KanzleiCheck\AppInfo\Application;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUserManager;
@@ -32,7 +32,7 @@ class AccessDoorService
 		private readonly IGroupManager $groupManager,
 		private readonly IUserManager $userManager,
 		private readonly SettingsService $settings,
-		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncBindings = null,
+		private readonly ?\OCA\KanzleiCheck\Db\SyncBindingMapper $syncBindings = null,
 	) {
 	}
 
@@ -127,7 +127,7 @@ class AccessDoorService
 					$uids[$u->getUID()] = true;
 				}
 			} catch (\Throwable $e) {
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck group enumeration failed', ['gid' => $gid, 'e' => $e->getMessage()]);
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck group enumeration failed', ['gid' => $gid, 'e' => $e->getMessage()]);
 			}
 		}
 		if ($uids === [] && !$this->isRestricted()) {

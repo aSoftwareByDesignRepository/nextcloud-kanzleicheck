@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * ATLAS ptl-c7 / ptl-c8 — stale_response_render_clobber + poller_chain_fork.
+ * ATLAS kzc-c7 / kzc-c8 — stale_response_render_clobber + poller_chain_fork.
  *
  * Leg 1 (staff c8): sends while a conv fetch is in flight must coalesce onto
  *   the single chain — never fork a second parallel poller. A held message
@@ -17,7 +17,7 @@ const { spawnSync } = require('child_process');
 const { createHash } = require('crypto');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const COMPOSE_ROOT = require('path').resolve(__dirname, '../../..');
 const authed = hasCreds();
 
@@ -32,7 +32,7 @@ async function readOtp(email, tries = 30) {
 	const sha = createHash('sha256').update(email).digest('hex');
 	for (let i = 0; i < tries; i++) {
 		const code = db("SELECT JSON_UNQUOTE(JSON_EXTRACT(params_json,'$.code')) " +
-			`FROM oc_ptl_mail_outbox WHERE kind='otp' AND to_hash='${sha}' ` +
+			`FROM oc_kzc_mail_outbox WHERE kind='otp' AND to_hash='${sha}' ` +
 			'AND discard=0 ORDER BY id DESC LIMIT 1;').split('\n').pop().trim();
 		if (/^\d{6}$/.test(code)) return code;
 		await new Promise((r) => setTimeout(r, 500));
@@ -42,13 +42,13 @@ async function readOtp(email, tries = 30) {
 
 async function portalLogin(page, email) {
 	await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
-	await page.locator('#ptl-send-form').waitFor({ state: 'visible', timeout: 15000 });
-	await page.locator('#ptl-email').fill(email);
-	await page.locator('#ptl-send-btn').click();
-	await page.locator('#ptl-verify-form').waitFor({ state: 'visible', timeout: 15000 });
-	await page.locator('#ptl-code').fill(await readOtp(email));
-	await page.locator('#ptl-verify-btn').click();
-	await page.waitForURL('**/apps/portalcheck/portal**', { timeout: 20000 });
+	await page.locator('#kzc-send-form').waitFor({ state: 'visible', timeout: 15000 });
+	await page.locator('#kzc-email').fill(email);
+	await page.locator('#kzc-send-btn').click();
+	await page.locator('#kzc-verify-form').waitFor({ state: 'visible', timeout: 15000 });
+	await page.locator('#kzc-code').fill(await readOtp(email));
+	await page.locator('#kzc-verify-btn').click();
+	await page.waitForURL('**/apps/kanzleicheck/portal**', { timeout: 20000 });
 }
 
 /** Holds GETs matching match(url) in `pending` until release() flips the gate. */
@@ -100,7 +100,7 @@ test.describe('staff conv poll-chain + stale-response guards (c7/c8)', () => {
 			const gate = msgGate(page, (u) => u.includes(`/api/portal/orgs/${org.id}/messages`));
 			await login(page, creds());
 			await page.goto(`${APP}/?view=inbox&org=${org.id}`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-cm').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-cm').waitFor({ state: 'visible', timeout: 20000 });
 			await expect.poll(() => gate.state.pending.length, { timeout: 15000 }).toBe(1);
 
 			// The mount pull is held in flight — send two messages against it.
@@ -108,8 +108,8 @@ test.describe('staff conv poll-chain + stale-response guards (c7/c8)', () => {
 				const posted = page.waitForResponse(
 					(r) => r.url().includes(`/orgs/${org.id}/messages`) && r.request().method() === 'POST',
 					{ timeout: 20000 });
-				await page.locator('#ptl-cm').fill(body);
-				await page.locator('#ptl-cm').press('Enter');
+				await page.locator('#kzc-cm').fill(body);
+				await page.locator('#kzc-cm').press('Enter');
 				await posted;
 			}
 			await page.waitForTimeout(500);
@@ -118,10 +118,10 @@ test.describe('staff conv poll-chain + stale-response guards (c7/c8)', () => {
 			expect(gate.state.count).toBe(1);
 
 			await gate.release();
-			const rows = page.locator('#ptl-msgs .ptl-msg');
+			const rows = page.locator('#kzc-msgs .kzc-msg');
 			await expect(rows).toHaveCount(3, { timeout: 20000 });
 			for (const body of [`seed-${tag}`, `fork-a-${tag}`, `fork-b-${tag}`]) {
-				await expect(page.locator('.ptl-msg__body', { hasText: body })).toHaveCount(1);
+				await expect(page.locator('.kzc-msg__body', { hasText: body })).toHaveCount(1);
 			}
 			// Exactly one coalesced follow-up fetch — no extra chains.
 			await page.waitForTimeout(600);
@@ -150,33 +150,33 @@ test.describe('staff conv poll-chain + stale-response guards (c7/c8)', () => {
 			// under parallel-suite load (robustness: only the row click is
 			// deterministic here).
 			await page.goto(`${APP}/?view=inbox`, { waitUntil: 'domcontentloaded' });
-			const rowA = page.locator('.ptl-row', { hasText: `StaleA ${tag}` });
+			const rowA = page.locator('.kzc-row', { hasText: `StaleA ${tag}` });
 			await rowA.waitFor({ state: 'visible', timeout: 30000 });
 			await rowA.click();
-			await page.locator('#ptl-cm').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-cm').waitFor({ state: 'visible', timeout: 20000 });
 			await expect.poll(() => gate.state.pending.length, { timeout: 15000 }).toBe(1);
 
 			// Switch to conversation B while A's response is still in flight.
-			await page.locator('.ptl-navbtn[data-v="inbox"]').click();
-			const rowB = page.locator('.ptl-row', { hasText: `StaleB ${tag}` });
+			await page.locator('.kzc-navbtn[data-v="inbox"]').click();
+			const rowB = page.locator('.kzc-row', { hasText: `StaleB ${tag}` });
 			await rowB.waitFor({ state: 'visible', timeout: 20000 });
 			await rowB.click();
-			const rows = page.locator('#ptl-msgs .ptl-msg');
+			const rows = page.locator('#kzc-msgs .kzc-msg');
 			await expect(rows).toHaveCount(2, { timeout: 20000 });
 
 			// Release A's stale response — it must be dropped, not painted.
 			await gate.release();
 			await page.waitForTimeout(800);
 			await expect(rows).toHaveCount(2);
-			await expect(page.locator('.ptl-msg__body', { hasText: 'orgA-' })).toHaveCount(0);
-			await expect(page.locator('.ptl-msg__body', { hasText: 'orgB-' })).toHaveCount(2);
+			await expect(page.locator('.kzc-msg__body', { hasText: 'orgA-' })).toHaveCount(0);
+			await expect(page.locator('.kzc-msg__body', { hasText: 'orgB-' })).toHaveCount(2);
 
 			// Cursor must be uncorrupted: a new B send paints via the live chain.
 			const posted = page.waitForResponse(
 				(r) => r.url().includes(`/orgs/${orgB.id}/messages`) && r.request().method() === 'POST',
 				{ timeout: 20000 });
-			await page.locator('#ptl-cm').fill(`orgB-3-${tag}`);
-			await page.locator('#ptl-cm').press('Enter');
+			await page.locator('#kzc-cm').fill(`orgB-3-${tag}`);
+			await page.locator('#kzc-cm').press('Enter');
 			await posted;
 			await expect(rows).toHaveCount(3, { timeout: 15000 });
 		} finally {
@@ -205,7 +205,7 @@ test.describe('portal view stale-render + poll-chain guards (c7/c8)', () => {
 
 	test('c7: delayed start fetches cannot clobber chat; c8: sends coalesce onto one chain', async ({ page }) => {
 		const tag = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-		const email = `ptl-chain-${tag}@test.invalid`;
+		const email = `kzc-chain-${tag}@test.invalid`;
 		const org = (await api('POST', '/api/portal/orgs', { name: `PortalChain ${tag}`, ref: `PC-${tag}`, kind: 'company' })).data.org;
 		const m = await api('POST', `/api/portal/orgs/${org.id}/members`, { email, displayName: 'Chain Client' });
 		expect(m.success).toBeTruthy();
@@ -217,15 +217,15 @@ test.describe('portal view stale-render + poll-chain guards (c7/c8)', () => {
 			await portalLogin(page, email);
 			// boot readiness: viewStart paints its h1 synchronously once init()
 			// resolved — tab clicks before READY are dropped by route()
-			await page.locator('#ptl-view h1').waitFor({ state: 'visible', timeout: 20000 });
-			await page.locator('.ptl-tab[data-view="chat"]').click();
-			await page.locator('#ptl-cf').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#kzc-view h1').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('.kzc-tab[data-view="chat"]').click();
+			await page.locator('#kzc-cf').waitFor({ state: 'visible', timeout: 20000 });
 			await startGate.release();
 			await page.waitForTimeout(600);
 			// The stale start continuation must not have repainted over chat.
-			await expect(page.locator('#ptl-cf')).toBeVisible();
-			await expect(page.locator('#ptl-msgs')).toBeAttached();
-			await expect(page.locator('.ptl-stack')).toHaveCount(0);
+			await expect(page.locator('#kzc-cf')).toBeVisible();
+			await expect(page.locator('#kzc-msgs')).toBeAttached();
+			await expect(page.locator('.kzc-stack')).toHaveCount(0);
 
 			// c8: hold the chat GET, send twice — one pending fetch only.
 			const chatGate = msgGate(page, (u) => u.includes(`/portal/api/orgs/${org.id}/messages`));
@@ -233,8 +233,8 @@ test.describe('portal view stale-render + poll-chain guards (c7/c8)', () => {
 				const posted = page.waitForResponse(
 					(r) => r.url().includes(`/portal/api/orgs/${org.id}/messages`) && r.request().method() === 'POST',
 					{ timeout: 20000 });
-				await page.locator('#ptl-cm').fill(body);
-				await page.locator('#ptl-cm').press('Enter');
+				await page.locator('#kzc-cm').fill(body);
+				await page.locator('#kzc-cm').press('Enter');
 				await posted;
 			}
 			await page.waitForTimeout(500);
@@ -242,18 +242,18 @@ test.describe('portal view stale-render + poll-chain guards (c7/c8)', () => {
 			expect(chatGate.state.count).toBe(1);
 
 			await chatGate.release();
-			const rows = page.locator('#ptl-msgs .ptl-msg');
+			const rows = page.locator('#kzc-msgs .kzc-msg');
 			await expect(rows).toHaveCount(2, { timeout: 20000 });
 			for (const body of [`p-fork-a-${tag}`, `p-fork-b-${tag}`]) {
-				await expect(page.locator('.ptl-msg__body', { hasText: body })).toHaveCount(1);
+				await expect(page.locator('.kzc-msg__body', { hasText: body })).toHaveCount(1);
 			}
 			await page.waitForTimeout(600);
 			expect(chatGate.state.count).toBe(2);
 		} finally {
 			try { await api('POST', `/api/portal/orgs/${org.id}/offboard`, {}); } catch { /* best effort */ }
-			db("DELETE m FROM oc_ptl_member m JOIN oc_ptl_identity i ON m.identity_id=i.id " +
-				"WHERE i.email LIKE 'ptl-chain-%@test.invalid';");
-			db("DELETE FROM oc_ptl_identity WHERE email LIKE 'ptl-chain-%@test.invalid';");
+			db("DELETE m FROM oc_kzc_member m JOIN oc_kzc_identity i ON m.identity_id=i.id " +
+				"WHERE i.email LIKE 'kzc-chain-%@test.invalid';");
+			db("DELETE FROM oc_kzc_identity WHERE email LIKE 'kzc-chain-%@test.invalid';");
 		}
 	});
 });

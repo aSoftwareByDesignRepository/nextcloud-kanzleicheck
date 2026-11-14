@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 /*
  * Copied from bookingcheck@31c2669e70 lib/Middleware/RateLimitMiddleware.php
- * (COPIED-SOURCES.md) — PortalCheck rule table (ptl_* actions).
+ * (COPIED-SOURCES.md) — KanzleiCheck rule table (kzc_* actions).
  */
 
-namespace OCA\PortalCheck\Middleware;
+namespace OCA\KanzleiCheck\Middleware;
 
-use OCA\PortalCheck\Exception\RateLimitException;
+use OCA\KanzleiCheck\Exception\RateLimitException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Middleware;
 use OCP\IRequest;
@@ -19,11 +19,11 @@ use OCP\Security\Bruteforce\IThrottler;
 class RateLimitMiddleware extends Middleware
 {
 	private const RULES = [
-		['needles' => ['/portal/api/auth/send'], 'verbs' => ['POST'], 'action' => 'ptl_otp_send', 'sleep' => 250],
-		['needles' => ['/portal/api/auth/verify'], 'verbs' => ['POST'], 'action' => 'ptl_otp_verify', 'sleep' => 400],
-		['needles' => ['/portal/api/u/'], 'verbs' => ['POST'], 'action' => 'ptl_upload_link', 'sleep' => 300],
-		['needles' => ['/api/companion/v1/pair'], 'verbs' => ['POST'], 'action' => 'ptl_device_pair', 'sleep' => 400],
-		['needles' => ['/approvals/', '/start'], 'verbs' => ['POST'], 'action' => 'ptl_otp_send', 'sleep' => 250],
+		['needles' => ['/portal/api/auth/send'], 'verbs' => ['POST'], 'action' => 'kzc_otp_send', 'sleep' => 250],
+		['needles' => ['/portal/api/auth/verify'], 'verbs' => ['POST'], 'action' => 'kzc_otp_verify', 'sleep' => 400],
+		['needles' => ['/portal/api/u/'], 'verbs' => ['POST'], 'action' => 'kzc_upload_link', 'sleep' => 300],
+		['needles' => ['/api/companion/v1/pair'], 'verbs' => ['POST'], 'action' => 'kzc_device_pair', 'sleep' => 400],
+		['needles' => ['/approvals/', '/start'], 'verbs' => ['POST'], 'action' => 'kzc_otp_send', 'sleep' => 250],
 	];
 
 	public function __construct(
@@ -35,7 +35,7 @@ class RateLimitMiddleware extends Middleware
 
 	public function beforeController(Controller $controller, string $methodName): void
 	{
-		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
+		if (!str_starts_with(get_class($controller), 'OCA\\KanzleiCheck\\')) {
 			return;
 		}
 		$path = $this->request->getPathInfo() ?: '';

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\SafeFilenameService;
+use OCA\KanzleiCheck\Service\SafeFilenameService;
 use PHPUnit\Framework\TestCase;
 
 class SafeFilenameTest extends TestCase

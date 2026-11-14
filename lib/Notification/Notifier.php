@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Notification;
+namespace OCA\KanzleiCheck\Notification;
 
-use OCA\PortalCheck\AppInfo\Application;
+use OCA\KanzleiCheck\AppInfo\Application;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
@@ -25,7 +25,7 @@ class Notifier implements INotifier
 
 	public function getName(): string
 	{
-		return $this->l10n->get(Application::APP_ID)->t('PortalCheck');
+		return $this->l10n->get(Application::APP_ID)->t('KanzleiCheck');
 	}
 
 	public function prepare(INotification $notification, string $languageCode): INotification

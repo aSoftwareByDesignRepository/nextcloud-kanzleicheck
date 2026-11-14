@@ -1,32 +1,32 @@
-/* PortalCheck shared tokens + control baseline + button-variant armor.
+/* KanzleiCheck shared tokens + control baseline + button-variant armor.
    Loaded on every app surface (staff shell + guest portal pages). */
 
 :root {
 	/* Family canvas (DESIGN-SYSTEM §2.3): slate tint only on the app scope,
 	 * never body. Mirrors --mc-bg-soft / --bc-bg-soft in sibling apps. */
-	--ptl-bg: var(--color-main-background);
-	--ptl-bg-soft: color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%);
-	--ptl-bg-card: var(--color-main-background);
-	--ptl-text: var(--color-main-text);
-	--ptl-form-border: var(--color-border-maxcontrast, var(--color-border));
-	--ptl-border-strong: var(--color-border-maxcontrast, var(--color-border));
-	--portalcheck-color-form-border: var(--ptl-form-border);
-	--portalcheck-color-form-border-error: var(--color-element-error, var(--color-error));
-	--portalcheck-color-form-border-focus: var(--color-primary-element);
-	--ptl-danger-fill: var(--color-element-error, #c90000);
-	--ptl-danger-ink: var(--color-error-text, var(--color-element-error, #8a0000));
-	--ptl-danger-border: var(--color-border-error, var(--color-element-error, #c90000));
+	--kzc-bg: var(--color-main-background);
+	--kzc-bg-soft: color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%);
+	--kzc-bg-card: var(--color-main-background);
+	--kzc-text: var(--color-main-text);
+	--kzc-form-border: var(--color-border-maxcontrast, var(--color-border));
+	--kzc-border-strong: var(--color-border-maxcontrast, var(--color-border));
+	--kanzleicheck-color-form-border: var(--kzc-form-border);
+	--kanzleicheck-color-form-border-error: var(--color-element-error, var(--color-error));
+	--kanzleicheck-color-form-border-focus: var(--color-primary-element);
+	--kzc-danger-fill: var(--color-element-error, #c90000);
+	--kzc-danger-ink: var(--color-error-text, var(--color-element-error, #8a0000));
+	--kzc-danger-border: var(--color-border-error, var(--color-element-error, #c90000));
 }
 
 /* App shell canvas: paint the flat family slate + canvas-local ink so staff
  * surfaces never float on the NC theming wallpaper/photo gradient. */
-#content.app-portalcheck,
-#content.app-portalcheck #app-content,
-.ptl-app {
-	background: var(--ptl-bg-soft);
-	color: var(--ptl-text);
+#content.app-kanzleicheck,
+#content.app-kanzleicheck #app-content,
+.kzc-app {
+	background: var(--kzc-bg-soft);
+	color: var(--kzc-text);
 }
-.ptl-app {
+.kzc-app {
 	min-height: 100%;
 	min-width: 0;
 	width: 100%;
@@ -37,28 +37,28 @@
  * paints every input/select/textarea with a faint border that fails
  * non-text contrast on theme-sensitive surfaces. Pin the strong family
  * token on every control the app ships inside the NC shell. */
-#app-content .ptl-app input:not([type="checkbox"]):not([type="radio"]),
-#app-content .ptl-app select,
-#app-content .ptl-app textarea,
-#app-content .ptl-app .ptl-input,
-#app-content-wrapper .ptl-app input:not([type="checkbox"]):not([type="radio"]),
-#app-content-wrapper .ptl-app select,
-#app-content-wrapper .ptl-app textarea,
-#app-content-wrapper .ptl-app .ptl-input {
-	border: 1px solid var(--ptl-form-border);
+#app-content .kzc-app input:not([type="checkbox"]):not([type="radio"]),
+#app-content .kzc-app select,
+#app-content .kzc-app textarea,
+#app-content .kzc-app .kzc-input,
+#app-content-wrapper .kzc-app input:not([type="checkbox"]):not([type="radio"]),
+#app-content-wrapper .kzc-app select,
+#app-content-wrapper .kzc-app textarea,
+#app-content-wrapper .kzc-app .kzc-input {
+	border: 1px solid var(--kzc-form-border);
 }
-#app-content .ptl-app input:focus-visible,
-#app-content .ptl-app select:focus-visible,
-#app-content .ptl-app textarea:focus-visible,
-#app-content .ptl-app .ptl-input:focus-visible {
-	border-color: var(--portalcheck-color-form-border-focus);
+#app-content .kzc-app input:focus-visible,
+#app-content .kzc-app select:focus-visible,
+#app-content .kzc-app textarea:focus-visible,
+#app-content .kzc-app .kzc-input:focus-visible {
+	border-color: var(--kanzleicheck-color-form-border-focus);
 }
 
 /* ── Button-variant armor ────────────────────────────────────────────
  * Why !important everywhere: NC core inputs.scss repaints every
  * <button>:not(.button-vue,[class^=vs__]) at specificity 0-1-1 with the
  * pale --color-primary-element-light fill + light-text ink — stronger than
- * a lone .ptl-btn--{variant} class (0-1-0). On <button> elements the
+ * a lone .kzc-btn--{variant} class (0-1-0). On <button> elements the
  * variant collapses to the pale core skin; anchors/<summary> keep working,
  * which is why the defect looks asymmetric
  * (button_variant_specificity_collapse; canonical fix shape ported from
@@ -69,115 +69,115 @@
  * :hover/:focus-visible/:active. A new overlay is armored by landing on the
  * scope list, never by a per-dialog-class rule.
  */
-.ptl-app .ptl-btn,
-.ptl-portal .ptl-btn,
-.ptl-dialog .ptl-btn,
-dialog .ptl-btn,
-[role="dialog"] .ptl-btn,
-[role="alertdialog"] .ptl-btn {
+.kzc-app .kzc-btn,
+.kzc-portal .kzc-btn,
+.kzc-dialog .kzc-btn,
+dialog .kzc-btn,
+[role="dialog"] .kzc-btn,
+[role="alertdialog"] .kzc-btn {
 	background: transparent !important;
-	border-color: var(--ptl-form-border) !important;
+	border-color: var(--kzc-form-border) !important;
 	color: var(--color-main-text) !important;
 }
-.ptl-app .ptl-btn:hover,
-.ptl-portal .ptl-btn:hover,
-.ptl-dialog .ptl-btn:hover,
-dialog .ptl-btn:hover,
-[role="dialog"] .ptl-btn:hover,
-[role="alertdialog"] .ptl-btn:hover {
+.kzc-app .kzc-btn:hover,
+.kzc-portal .kzc-btn:hover,
+.kzc-dialog .kzc-btn:hover,
+dialog .kzc-btn:hover,
+[role="dialog"] .kzc-btn:hover,
+[role="alertdialog"] .kzc-btn:hover {
 	background: color-mix(in srgb, var(--color-main-text) 8%, transparent) !important;
-	border-color: var(--ptl-form-border) !important;
+	border-color: var(--kzc-form-border) !important;
 	color: var(--color-main-text) !important;
 }
-.ptl-app .ptl-btn:active,
-.ptl-portal .ptl-btn:active,
-.ptl-dialog .ptl-btn:active,
-dialog .ptl-btn:active,
-[role="dialog"] .ptl-btn:active,
-[role="alertdialog"] .ptl-btn:active {
+.kzc-app .kzc-btn:active,
+.kzc-portal .kzc-btn:active,
+.kzc-dialog .kzc-btn:active,
+dialog .kzc-btn:active,
+[role="dialog"] .kzc-btn:active,
+[role="alertdialog"] .kzc-btn:active {
 	background: color-mix(in srgb, var(--color-main-text) 14%, transparent) !important;
-	border-color: var(--ptl-form-border) !important;
+	border-color: var(--kzc-form-border) !important;
 	color: var(--color-main-text) !important;
 }
-.ptl-app .ptl-btn:focus-visible,
-.ptl-portal .ptl-btn:focus-visible,
-.ptl-dialog .ptl-btn:focus-visible,
-dialog .ptl-btn:focus-visible,
-[role="dialog"] .ptl-btn:focus-visible,
-[role="alertdialog"] .ptl-btn:focus-visible {
+.kzc-app .kzc-btn:focus-visible,
+.kzc-portal .kzc-btn:focus-visible,
+.kzc-dialog .kzc-btn:focus-visible,
+dialog .kzc-btn:focus-visible,
+[role="dialog"] .kzc-btn:focus-visible,
+[role="alertdialog"] .kzc-btn:focus-visible {
 	background: transparent !important;
-	border-color: var(--ptl-form-border) !important;
+	border-color: var(--kzc-form-border) !important;
 	color: var(--color-main-text) !important;
 	outline: 3px solid color-mix(in srgb, var(--color-primary-element, #0082c9) 55%, transparent);
 	outline-offset: 2px;
 }
 
-.ptl-app .ptl-btn--primary,
-.ptl-portal .ptl-btn--primary,
-.ptl-dialog .ptl-btn--primary,
-dialog .ptl-btn--primary,
-[role="dialog"] .ptl-btn--primary,
-[role="alertdialog"] .ptl-btn--primary {
+.kzc-app .kzc-btn--primary,
+.kzc-portal .kzc-btn--primary,
+.kzc-dialog .kzc-btn--primary,
+dialog .kzc-btn--primary,
+[role="dialog"] .kzc-btn--primary,
+[role="alertdialog"] .kzc-btn--primary {
 	background: var(--color-primary-element, #0082c9) !important;
 	border-color: var(--color-primary-element, #0082c9) !important;
 	color: var(--color-primary-element-text, #fff) !important;
 }
-.ptl-app .ptl-btn--primary:hover,
-.ptl-portal .ptl-btn--primary:hover,
-.ptl-dialog .ptl-btn--primary:hover,
-dialog .ptl-btn--primary:hover,
-[role="dialog"] .ptl-btn--primary:hover,
-[role="alertdialog"] .ptl-btn--primary:hover {
+.kzc-app .kzc-btn--primary:hover,
+.kzc-portal .kzc-btn--primary:hover,
+.kzc-dialog .kzc-btn--primary:hover,
+dialog .kzc-btn--primary:hover,
+[role="dialog"] .kzc-btn--primary:hover,
+[role="alertdialog"] .kzc-btn--primary:hover {
 	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	color: var(--color-primary-element-text, #fff) !important;
 }
-.ptl-app .ptl-btn--primary:focus-visible,
-.ptl-portal .ptl-btn--primary:focus-visible,
-.ptl-dialog .ptl-btn--primary:focus-visible,
-dialog .ptl-btn--primary:focus-visible,
-[role="dialog"] .ptl-btn--primary:focus-visible,
-[role="alertdialog"] .ptl-btn--primary:focus-visible {
+.kzc-app .kzc-btn--primary:focus-visible,
+.kzc-portal .kzc-btn--primary:focus-visible,
+.kzc-dialog .kzc-btn--primary:focus-visible,
+dialog .kzc-btn--primary:focus-visible,
+[role="dialog"] .kzc-btn--primary:focus-visible,
+[role="alertdialog"] .kzc-btn--primary:focus-visible {
 	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	color: var(--color-primary-element-text, #fff) !important;
 	outline: 3px solid color-mix(in srgb, var(--color-primary-element, #0082c9) 55%, transparent);
 	outline-offset: 2px;
 }
-.ptl-app .ptl-btn--primary:active,
-.ptl-portal .ptl-btn--primary:active,
-.ptl-dialog .ptl-btn--primary:active,
-dialog .ptl-btn--primary:active,
-[role="dialog"] .ptl-btn--primary:active,
-[role="alertdialog"] .ptl-btn--primary:active {
+.kzc-app .kzc-btn--primary:active,
+.kzc-portal .kzc-btn--primary:active,
+.kzc-dialog .kzc-btn--primary:active,
+dialog .kzc-btn--primary:active,
+[role="dialog"] .kzc-btn--primary:active,
+[role="alertdialog"] .kzc-btn--primary:active {
 	background: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	border-color: var(--color-primary-element-hover, var(--color-primary-element, #0082c9)) !important;
 	color: var(--color-primary-element-text, #fff) !important;
 }
 
-/* ── Forced-colors affordance (WCAG 1.4.11, ptl-v15) ─────────────────
+/* ── Forced-colors affordance (WCAG 1.4.11, kzc-v15) ─────────────────
  * Under forced-colors:active the primary fill collapses and the inherited
  * transparent border leaves the CTA as bare text. Pin a visible system-colour
- * boundary on every .ptl-btn variant — never forced-color-adjust:none.
+ * boundary on every .kzc-btn variant — never forced-color-adjust:none.
  * !important is required: the armor above carries !important border-color and
  * would otherwise defeat this rule. */
 @media (forced-colors: active) {
-	.ptl-btn,
-	.ptl-app .ptl-btn,
-	.ptl-portal .ptl-btn,
-	.ptl-dialog .ptl-btn,
-	dialog .ptl-btn,
-	[role="dialog"] .ptl-btn,
-	[role="alertdialog"] .ptl-btn {
+	.kzc-btn,
+	.kzc-app .kzc-btn,
+	.kzc-portal .kzc-btn,
+	.kzc-dialog .kzc-btn,
+	dialog .kzc-btn,
+	[role="dialog"] .kzc-btn,
+	[role="alertdialog"] .kzc-btn {
 		border: 1px solid ButtonText !important;
 	}
-	.ptl-btn:focus-visible,
-	.ptl-app .ptl-btn:focus-visible,
-	.ptl-portal .ptl-btn:focus-visible,
-	.ptl-dialog .ptl-btn:focus-visible,
-	dialog .ptl-btn:focus-visible,
-	[role="dialog"] .ptl-btn:focus-visible,
-	[role="alertdialog"] .ptl-btn:focus-visible {
+	.kzc-btn:focus-visible,
+	.kzc-app .kzc-btn:focus-visible,
+	.kzc-portal .kzc-btn:focus-visible,
+	.kzc-dialog .kzc-btn:focus-visible,
+	dialog .kzc-btn:focus-visible,
+	[role="dialog"] .kzc-btn:focus-visible,
+	[role="alertdialog"] .kzc-btn:focus-visible {
 		outline: 2px solid ButtonText;
 		outline-offset: 2px;
 	}

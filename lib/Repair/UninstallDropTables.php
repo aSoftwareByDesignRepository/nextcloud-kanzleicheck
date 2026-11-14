@@ -6,13 +6,13 @@ declare(strict_types=1);
  * SPDX-FileCopyrightText: 2026 Nextcloud DB-Standards (auto-generated)
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Drops every table the portalcheck app has ever created, migration rows, and app config.
+ * Drops every table the kanzleicheck app has ever created, migration rows, and app config.
  *
  * Disable (including auto-disable during a server upgrade) always preserves data;
  * only an explicit app removal drops tables. The documents root folder in Files is
  * NEVER touched — it holds the customer's records (SPEC §6 upgrade/uninstall row).
  */
-namespace OCA\PortalCheck\Repair;
+namespace OCA\KanzleiCheck\Repair;
 
 use OCP\Files\IRootFolder;
 use OCP\IConfig;
@@ -22,7 +22,7 @@ use OCP\Migration\IRepairStep;
 
 final class UninstallDropTables implements IRepairStep
 {
-	public const APP_ID = 'portalcheck';
+	public const APP_ID = 'kanzleicheck';
 
 	/**
 	 * Legacy counter from the two-pass implementation. Cleared on disable and by schema
@@ -35,39 +35,39 @@ final class UninstallDropTables implements IRepairStep
 	 * Kept in sync by the DB-standards linter.
 	 */
 	public const TABLES = [
-		'ptl_approval',
-		'ptl_audit',
-		'ptl_contact',
-		'ptl_conv',
-		'ptl_device',
-		'ptl_form',
-		'ptl_form_ans',
-		'ptl_form_tpl',
-		'ptl_identity',
-		'ptl_intake',
-		'ptl_intake_hold',
-		'ptl_job_cursor',
-		'ptl_license_state',
-		'ptl_mail_outbox',
-		'ptl_member',
-		'ptl_message',
-		'ptl_mobile_seat',
-		'ptl_notify',
-		'ptl_org',
-		'ptl_otp',
-		'ptl_read',
-		'ptl_req',
-		'ptl_req_file',
-		'ptl_req_item',
-		'ptl_req_remind',
-		'ptl_req_tpl',
-		'ptl_req_tpl_org',
-		'ptl_session',
-		'ptl_sync',
-		'ptl_task',
-		'ptl_ulink',
-		'ptl_upload',
-		'ptl_upload_chunk',
+		'kzc_approval',
+		'kzc_audit',
+		'kzc_contact',
+		'kzc_conv',
+		'kzc_device',
+		'kzc_form',
+		'kzc_form_ans',
+		'kzc_form_tpl',
+		'kzc_identity',
+		'kzc_intake',
+		'kzc_intake_hold',
+		'kzc_job_cursor',
+		'kzc_license_state',
+		'kzc_mail_outbox',
+		'kzc_member',
+		'kzc_message',
+		'kzc_mobile_seat',
+		'kzc_notify',
+		'kzc_org',
+		'kzc_otp',
+		'kzc_read',
+		'kzc_req',
+		'kzc_req_file',
+		'kzc_req_item',
+		'kzc_req_remind',
+		'kzc_req_tpl',
+		'kzc_req_tpl_org',
+		'kzc_session',
+		'kzc_sync',
+		'kzc_task',
+		'kzc_ulink',
+		'kzc_upload',
+		'kzc_upload_chunk',
 	];
 
 	public function __construct(
@@ -80,7 +80,7 @@ final class UninstallDropTables implements IRepairStep
 
 	public function getName(): string
 	{
-		return 'Drop portalcheck tables and install metadata on uninstall';
+		return 'Drop kanzleicheck tables and install metadata on uninstall';
 	}
 
 	public function run(IOutput $output): void
@@ -93,14 +93,14 @@ final class UninstallDropTables implements IRepairStep
 		// Disable path (manual or auto during server upgrade): idempotent — never drop.
 		$this->config->deleteAppValue(self::APP_ID, self::REPAIR_PASS_KEY);
 		$output->info(
-			'portalcheck: preserving data on disable. '
+			'kanzleicheck: preserving data on disable. '
 			. 'Tables, migration history, and settings are kept until the app is fully removed.'
 		);
 	}
 
 	private function dropAllTablesAndMetadata(IOutput $output): void
 	{
-		// GAC-7/US-S11: every live binding share is revoked BEFORE ptl_sync
+		// GAC-7/US-S11: every live binding share is revoked BEFORE kzc_sync
 		// drops — app removal must leave zero dangling shares.
 		$this->revokeBindingShares($output);
 		$provider = $this->connection->getDatabaseProvider();
@@ -129,7 +129,7 @@ final class UninstallDropTables implements IRepairStep
 		$this->config->deleteAppValues(self::APP_ID);
 
 		$output->info(sprintf(
-			'portalcheck: dropped %d of %d table(s); removed %d migration row(s) and app config. Documents in Files are untouched.',
+			'kanzleicheck: dropped %d of %d table(s); removed %d migration row(s) and app config. Documents in Files are untouched.',
 			$dropped,
 			count(self::TABLES),
 			$migrationsRemoved,
@@ -149,14 +149,14 @@ final class UninstallDropTables implements IRepairStep
 
 	private function revokeBindingShares(IOutput $output): void
 	{
-		if ($this->shareManager === null || !$this->connection->tableExists('ptl_sync')) {
+		if ($this->shareManager === null || !$this->connection->tableExists('kzc_sync')) {
 			return;
 		}
 		$revoked = 0;
 		try {
 			$qb = $this->connection->getQueryBuilder();
-			$qb->select('s.share_id', 'i.nc_uid')->from('ptl_sync', 's')
-				->leftJoin('s', 'ptl_identity', 'i', 'i.id = s.identity_id')
+			$qb->select('s.share_id', 'i.nc_uid')->from('kzc_sync', 's')
+				->leftJoin('s', 'kzc_identity', 'i', 'i.id = s.identity_id')
 				->where($qb->expr()->neq('s.state', $qb->createNamedParameter('revoked')));
 			foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
 				$shareId = (string)($row['share_id'] ?? '');
@@ -175,7 +175,7 @@ final class UninstallDropTables implements IRepairStep
 			// join against a partially-migrated tree must not block removal
 		}
 		if ($revoked > 0) {
-			$output->info(sprintf('portalcheck: revoked %d binding share(s) before table drop.', $revoked));
+			$output->info(sprintf('kanzleicheck: revoked %d binding share(s) before table drop.', $revoked));
 		}
 	}
 }

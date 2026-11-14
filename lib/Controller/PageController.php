@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\ConfigTransfer\TransferReceiptStore;
-use OCA\PortalCheck\Service\AccessDoorService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\ConfigTransfer\TransferReceiptStore;
+use OCA\KanzleiCheck\Service\AccessDoorService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -17,7 +17,7 @@ use OCP\IUserSession;
 use OCP\Util;
 
 /** Staff app shell — access door enforced by StaffAccessMiddleware. */
-class PageController extends Controller implements \OCA\PortalCheck\Contracts\StaffContextAware
+class PageController extends Controller implements \OCA\KanzleiCheck\Contracts\StaffContextAware
 {
 	public string $staffUid = '';
 	public bool $staffIsAdmin = false;
@@ -63,6 +63,10 @@ class PageController extends Controller implements \OCA\PortalCheck\Contracts\St
 				'transferLastReceipt' => $this->transferReceipts->lastReceipt(),
 			]);
 		}
+		if ($section === 'about') {
+			Util::addTranslations(Application::APP_ID);
+			return new TemplateResponse(Application::APP_ID, 'about', ['appId' => Application::APP_ID]);
+		}
 		return $this->index();
 	}
 
@@ -71,9 +75,9 @@ class PageController extends Controller implements \OCA\PortalCheck\Contracts\St
 	#[NoCSRFRequired]
 	public function approvalProof(int $id): TemplateResponse
 	{
-		$a = \OCP\Server::get(\OCA\PortalCheck\Db\ApprovalMapper::class)->find($id);
+		$a = \OCP\Server::get(\OCA\KanzleiCheck\Db\ApprovalMapper::class)->find($id);
 		if ($a === null) {
-			throw new \OCA\PortalCheck\Exception\NotFoundException();
+			throw new \OCA\KanzleiCheck\Exception\NotFoundException();
 		}
 		return new TemplateResponse(Application::APP_ID, 'staff/approval-proof', [
 			'id' => (int)$a->getId(), 'fileName' => $a->getFileName(), 'sha' => $a->getFileSha256(),

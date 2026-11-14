@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_read` — per-actor last-read message id per conversation. */
+/** `kzc_read` — per-actor last-read message id per conversation. */
 class ReadMarkerMapper
 {
-	public const TABLE = 'ptl_read';
+	public const TABLE = 'kzc_read';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

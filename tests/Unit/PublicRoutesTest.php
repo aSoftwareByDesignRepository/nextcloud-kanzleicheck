@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -62,7 +62,7 @@ class PublicRoutesTest extends TestCase
 	{
 		// portalApi/companion: every public method must also be NoCSRFRequired
 		// (session cookie / device header auth — NC CSRF check does not apply,
-		// our own ptl_csrf double-submit does).
+		// our own kzc_csrf double-submit does).
 		foreach (['PortalApiController', 'CompanionController'] as $class) {
 			$src = file_get_contents(dirname(__DIR__, 2) . '/lib/Controller/' . $class . '.php');
 			preg_match_all('/((?:#\[[A-Za-z]+\]\s*)+)public function (\w+)\s*\(/s', $src, $m, PREG_SET_ORDER);

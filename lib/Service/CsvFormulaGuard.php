@@ -7,7 +7,7 @@ declare(strict_types=1);
  * (COPIED-SOURCES.md).
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
 /** CSV formula-injection guard (api-security §7): prefix ' on = + - @ TAB CR VT. */
 class CsvFormulaGuard

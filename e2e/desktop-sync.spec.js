@@ -3,10 +3,10 @@
  * Desktop-Sync staff UI (nc-user-binding §7) — one section per org detail,
  * one setup dialog (people-search picker + suggestion), state chips, repair
  * CTA, toggle-off confirm, proactive open-door notice. The setup flow is
- * driven against the real instance: ptl_atlas_nonstaff has NO account email,
+ * driven against the real instance: kzc_atlas_nonstaff has NO account email,
  * so the in-dialog mismatch confirm gate is exercised for real.
  *
- * Writes craft PNGs to .cursor/atlas-farm-v3/artifacts/portalcheck/craft/web/.
+ * Writes craft PNGs to .cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web/.
  */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
@@ -14,8 +14,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
-const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck/craft/web');
+const APP = '/index.php/apps/kanzleicheck';
+const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web');
 const COMPOSE_ROOT = path.resolve(__dirname, '../../..');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
@@ -37,15 +37,15 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 		const { username, password } = creds();
 		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 		const tag = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-		const email = `ptl-syncui-${tag}@test.invalid`;
+		const email = `kzc-syncui-${tag}@test.invalid`;
 		const orgName = `SyncUI Mandat ${tag}`;
 		const api = async (method, u, data) => request.fetch(`${BASE}${APP}${u}`, {
 			method, data, headers: { Authorization: auth },
 		}).then((r) => r.json());
 
-		const origAdmins = db("SELECT configvalue FROM oc_appconfig WHERE appid='portalcheck' AND configkey='app_admins'");
+		const origAdmins = db("SELECT configvalue FROM oc_appconfig WHERE appid='kanzleicheck' AND configkey='app_admins'");
 		const admins = [...new Set([...(JSON.parse(origAdmins || '[]')), username])];
-		db(`UPDATE oc_appconfig SET configvalue='${JSON.stringify(admins)}' WHERE appid='portalcheck' AND configkey='app_admins'`);
+		db(`UPDATE oc_appconfig SET configvalue='${JSON.stringify(admins)}' WHERE appid='kanzleicheck' AND configkey='app_admins'`);
 
 		let orgId = 0;
 		let identityId = 0;
@@ -55,85 +55,85 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			expect(orgId).toBeGreaterThan(0);
 			const m = await api('POST', `/api/portal/orgs/${orgId}/members`, { email, displayName: 'Sync UI Client' });
 			expect(m.success).toBeTruthy();
-			identityId = m.data?.identityId ?? Number(db(`SELECT identity_id FROM oc_ptl_member WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
+			identityId = m.data?.identityId ?? Number(db(`SELECT identity_id FROM oc_kzc_member WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
 			expect(identityId).toBeGreaterThan(0);
 
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await login(page, { username, password });
 			await page.goto(`${APP}/?view=orgs`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-q').fill(orgName);
-			const row0 = page.locator('#ptl-orglist .ptl-row', { hasText: orgName });
+			await page.locator('#kzc-q').fill(orgName);
+			const row0 = page.locator('#kzc-orglist .kzc-row', { hasText: orgName });
 			await row0.waitFor({ state: 'visible', timeout: 20000 });
 			await row0.click();
 			await page.locator('h2:has-text("Desktop sync")').waitFor({ state: 'visible', timeout: 20000 });
 
 			/* ── teacher line + member row with Set up ── */
-			await expect(page.locator('.ptl-sync-list')).toBeVisible();
-			const row = page.locator('.ptl-sync-row', { hasText: 'Sync UI Client' });
+			await expect(page.locator('.kzc-sync-list')).toBeVisible();
+			const row = page.locator('.kzc-sync-row', { hasText: 'Sync UI Client' });
 			await expect(row).toBeVisible();
 			// bring the sync row inside the #app-content scrollport into the
 			// viewport — a fullPage:false shot of an off-screen row proves nothing
 			await row.scrollIntoViewIfNeeded();
-			await shot(page, 'ptl-staff-sync-section-1280');
+			await shot(page, 'kzc-staff-sync-section-1280');
 			// DOM click — the row sits below the fold inside NC's #app-content
 			// scroller, which confuses Playwright's viewport math (the element
 			// is genuinely visible + enabled for a real user).
 			await row.locator('button:has-text("Set up")').evaluate((el) => el.click());
 
 			/* ── one dialog: picker, perms radios, mismatch confirm in-dialog ── */
-			const dlg = page.locator('dialog.ptl-dialog');
+			const dlg = page.locator('dialog.kzc-dialog');
 			await dlg.waitFor({ state: 'visible', timeout: 15000 });
 			await expect(dlg.locator('h2')).toContainText('desktop sync', { ignoreCase: true });
 			await expect(dlg.locator('text=Read & write')).toBeVisible();
 			await expect(dlg.locator('text=Read only')).toBeVisible();
-			await dlg.locator('#sd-q').fill('ptl_atlas');
-			const hit = dlg.locator('#sd-hits button', { hasText: 'ptl_atlas_nonstaff' });
+			await dlg.locator('#sd-q').fill('kzc_atlas');
+			const hit = dlg.locator('#sd-hits button', { hasText: 'kzc_atlas_nonstaff' });
 			await hit.waitFor({ state: 'visible', timeout: 15000 });
 			await expect(hit).toBeEnabled(); // non-staff user is selectable
 			await hit.click();
-			await shot(page, 'ptl-staff-sync-dialog-picked');
-			await dlg.locator('.ptl-btn--primary:has-text("Link")').click();
+			await shot(page, 'kzc-staff-sync-dialog-picked');
+			await dlg.locator('.kzc-btn--primary:has-text("Link")').click();
 
 			/* mismatch confirm INSIDE the same dialog (empty NC email vs identity mail) */
-			const confirm = page.locator('dialog.ptl-dialog').last();
+			const confirm = page.locator('dialog.kzc-dialog').last();
 			await confirm.waitFor({ state: 'visible', timeout: 20000 });
 			await confirm.locator('button', { hasText: /confirm|bestät|ok|yes|ja/i }).click();
 
 			/* chip renders the binding state (active or pending-accept) +
 			   the durable mismatch flag chip ('e-mail differs') */
-			const chip = row.locator('.ptl-chip').first();
+			const chip = row.locator('.kzc-chip').first();
 			await chip.waitFor({ state: 'visible', timeout: 20000 });
-			await expect(row.locator('.ptl-chip', { hasText: 'e-mail differs' })).toBeVisible();
+			await expect(row.locator('.kzc-chip', { hasText: 'e-mail differs' })).toBeVisible();
 			await row.scrollIntoViewIfNeeded();
-			await shot(page, 'ptl-staff-sync-chip-active');
-			const bid = Number(db(`SELECT id FROM oc_ptl_sync WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
+			await shot(page, 'kzc-staff-sync-chip-active');
+			const bid = Number(db(`SELECT id FROM oc_kzc_sync WHERE org_id=${orgId} ORDER BY id DESC LIMIT 1`));
 			expect(bid).toBeGreaterThan(0);
 			// pin the assertion to THIS binding's share row — a shared dev
 			// instance may carry unrelated fixture shares to the same uid
-			const shareId = Number(db(`SELECT share_id FROM oc_ptl_sync WHERE id=${bid}`));
+			const shareId = Number(db(`SELECT share_id FROM oc_kzc_sync WHERE id=${bid}`));
 			expect(shareId).toBeGreaterThan(0);
-			expect(db(`SELECT COUNT(*) FROM oc_share WHERE id=${shareId} AND share_with='ptl_atlas_nonstaff' AND permissions=15`)).toBe('1');
+			expect(db(`SELECT COUNT(*) FROM oc_share WHERE id=${shareId} AND share_with='kzc_atlas_nonstaff' AND permissions=15`)).toBe('1');
 
 			/* ── toggle off → confirm → revoked, share row deleted ── */
 			await row.locator('button:has-text("Off")').evaluate((el) => el.click());
-			const off = page.locator('dialog.ptl-dialog').last();
+			const off = page.locator('dialog.kzc-dialog').last();
 			await off.waitFor({ state: 'visible', timeout: 15000 });
 			await off.locator('button', { hasText: /confirm|bestätigen/i }).last().click();
 			await page.waitForTimeout(1500);
 			await expect(row.locator('button:has-text("Set up")')).toBeVisible();
 			expect(db(`SELECT COUNT(*) FROM oc_share WHERE id=${shareId}`)).toBe('0');
-			expect(db(`SELECT state FROM oc_ptl_sync WHERE id=${bid}`)).toBe('revoked');
+			expect(db(`SELECT state FROM oc_kzc_sync WHERE id=${bid}`)).toBe('revoked');
 		} finally {
 			/* revoke any leftover share/binding + restore door + drop fixture rows */
 			try { if (orgId) await api('POST', `/api/portal/orgs/${orgId}/offboard`, {}); } catch { /* best effort */ }
-			for (const sid of (db(`SELECT GROUP_CONCAT(share_id) FROM oc_ptl_sync WHERE org_id=${orgId}`) || '').split(',')) {
+			for (const sid of (db(`SELECT GROUP_CONCAT(share_id) FROM oc_kzc_sync WHERE org_id=${orgId}`) || '').split(',')) {
 				if (sid && sid !== '0') db(`DELETE FROM oc_share WHERE id=${Number(sid)}`);
 			}
-			db(`DELETE FROM oc_ptl_sync WHERE org_id=${orgId};
-DELETE FROM oc_ptl_member WHERE org_id=${orgId};
-DELETE FROM oc_ptl_identity WHERE email='${email}';
-DELETE FROM oc_ptl_org WHERE ref='SYN-${tag}';
-UPDATE oc_appconfig SET configvalue='${origAdmins.replace(/'/g, "''")}' WHERE appid='portalcheck' AND configkey='app_admins';`);
+			db(`DELETE FROM oc_kzc_sync WHERE org_id=${orgId};
+DELETE FROM oc_kzc_member WHERE org_id=${orgId};
+DELETE FROM oc_kzc_identity WHERE email='${email}';
+DELETE FROM oc_kzc_org WHERE ref='SYN-${tag}';
+UPDATE oc_appconfig SET configvalue='${origAdmins.replace(/'/g, "''")}' WHERE appid='kanzleicheck' AND configkey='app_admins';`);
 		}
 	});
 });

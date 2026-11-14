@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Contracts;
+namespace OCA\KanzleiCheck\Contracts;
 
-use OCA\PortalCheck\Db\Identity;
+use OCA\KanzleiCheck\Db\Identity;
 
 /** Middleware → controller context contract (typed, no dynamic props). */
 interface PortalSessionAware

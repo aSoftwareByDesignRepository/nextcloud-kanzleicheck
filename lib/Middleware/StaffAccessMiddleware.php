@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Middleware;
+namespace OCA\KanzleiCheck\Middleware;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Exception\ForbiddenException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Service\AccessDoorService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Exception\ForbiddenException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Service\AccessDoorService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Middleware;
 use OCP\IRequest;
@@ -29,7 +29,7 @@ class StaffAccessMiddleware extends Middleware
 
 	public function beforeController(Controller $controller, string $methodName): void
 	{
-		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
+		if (!str_starts_with(get_class($controller), 'OCA\\KanzleiCheck\\')) {
 			return;
 		}
 		$rest = $this->restPath();
@@ -40,7 +40,7 @@ class StaffAccessMiddleware extends Middleware
 		if ($uid === '' || !$this->door->isStaff($uid)) {
 			throw new ForbiddenException();
 		}
-		if ($controller instanceof \OCA\PortalCheck\Contracts\StaffContextAware) {
+		if ($controller instanceof \OCA\KanzleiCheck\Contracts\StaffContextAware) {
 			$controller->setStaffContext($uid, $this->door->isAppAdmin($uid));
 		}
 	}

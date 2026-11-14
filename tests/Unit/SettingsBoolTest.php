@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Service\SettingsService;
 use OCP\IConfig;
 use OCP\Security\ICrypto;
 use PHPUnit\Framework\TestCase;

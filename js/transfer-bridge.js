@@ -1,7 +1,7 @@
 /**
  * Bridge for the shared transfer page (apps/_shared/config-transfer):
- * exposes the window.PortalCheckApi / PortalCheckMessaging contract the
- * synced js/transfer.js expects, in PortalCheck's own API envelope
+ * exposes the window.KanzleiCheckApi / KanzleiCheckMessaging contract the
+ * synced js/transfer.js expects, in KanzleiCheck's own API envelope
  * ({success,data} / {success:false,error,context}). App-specific — not synced.
  */
 (function () {
@@ -20,9 +20,9 @@
 		}
 		return j && Object.prototype.hasOwnProperty.call(j, 'data') ? j.data : j;
 	}
-	window.PortalCheckApi = {
+	window.KanzleiCheckApi = {
 		url(path) {
-			return OC.generateUrl('/apps/portalcheck' + path);
+			return OC.generateUrl('/apps/kanzleicheck' + path);
 		},
 		async get(path, params) {
 			let u = this.url(path);
@@ -56,21 +56,21 @@
 		},
 	};
 	// Messaging: the synced transfer.js asks for .alert/.polite — map both
-	// onto the app-owned toast announcer (visible .ptl-toast + live regions)
-	// and always mirror into the ptl-transfer-result-live status region the
+	// onto the app-owned toast announcer (visible .kzc-toast + live regions)
+	// and always mirror into the kzc-transfer-result-live status region the
 	// synced part renders. OC.Notification is gone from NC≥31 bundles — it
 	// may only ever be a fallback behind the app-owned channel, never the
 	// only write.
 	const t = (s) => (window.OC && OC.L10N && OC.L10N.translate)
-		? OC.L10N.translate('portalcheck', s) : s;
+		? OC.L10N.translate('kanzleicheck', s) : s;
 	let toastContainer = null;
 	function ensureToastContainer() {
 		if (toastContainer && document.body.contains(toastContainer)) {
 			return toastContainer;
 		}
 		toastContainer = document.createElement('div');
-		toastContainer.className = 'ptl-toasts';
-		toastContainer.id = 'ptl-toasts';
+		toastContainer.className = 'kzc-toasts';
+		toastContainer.id = 'kzc-toasts';
 		document.body.appendChild(toastContainer);
 		return toastContainer;
 	}
@@ -81,11 +81,11 @@
 		// stack (rapid retries, repeated API failures).
 		const dedupKey = k + '|' + String(text);
 		const existing = typeof container.querySelectorAll === 'function'
-			? container.querySelectorAll('.ptl-toast[data-ptl-toast-key]')
+			? container.querySelectorAll('.kzc-toast[data-kzc-toast-key]')
 			: Array.prototype.slice.call(container.childNodes || []);
 		for (const prev of existing) {
 			const prevKey = typeof prev.getAttribute === 'function'
-				? prev.getAttribute('data-ptl-toast-key') : prev._ptlToastKey;
+				? prev.getAttribute('data-kzc-toast-key') : prev._ptlToastKey;
 			if (prevKey === dedupKey || prev._ptlToastKey === dedupKey) {
 				if (prev._ptlDismissTimer) window.clearTimeout(prev._ptlDismissTimer);
 				prev._ptlDismissTimer = window.setTimeout(() => {
@@ -95,14 +95,14 @@
 			}
 		}
 		const toastEl = document.createElement('div');
-		toastEl.className = 'ptl-toast ptl-toast--' + k;
+		toastEl.className = 'kzc-toast kzc-toast--' + k;
 		toastEl.setAttribute('role', k === 'error' ? 'alert' : 'status');
-		toastEl.setAttribute('data-ptl-toast-key', dedupKey);
+		toastEl.setAttribute('data-kzc-toast-key', dedupKey);
 		toastEl._ptlToastKey = dedupKey;
 		const content = document.createElement('span');
-		content.className = 'ptl-toast__content';
+		content.className = 'kzc-toast__content';
 		const msgText = document.createElement('span');
-		msgText.className = 'ptl-toast__text';
+		msgText.className = 'kzc-toast__text';
 		msgText.textContent = String(text);
 		content.appendChild(msgText);
 		if (k === 'error') {
@@ -112,7 +112,7 @@
 				const feedback = window.SbdAppFeedback;
 				if (feedback && typeof feedback.buildMailto === 'function') {
 					const link = document.createElement('a');
-					link.className = 'ptl-toast__link';
+					link.className = 'kzc-toast__link';
 					link.href = feedback.buildMailto('problem', {});
 					link.textContent = t('Report this problem');
 					content.appendChild(link);
@@ -121,7 +121,7 @@
 		}
 		const close = document.createElement('button');
 		close.type = 'button';
-		close.className = 'ptl-toast__close';
+		close.className = 'kzc-toast__close';
 		close.setAttribute('aria-label', t('Dismiss'));
 		close.textContent = '✕';
 		close.addEventListener('click', () => toastEl.remove());
@@ -133,7 +133,7 @@
 		}, k === 'error' ? 7000 : 4000);
 	}
 	function live(text) {
-		const el = document.getElementById('ptl-transfer-result-live');
+		const el = document.getElementById('kzc-transfer-result-live');
 		if (el) el.textContent = text;
 	}
 	function announce(text, kind) {
@@ -145,7 +145,7 @@
 			OC.Notification.showTemporary(text);
 		}
 	}
-	const msg = window.PortalCheckMessaging || {};
+	const msg = window.KanzleiCheckMessaging || {};
 	if (typeof msg.announce !== 'function') {
 		msg.announce = announce;
 	}
@@ -155,5 +155,5 @@
 	if (typeof msg.polite !== 'function') {
 		msg.polite = function (text) { msg.announce(text, 'success'); live(text); };
 	}
-	window.PortalCheckMessaging = msg;
+	window.KanzleiCheckMessaging = msg;
 })();

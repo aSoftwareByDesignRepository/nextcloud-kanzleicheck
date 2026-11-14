@@ -1,5 +1,5 @@
 {
-	"name": "software-by-design/nextcloud-portalcheck",
+	"name": "software-by-design/nextcloud-kanzleicheck",
 	"description": "Client portal for Nextcloud — passwordless client access, chat, documents, requests and approvals",
 	"type": "project",
 	"license": "AGPL-3.0-or-later",
@@ -21,12 +21,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"OCA\\PortalCheck\\": "lib/"
+			"OCA\\KanzleiCheck\\": "lib/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"OCA\\PortalCheck\\Tests\\": "tests/",
+			"OCA\\KanzleiCheck\\Tests\\": "tests/",
 			"OCP\\": "vendor/nextcloud/ocp/OCP/",
 			"NCU\\": "vendor/nextcloud/ocp/NCU/"
 		}

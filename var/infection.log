@@ -4,7 +4,7 @@ Note: Pass `--debug` to log test-framework output.
 Escaped mutants:
 ================
 
-1) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:27    [M] CastString [ID] 440a344dfc0cd60de43042af71bb99b5
+1) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:27    [M] CastString [ID] 440a344dfc0cd60de43042af71bb99b5
 
 @@ @@
  	{
@@ -17,7 +17,7 @@ Escaped mutants:
  			case 'otp':
 
 
-2) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:28    [M] Concat [ID] f9e436dc7b832b415b08ec760bea6376
+2) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:28    [M] Concat [ID] f9e436dc7b832b415b08ec760bea6376
 
 @@ @@
  		$de = str_starts_with(strtolower($locale), 'de');
@@ -30,7 +30,7 @@ Escaped mutants:
  				$code = (string)($params['code'] ?? '');
 
 
-3) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:28    [M] ConcatOperandRemoval [ID] 551205463db575fca1204f4f71342a49
+3) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:28    [M] ConcatOperandRemoval [ID] 551205463db575fca1204f4f71342a49
 
 @@ @@
  		$de = str_starts_with(strtolower($locale), 'de');
@@ -43,7 +43,7 @@ Escaped mutants:
  				$code = (string)($params['code'] ?? '');
 
 
-4) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:29    [M] SharedCaseRemoval [ID] 414cc7ecee369c50129d83e147489a86
+4) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:29    [M] SharedCaseRemoval [ID] 414cc7ecee369c50129d83e147489a86
 
 @@ @@
  		$portalUrl = (string)($params['portalUrl'] ?? '');
@@ -110,7 +110,7 @@ Escaped mutants:
  }
 
 
-5) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:31    [M] CastString [ID] bf7a4e9ced415894f4179fce1d353c46
+5) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:31    [M] CastString [ID] bf7a4e9ced415894f4179fce1d353c46
 
 @@ @@
  		$lines = static fn(array $l): string => implode("\n", $l) . "\n";
@@ -123,7 +123,7 @@ Escaped mutants:
  					'text' => $lines($de ? [
 
 
-6) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:57    [M] CastString [ID] 41842ba71c7c8fd909343d2f2a8ee774
+6) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:57    [M] CastString [ID] 41842ba71c7c8fd909343d2f2a8ee774
 
 @@ @@
  					]),
@@ -136,7 +136,7 @@ Escaped mutants:
  					'text' => $lines($de ? [
 
 
-7) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:60    [M] ArrayItemRemoval [ID] 76b27c88f1ba9d680307b572345b189a
+7) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:60    [M] ArrayItemRemoval [ID] 76b27c88f1ba9d680307b572345b189a
 
 @@ @@
  				return [
@@ -148,7 +148,7 @@ Escaped mutants:
  						'Der Code ist 10 Minuten gültig und kann nur einmal verwendet werden.',
 
 
-8) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:66    [M] ArrayItemRemoval [ID] aaa8d11f522098ec391cf7148de63acf
+8) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:66    [M] ArrayItemRemoval [ID] aaa8d11f522098ec391cf7148de63acf
 
 @@ @@
  						'Der Code ist 10 Minuten gültig und kann nur einmal verwendet werden.',
@@ -160,7 +160,7 @@ Escaped mutants:
  						'The code is valid for 10 minutes and can only be used once.',
 
 
-9) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:88    [M] CastString [ID] 9ba672e336a4c65070aa836fb3f06927
+9) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:88    [M] CastString [ID] 9ba672e336a4c65070aa836fb3f06927
 
 @@ @@
  					]),
@@ -173,7 +173,7 @@ Escaped mutants:
  					'text' => $lines($de ? [
 
 
-10) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] Concat [ID] 5ba60968a4855b71a7d659b64c7f2571
+10) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] Concat [ID] 5ba60968a4855b71a7d659b64c7f2571
 
 @@ @@
  				return [
@@ -186,7 +186,7 @@ Escaped mutants:
  					] : [
 
 
-11) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 8cdedfb4e221d446aa89be09775c6e0f
+11) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 8cdedfb4e221d446aa89be09775c6e0f
 
 @@ @@
  				return [
@@ -199,7 +199,7 @@ Escaped mutants:
  					] : [
 
 
-12) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] Concat [ID] 86cb785b76f4ea71462cd5315fb45c40
+12) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] Concat [ID] 86cb785b76f4ea71462cd5315fb45c40
 
 @@ @@
  				return [
@@ -212,7 +212,7 @@ Escaped mutants:
  					] : [
 
 
-13) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 312cc14849f4c405565893f839b8461f
+13) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 312cc14849f4c405565893f839b8461f
 
 @@ @@
  				return [
@@ -225,7 +225,7 @@ Escaped mutants:
  					] : [
 
 
-14) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 1a8021cc56b2bc596e1df65071937c6b
+14) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 1a8021cc56b2bc596e1df65071937c6b
 
 @@ @@
  				return [
@@ -238,7 +238,7 @@ Escaped mutants:
  					] : [
 
 
-15) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 5ec9b960989d6124a010cbe9b40148ca
+15) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:92    [M] ConcatOperandRemoval [ID] 5ec9b960989d6124a010cbe9b40148ca
 
 @@ @@
  				return [
@@ -251,7 +251,7 @@ Escaped mutants:
  					] : [
 
 
-16) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] c8db9d23380b1b4ed606b8e2e659e9d4
+16) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] c8db9d23380b1b4ed606b8e2e659e9d4
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -264,7 +264,7 @@ Escaped mutants:
  					]),
 
 
-17) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] 62670ff2cecbd74b95a9fdf7d2c82986
+17) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] 62670ff2cecbd74b95a9fdf7d2c82986
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -277,7 +277,7 @@ Escaped mutants:
  					]),
 
 
-18) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] e81057f75457816978c03aa8d69464e8
+18) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] e81057f75457816978c03aa8d69464e8
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -290,7 +290,7 @@ Escaped mutants:
  					]),
 
 
-19) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] 48c773260f041798a975b1cb8931338f
+19) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] 48c773260f041798a975b1cb8931338f
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -303,7 +303,7 @@ Escaped mutants:
  					]),
 
 
-20) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] 37e9432da92728b5a97fbfbfc5f1f94a
+20) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] Concat [ID] 37e9432da92728b5a97fbfbfc5f1f94a
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -316,7 +316,7 @@ Escaped mutants:
  					]),
 
 
-21) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] dc8b4c1e7702daacffbd4fb704eba32f
+21) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:96    [M] ConcatOperandRemoval [ID] dc8b4c1e7702daacffbd4fb704eba32f
 
 @@ @@
  						'Bitte öffnen Sie Ihr Portal für Details.',
@@ -329,7 +329,7 @@ Escaped mutants:
  					]),
 
 
-22) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:102    [M] CastString [ID] 06bcfc33dcd75484470f755b02dab72d
+22) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:102    [M] CastString [ID] 06bcfc33dcd75484470f755b02dab72d
 
 @@ @@
  					]),
@@ -342,7 +342,7 @@ Escaped mutants:
  				return [
 
 
-23) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:103    [M] CastString [ID] 54f8a6ba8fceefa053aeb2d0393c2095
+23) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:103    [M] CastString [ID] 54f8a6ba8fceefa053aeb2d0393c2095
 
 @@ @@
  				];
@@ -355,7 +355,7 @@ Escaped mutants:
  					'subject' => $de ? "$provider: Neues Gerät angemeldet" : "$provider: new device paired",
 
 
-24) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:104    [M] CastString [ID] a0491d62d3fc357846a6056ee512eab8
+24) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:104    [M] CastString [ID] a0491d62d3fc357846a6056ee512eab8
 
 @@ @@
  			case 'device':
@@ -368,7 +368,7 @@ Escaped mutants:
  					'text' => $lines($de ? [
 
 
-25) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:107    [M] ArrayItemRemoval [ID] 0cef246f571477def98d2f785fdc2c6f
+25) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:107    [M] ArrayItemRemoval [ID] 0cef246f571477def98d2f785fdc2c6f
 
 @@ @@
  				return [
@@ -380,7 +380,7 @@ Escaped mutants:
  						'Falls Sie das nicht waren, öffnen Sie Ihr Portal und entfernen Sie das Gerät unter "Geräte".',
 
 
-26) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:113    [M] ArrayItemRemoval [ID] 60d61179053a20432f2cb1691942ef20
+26) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:113    [M] ArrayItemRemoval [ID] 60d61179053a20432f2cb1691942ef20
 
 @@ @@
  						'Falls Sie das nicht waren, öffnen Sie Ihr Portal und entfernen Sie das Gerät unter "Geräte".',
@@ -392,7 +392,7 @@ Escaped mutants:
  						'If this was not you, open your portal and remove the device under "Devices".',
 
 
-27) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:115    [M] Concat [ID] 47ddb73701aa8c855fee3ed246d7e3bb
+27) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:115    [M] Concat [ID] 47ddb73701aa8c855fee3ed246d7e3bb
 
 @@ @@
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
@@ -405,7 +405,7 @@ Escaped mutants:
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
 
 
-28) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 44144025c32ee20a06fda7c5de242ce3
+28) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 44144025c32ee20a06fda7c5de242ce3
 
 @@ @@
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
@@ -418,7 +418,7 @@ Escaped mutants:
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
 
 
-29) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 4172a83487943c63587757ac5c02df83
+29) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 4172a83487943c63587757ac5c02df83
 
 @@ @@
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
@@ -431,7 +431,7 @@ Escaped mutants:
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
 
 
-30) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 4885e16f048b86deef1d0dc81613c11d
+30) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:115    [M] ConcatOperandRemoval [ID] 4885e16f048b86deef1d0dc81613c11d
 
 @@ @@
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
@@ -444,7 +444,7 @@ Escaped mutants:
  						$portalUrl !== '' ? 'Portal: ' . $portalUrl : '',
 
 
-31) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:123    [M] CastString [ID] ad6d967ac698c1e65c42a35772b8d3cf
+31) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:123    [M] CastString [ID] ad6d967ac698c1e65c42a35772b8d3cf
 
 @@ @@
  				];
@@ -457,7 +457,7 @@ Escaped mutants:
  					'document' => $de ? 'ein neues Dokument' : 'a new document',
 
 
-32) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] Coalesce [ID] 47fe3d253aee16e7b8c8efdf9bf60418
+32) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] Coalesce [ID] 47fe3d253aee16e7b8c8efdf9bf60418
 
 @@ @@
  					'update' => $de ? 'eine Aktualisierung' : 'an update',
@@ -470,7 +470,7 @@ Escaped mutants:
  						'Öffnen Sie Ihr Portal für Details.',
 
 
-33) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] ConcatOperandRemoval [ID] b7f3258c311c9f5daa39d075793a606c
+33) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] ConcatOperandRemoval [ID] b7f3258c311c9f5daa39d075793a606c
 
 @@ @@
  					'update' => $de ? 'eine Aktualisierung' : 'an update',
@@ -483,7 +483,7 @@ Escaped mutants:
  						'Öffnen Sie Ihr Portal für Details.',
 
 
-34) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] ConcatOperandRemoval [ID] a5e14f7294f5d82ee0e376d3b5acfe1c
+34) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] ConcatOperandRemoval [ID] a5e14f7294f5d82ee0e376d3b5acfe1c
 
 @@ @@
  					'update' => $de ? 'eine Aktualisierung' : 'an update',
@@ -496,7 +496,7 @@ Escaped mutants:
  						'Öffnen Sie Ihr Portal für Details.',
 
 
-35) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] Coalesce [ID] 33308d095c38da0ae76e159660c1f1aa
+35) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] Coalesce [ID] 33308d095c38da0ae76e159660c1f1aa
 
 @@ @@
  					'update' => $de ? 'eine Aktualisierung' : 'an update',
@@ -509,7 +509,7 @@ Escaped mutants:
  						'Öffnen Sie Ihr Portal für Details.',
 
 
-36) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] Concat [ID] 0a52d4046b876c0dc957c46a31817dd2
+36) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] Concat [ID] 0a52d4046b876c0dc957c46a31817dd2
 
 @@ @@
  					'update' => $de ? 'eine Aktualisierung' : 'an update',
@@ -522,12 +522,12 @@ Escaped mutants:
  						'Öffnen Sie Ihr Portal für Details.',
 
 
-37) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:130    [M] Ternary [ID] 1de800b6dbf26e764c418e32c8af12c8
+37) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:130    [M] Ternary [ID] 1de800b6dbf26e764c418e32c8af12c8
 
 
 
 
-38) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:131    [M] Ternary [ID] f653249df72fa5db98537cc8e8b5bd04
+38) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:131    [M] Ternary [ID] f653249df72fa5db98537cc8e8b5bd04
 
 @@ @@
  				return [
@@ -555,7 +555,7 @@ Escaped mutants:
  		}
 
 
-39) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] 2e8e4e11641cf07d43caff7d65396e7d
+39) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] 2e8e4e11641cf07d43caff7d65396e7d
 
 @@ @@
  				return [
@@ -568,7 +568,7 @@ Escaped mutants:
  						'',
 
 
-40) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 9e2b6599531b2b88f56f20100bccd453
+40) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 9e2b6599531b2b88f56f20100bccd453
 
 @@ @@
  				return [
@@ -581,7 +581,7 @@ Escaped mutants:
  						'',
 
 
-41) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 8f7cd35543a2d83ee2bd53afad3f198a
+41) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 8f7cd35543a2d83ee2bd53afad3f198a
 
 @@ @@
  				return [
@@ -594,7 +594,7 @@ Escaped mutants:
  						'',
 
 
-42) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] ce37e391d5f905afce09ad81ac5a3cc8
+42) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] ce37e391d5f905afce09ad81ac5a3cc8
 
 @@ @@
  				return [
@@ -607,7 +607,7 @@ Escaped mutants:
  						'',
 
 
-43) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 92b3911ba2a28349fe59536ddd28b558
+43) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] 92b3911ba2a28349fe59536ddd28b558
 
 @@ @@
  				return [
@@ -620,7 +620,7 @@ Escaped mutants:
  						'',
 
 
-44) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] 9ad89f8104869d6c69c733a595b029eb
+44) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] 9ad89f8104869d6c69c733a595b029eb
 
 @@ @@
  				return [
@@ -633,7 +633,7 @@ Escaped mutants:
  						'',
 
 
-45) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] a169a84e37aff9f500dd936908fcd651
+45) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] Concat [ID] a169a84e37aff9f500dd936908fcd651
 
 @@ @@
  				return [
@@ -646,7 +646,7 @@ Escaped mutants:
  						'',
 
 
-46) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] e613368dbc6061e3a6c1f1e6ab962f03
+46) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:132    [M] ConcatOperandRemoval [ID] e613368dbc6061e3a6c1f1e6ab962f03
 
 @@ @@
  				return [
@@ -659,7 +659,7 @@ Escaped mutants:
  						'',
 
 
-47) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 9e93e16bd12a7806d7a98c988e9bf8f2
+47) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 9e93e16bd12a7806d7a98c988e9bf8f2
 
 @@ @@
  						'',
@@ -672,7 +672,7 @@ Escaped mutants:
  						'',
 
 
-48) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] f4671ae6931129782611dbae56ab0887
+48) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] f4671ae6931129782611dbae56ab0887
 
 @@ @@
  						'',
@@ -685,7 +685,7 @@ Escaped mutants:
  						'',
 
 
-49) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] 878d9eb366cba430d5332233ff265918
+49) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] 878d9eb366cba430d5332233ff265918
 
 @@ @@
  						'',
@@ -698,7 +698,7 @@ Escaped mutants:
  						'',
 
 
-50) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] bb8340bd3e144fe15f102c5f44f8c68f
+50) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] bb8340bd3e144fe15f102c5f44f8c68f
 
 @@ @@
  						'',
@@ -711,7 +711,7 @@ Escaped mutants:
  						'',
 
 
-51) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 9fbf1fa7c02658915cb5322f2676e819
+51) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 9fbf1fa7c02658915cb5322f2676e819
 
 @@ @@
  						'',
@@ -724,7 +724,7 @@ Escaped mutants:
  						'',
 
 
-52) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] 9cd6d2165c1f45c7d746fab4b719ed45
+52) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] ConcatOperandRemoval [ID] 9cd6d2165c1f45c7d746fab4b719ed45
 
 @@ @@
  						'',
@@ -737,7 +737,7 @@ Escaped mutants:
  						'',
 
 
-53) /var/www/html/custom_apps/portalcheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 44505b5bb0827c2b103e346e653333a4
+53) /var/www/html/custom_apps/kanzleicheck/lib/Service/MailRenderer.php:138    [M] Concat [ID] 44505b5bb0827c2b103e346e653333a4
 
 @@ @@
  						'',

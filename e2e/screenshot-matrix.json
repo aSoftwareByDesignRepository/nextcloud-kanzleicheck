@@ -1,5 +1,5 @@
 {
- "prefix": "ptl",
+ "prefix": "kzc",
  "outDir": "craft/web",
  "viewports": [
   {
@@ -41,7 +41,7 @@
    "states": [
     "populated"
    ],
-   "readySelector": "#ptl-body .ptl-list .ptl-row",
+   "readySelector": "#kzc-body .kzc-list .kzc-row",
    "dark": true
   },
   {
@@ -52,7 +52,7 @@
    "states": [
     "populated"
    ],
-   "readySelector": "#ptl-body .ptl-board"
+   "readySelector": "#kzc-body .kzc-board"
   },
   {
    "id": "staff-requests",
@@ -62,7 +62,7 @@
    "states": [
     "populated"
    ],
-   "readySelector": "#ptl-body .ptl-list .ptl-card"
+   "readySelector": "#kzc-body .kzc-list .kzc-card"
   },
   {
    "id": "staff-orgs",
@@ -72,7 +72,7 @@
    "states": [
     "populated"
    ],
-   "readySelector": "#ptl-body .ptl-list .ptl-row"
+   "readySelector": "#kzc-body .kzc-list .kzc-row"
   },
   {
    "id": "staff-uploads",
@@ -82,7 +82,7 @@
    "states": [
     "populated"
    ],
-   "readySelector": "#ptl-body .ptl-list"
+   "readySelector": "#kzc-body .kzc-list"
   },
   {
    "id": "staff-settings",
@@ -92,7 +92,7 @@
    "states": [
     "current"
    ],
-   "readySelector": "#ptl-body .ptl-card"
+   "readySelector": "#kzc-body .kzc-card"
   }
  ]
 }

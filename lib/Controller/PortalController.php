@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Service\CsrfService;
-use OCA\PortalCheck\Service\UploadLinkService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Service\CsrfService;
+use OCA\KanzleiCheck\Service\UploadLinkService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;

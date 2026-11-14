@@ -7,24 +7,24 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Copied from ticketcheck@eb42a0f lib/License/Tkc2Codec.php
- * (COPIED-SOURCES.md) — Family B codec template, PortalCheck payload:
+ * (COPIED-SOURCES.md) — Family B codec template, KanzleiCheck payload:
  * v, product, customerId, issuedAt, validUntil, mobileSeats, portalClients,
- * bundle? (LICENSE-PTL2-SPEC §1–3).
+ * bundle? (LICENSE-KZC2-SPEC §1–3).
  */
 
-namespace OCA\PortalCheck\License;
+namespace OCA\KanzleiCheck\License;
 
-use OCA\PortalCheck\Config\VendorPublicKey;
+use OCA\KanzleiCheck\Config\VendorPublicKey;
 
 /**
- * PTL2 wire: `PTL2.<payload_b64url>.<signature_b64url>` — Ed25519 detached
+ * KZC2 wire: `KZC2.<payload_b64url>.<signature_b64url>` — Ed25519 detached
  * signature over the canonical payload bytes.
  */
-final class Ptl2Codec
+final class Kzc2Codec
 {
-	public const FORMAT = 'PTL2';
+	public const FORMAT = 'KZC2';
 	public const VERSION = 2;
-	public const PRODUCT = 'portalcheck';
+	public const PRODUCT = 'kanzleicheck';
 
 	public const ERROR_INVALID_FORMAT = 'invalid_format';
 	public const ERROR_INVALID_SIGNATURE = 'invalid_signature';
@@ -139,7 +139,7 @@ final class Ptl2Codec
 		}
 		$json = json_encode($ordered, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 		if ($json === false) {
-			throw new \RuntimeException('PTL2 canonical JSON encode failed.');
+			throw new \RuntimeException('KZC2 canonical JSON encode failed.');
 		}
 		return $json;
 	}

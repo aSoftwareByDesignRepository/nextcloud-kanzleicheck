@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\BackgroundJob;
+namespace OCA\KanzleiCheck\BackgroundJob;
 
-use OCA\PortalCheck\Db\UploadChunkMapper;
+use OCA\KanzleiCheck\Db\UploadChunkMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\Files\AppData\IAppDataFactory;
@@ -25,14 +25,14 @@ class ChunkCleanupJob extends TimedJob
 		$dir = null;
 		foreach ($this->chunks->findIdle($cutoff) as $row) {
 			try {
-				$dir ??= $this->appData->get('portalcheck')->getFolder('chunks');
+				$dir ??= $this->appData->get('kanzleicheck')->getFolder('chunks');
 				$name = 'c_' . preg_replace('/[^a-zA-Z0-9-]/', '', (string)$row['upload_id']);
 				if ($dir->fileExists($name)) {
 					$dir->getFile($name)->delete();
 				}
 			} catch (\Throwable $e) {
 				// best-effort: row still deleted — log so orphaned part files stay observable
-				$this->logger->warning('portalcheck chunk part cleanup failed', ['upload' => (string)$row['upload_id'], 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck chunk part cleanup failed', ['upload' => (string)$row['upload_id'], 'e' => $e->getMessage()]);
 			}
 			$this->chunks->delete((string)$row['upload_id']);
 		}

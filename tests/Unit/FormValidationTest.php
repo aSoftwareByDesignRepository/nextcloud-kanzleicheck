@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Exception\ValidationException;
-use OCA\PortalCheck\Service\FormService;
+use OCA\KanzleiCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Service\FormService;
 use PHPUnit\Framework\TestCase;
 
 /** Field-schema + per-type value validation (US-P28). */

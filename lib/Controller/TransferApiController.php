@@ -22,12 +22,12 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\ConfigTransfer\ConfigTransferHooks;
-use OCA\PortalCheck\ConfigTransfer\TransferException;
-use OCA\PortalCheck\ConfigTransfer\TransferService;
-use OCA\PortalCheck\BackgroundJob\TransferApplyJob;
+use OCA\KanzleiCheck\ConfigTransfer\ConfigTransferHooks;
+use OCA\KanzleiCheck\ConfigTransfer\TransferException;
+use OCA\KanzleiCheck\ConfigTransfer\TransferService;
+use OCA\KanzleiCheck\BackgroundJob\TransferApplyJob;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -42,7 +42,7 @@ use OCP\Security\Bruteforce\IThrottler;
 
 class TransferApiController extends Controller
 {
-	private const THROTTLE_ACTION = 'portalcheck_transfer_import';
+	private const THROTTLE_ACTION = 'kanzleicheck_transfer_import';
 
 	public function __construct(
 		string $appName,
@@ -80,7 +80,7 @@ class TransferApiController extends Controller
 		}
 		return new DataDownloadResponse(
 			$bytes,
-			'portalcheck-transfer-' . gmdate('Ymd-Hi') . '.nctransfer',
+			'kanzleicheck-transfer-' . gmdate('Ymd-Hi') . '.nctransfer',
 			'application/json',
 		);
 	}

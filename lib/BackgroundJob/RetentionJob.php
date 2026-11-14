@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\BackgroundJob;
+namespace OCA\KanzleiCheck\BackgroundJob;
 
-use OCA\PortalCheck\Db\AuditMapper;
-use OCA\PortalCheck\Db\DeviceMapper;
-use OCA\PortalCheck\Db\IntakeHoldMapper;
-use OCA\PortalCheck\Db\MailOutboxMapper;
-use OCA\PortalCheck\Db\OtpMapper;
-use OCA\PortalCheck\Db\PortalSessionMapper;
-use OCA\PortalCheck\Service\SettingsService;
+use OCA\KanzleiCheck\Db\AuditMapper;
+use OCA\KanzleiCheck\Db\DeviceMapper;
+use OCA\KanzleiCheck\Db\IntakeHoldMapper;
+use OCA\KanzleiCheck\Db\MailOutboxMapper;
+use OCA\KanzleiCheck\Db\OtpMapper;
+use OCA\KanzleiCheck\Db\PortalSessionMapper;
+use OCA\KanzleiCheck\Service\SettingsService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 

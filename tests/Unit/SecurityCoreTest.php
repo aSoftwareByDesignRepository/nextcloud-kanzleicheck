@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Db\DocRequest;
-use OCA\PortalCheck\Db\DocRequestMapper;
-use OCA\PortalCheck\Db\ReqFileMapper;
-use OCA\PortalCheck\Db\ReqItemMapper;
-use OCA\PortalCheck\Db\ReqRemindMapper;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\ConflictException;
-use OCA\PortalCheck\Exception\RateLimitException;
-use OCA\PortalCheck\Service\AuditService;
-use OCA\PortalCheck\Service\CsrfService;
-use OCA\PortalCheck\Service\IntakeService;
-use OCA\PortalCheck\Service\MailRenderer;
-use OCA\PortalCheck\Service\RequestService;
-use OCA\PortalCheck\Service\TokenService;
+use OCA\KanzleiCheck\Db\DocRequest;
+use OCA\KanzleiCheck\Db\DocRequestMapper;
+use OCA\KanzleiCheck\Db\ReqFileMapper;
+use OCA\KanzleiCheck\Db\ReqItemMapper;
+use OCA\KanzleiCheck\Db\ReqRemindMapper;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\ConflictException;
+use OCA\KanzleiCheck\Exception\RateLimitException;
+use OCA\KanzleiCheck\Service\AuditService;
+use OCA\KanzleiCheck\Service\CsrfService;
+use OCA\KanzleiCheck\Service\IntakeService;
+use OCA\KanzleiCheck\Service\MailRenderer;
+use OCA\KanzleiCheck\Service\RequestService;
+use OCA\KanzleiCheck\Service\TokenService;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 
@@ -68,7 +68,7 @@ class SecurityCoreTest extends TestCase
 		$this->assertNotSame($a, $s->intakeToken('other', 7));
 		$this->assertSame(16, strlen($a));
 		// exact value pins the HMAC salt + truncation (kills concat/substr mutants)
-		$this->assertSame(substr(hash_hmac('sha256', 'ptl-intake:7', 'secret'), 0, 16), $a);
+		$this->assertSame(substr(hash_hmac('sha256', 'kzc-intake:7', 'secret'), 0, 16), $a);
 	}
 
 	public function testMintEntropyIsExactly32Bytes(): void

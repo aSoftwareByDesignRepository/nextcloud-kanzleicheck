@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\MailRenderer;
+use OCA\KanzleiCheck\Service\MailRenderer;
 use PHPUnit\Framework\TestCase;
 
 /**

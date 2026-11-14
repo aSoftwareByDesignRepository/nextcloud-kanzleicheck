@@ -7,7 +7,7 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Exception;
+namespace OCA\KanzleiCheck\Exception;
 
 /** 429 RATE_LIMITED — response carries Retry-After. */
 class RateLimitException extends \RuntimeException

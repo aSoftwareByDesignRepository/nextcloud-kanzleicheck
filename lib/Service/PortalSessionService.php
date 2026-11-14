@@ -7,15 +7,15 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Copied from bookingcheck@31c2669e70 lib/Service/PortalSessionService.php
- * (COPIED-SOURCES.md). PortalCheck changes: sessions bind to identity_id
+ * (COPIED-SOURCES.md). KanzleiCheck changes: sessions bind to identity_id
  * (not raw email) so erasure/disabling propagates; resolve() returns the
  * row, the caller checks identity status.
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\PortalSession;
-use OCA\PortalCheck\Db\PortalSessionMapper;
+use OCA\KanzleiCheck\Db\PortalSession;
+use OCA\KanzleiCheck\Db\PortalSessionMapper;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
@@ -92,7 +92,7 @@ class PortalSessionService
 			$newExp = $row->getAbsExpiresAt();
 		}
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_session')
+		$qb->update('kzc_session')
 			->set('expires_at', $qb->createNamedParameter($newExp, 'datetime'))
 			->set('last_seen_at', $qb->createNamedParameter($now, 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$row->getId())));
@@ -103,7 +103,7 @@ class PortalSessionService
 	public function revoke(string $token): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_session')
+		$qb->update('kzc_session')
 			->set('revoked_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('token_hash', $qb->createNamedParameter($this->tokens->hash($token))));
 		$qb->executeStatement();

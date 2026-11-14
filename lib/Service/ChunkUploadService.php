@@ -7,12 +7,12 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\UploadChunkMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\UploadChunkMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\Files\AppData\IAppDataFactory;
 use OCP\Files\NotFoundException as NcNotFoundException;
 use OCP\Files\SimpleFS\ISimpleFolder;
@@ -37,7 +37,7 @@ class ChunkUploadService
 
 	private function dir(): ISimpleFolder
 	{
-		$appData = $this->appData->get('portalcheck');
+		$appData = $this->appData->get('kanzleicheck');
 		try {
 			return $appData->getFolder('chunks');
 		} catch (NcNotFoundException) {
@@ -129,7 +129,7 @@ class ChunkUploadService
 			throw new ApiException(400, 'VALIDATION_FAILED', 'incomplete upload');
 		}
 		$dir = $this->dir();
-		$tmp = tempnam(sys_get_temp_dir(), 'ptl_');
+		$tmp = tempnam(sys_get_temp_dir(), 'kzc_');
 		$out = fopen($tmp, 'w');
 		if (!is_resource($out)) {
 			@unlink($tmp);
@@ -172,7 +172,7 @@ class ChunkUploadService
 				}
 			} catch (\Throwable $e) {
 				// best-effort: leaked part files are reaped by ChunkCleanupJob — log for observability
-				$this->logger->warning('portalcheck chunk part cleanup failed', ['upload' => $uploadId, 'part' => $part, 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck chunk part cleanup failed', ['upload' => $uploadId, 'part' => $part, 'e' => $e->getMessage()]);
 			}
 		}
 		$this->chunks->setState($uploadId, 'done');

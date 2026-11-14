@@ -5,7 +5,7 @@ const { chromium } = require('@playwright/test');
 const { AxeBuilder } = require('/home/alex/Development/nextcloud-dev/nextcloud/apps/bookingcheck/node_modules/@axe-core/playwright');
 const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 
-const APP = 'http://127.0.0.1:8081/index.php/apps/portalcheck';
+const APP = 'http://127.0.0.1:8081/index.php/apps/kanzleicheck';
 const VIEWS = [null, 'board', 'requests', 'orgs', 'uploads', 'settings'];
 const VIEWS_VP = [
   ['mobile', { width: 375, height: 812 }],
@@ -26,7 +26,7 @@ const VIEWS_VP = [
     await login(p, creds());
     for (const v of scheme === 'light' ? VIEWS : scheme === 'hc' ? ['orgs','settings'] : [null]) {
       await p.goto(`${APP}/${v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
-      await p.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+      await p.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
       await p.waitForTimeout(900);
       const r = await new AxeBuilder({ page: p }).withTags(['wcag2a', 'wcag2aa']).analyze();
       console.log(`staff-${v || 'overview'}-${scheme} violations=${r.violations.length} ${JSON.stringify(r.violations.map(x => x.id))}`);
@@ -41,7 +41,7 @@ const VIEWS_VP = [
     await login(p, creds());
     for (const v of VIEWS) {
       await p.goto(`${APP}/${v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
-      await p.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+      await p.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
       await p.waitForTimeout(700);
       const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       console.log(`scroll ${name} staff-${v || 'overview'} overflow=${overflow}px ${overflow > 0 ? 'FAIL' : 'ok'}`);

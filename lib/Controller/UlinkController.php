@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Controller;
+namespace OCA\KanzleiCheck\Controller;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Service\ActorResolver;
-use OCA\PortalCheck\Service\DocumentService;
-use OCA\PortalCheck\Service\UploadLinkService;
-use OCA\PortalCheck\Service\UploadService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\Service\DocumentService;
+use OCA\KanzleiCheck\Service\UploadLinkService;
+use OCA\KanzleiCheck\Service\UploadService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
@@ -32,7 +32,7 @@ class UlinkController extends Controller
 		private readonly UploadLinkService $links,
 		private readonly UploadService $uploads,
 		private readonly DocumentService $docs,
-		private readonly \OCA\PortalCheck\Db\OrgMapper $orgs,
+		private readonly \OCA\KanzleiCheck\Db\OrgMapper $orgs,
 	) {
 		parent::__construct($appName, $request);
 	}

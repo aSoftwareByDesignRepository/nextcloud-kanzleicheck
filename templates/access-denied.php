@@ -6,21 +6,21 @@
  * @var array $_
  * @var \OCP\IL10N $l
  */
-$appId = 'portalcheck';
+$appId = 'kanzleicheck';
 $title = (string)($_['title'] ?? $l->t('Access denied'));
-$message = (string)($_['message'] ?? $l->t('You do not have access to PortalCheck.'));
+$message = (string)($_['message'] ?? $l->t('You do not have access to KanzleiCheck.'));
 $hint = (string)($_['hint'] ?? '');
 $homeUrl = (string)($_['homeUrl'] ?? '/');
 style($appId, 'app');
 style($appId, 'portal');
 ?>
-<div class="ptl-portal">
-	<main class="ptl-card" role="alert" aria-labelledby="ptl-denied-title">
-		<h1 id="ptl-denied-title" class="ptl-title"><?php p($title); ?></h1>
-		<p class="ptl-muted"><?php p($message); ?></p>
+<div class="kzc-portal">
+	<main class="kzc-card" role="alert" aria-labelledby="kzc-denied-title">
+		<h1 id="kzc-denied-title" class="kzc-title"><?php p($title); ?></h1>
+		<p class="kzc-muted"><?php p($message); ?></p>
 		<?php if ($hint !== ''): ?>
-			<p class="ptl-muted"><?php p($hint); ?></p>
+			<p class="kzc-muted"><?php p($hint); ?></p>
 		<?php endif; ?>
-		<p><a class="ptl-btn ptl-btn--primary" href="<?php p($homeUrl); ?>"><?php p($l->t('Back to Nextcloud')); ?></a></p>
+		<p><a class="kzc-btn kzc-btn--primary" href="<?php p($homeUrl); ?>"><?php p($l->t('Back to Nextcloud')); ?></a></p>
 	</main>
 </div>

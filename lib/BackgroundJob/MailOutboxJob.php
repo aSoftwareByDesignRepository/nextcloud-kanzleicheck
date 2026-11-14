@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\BackgroundJob;
+namespace OCA\KanzleiCheck\BackgroundJob;
 
-use OCA\PortalCheck\Service\MailOutboxService;
+use OCA\KanzleiCheck\Service\MailOutboxService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 

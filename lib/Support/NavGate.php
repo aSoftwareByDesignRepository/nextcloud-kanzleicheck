@@ -10,7 +10,7 @@ declare(strict_types=1);
  * the copy, edit the template and re-run sync_nav_gate.py.
  */
 
-namespace OCA\PortalCheck\Support;
+namespace OCA\KanzleiCheck\Support;
 
 use OCP\AppFramework\IAppContainer;
 use OCP\INavigationManager;
@@ -63,7 +63,7 @@ final class NavGate
 			// Nav registration must never fatal a request — fail closed and log.
 			try {
 				$container->get(LoggerInterface::class)->error('NavGate: navigation manager unavailable', [
-					'app' => 'portalcheck', 'exception' => $e,
+					'app' => 'kanzleicheck', 'exception' => $e,
 				]);
 			} catch (\Throwable) {
 			}
@@ -82,7 +82,7 @@ final class NavGate
 				}
 				if (!$allowed) {
 					return [
-						'id' => 'portalcheck',
+						'id' => 'kanzleicheck',
 						'type' => 'hidden',
 						'name' => '',
 						'order' => PHP_INT_MAX,
@@ -90,18 +90,18 @@ final class NavGate
 				}
 				$url = $container->get(IURLGenerator::class);
 				try {
-					$iconPath = $url->imagePath('portalcheck', $icon);
+					$iconPath = $url->imagePath('kanzleicheck', $icon);
 				} catch (\RuntimeException) {
 					$iconPath = $url->imagePath('core', 'default-app-icon');
 				}
 				return [
-					'id' => 'portalcheck',
-					'app' => 'portalcheck',
+					'id' => 'kanzleicheck',
+					'app' => 'kanzleicheck',
 					'type' => 'link',
 					'order' => $order,
 					'href' => $url->linkToRoute($route),
 					'icon' => $iconPath,
-					'name' => $container->get(IL10NFactory::class)->get('portalcheck')->t($name),
+					'name' => $container->get(IL10NFactory::class)->get('kanzleicheck')->t($name),
 				];
 			},
 		);

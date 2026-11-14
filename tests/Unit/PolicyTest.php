@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Service\RequestService;
+use OCA\KanzleiCheck\Service\RequestService;
 use PHPUnit\Framework\TestCase;
 
 /** Reminder policy parsing "-3,0,+3x5" + due-date expansion. */

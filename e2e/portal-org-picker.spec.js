@@ -1,10 +1,10 @@
 // @ts-check
 /**
- * ATLAS portal multi-org picker (ptl-v13) — a portal identity linked to >1 org
+ * ATLAS portal multi-org picker (kzc-v13) — a portal identity linked to >1 org
  * must land on the org picker on boot (companion parity: App.tsx orgs.pick),
  * pick an org, and be able to switch back. Single-org identities keep the
  * direct auto-route. Writes craft PNGs to
- * .cursor/atlas-farm-v3/artifacts/portalcheck/craft/web/.
+ * .cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web/.
  */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
@@ -14,8 +14,8 @@ const { createHash } = require('crypto');
 const { hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 const { assertAtlasRenderedSurface } = require('../../_shared/e2e/atlas-rendered-surface-contract.js');
 
-const APP = '/index.php/apps/portalcheck';
-const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck/craft/web');
+const APP = '/index.php/apps/kanzleicheck';
+const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web');
 const COMPOSE_ROOT = path.resolve(__dirname, '../../..');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
@@ -31,7 +31,7 @@ async function readOtp(email, tries = 30) {
 	const sha = createHash('sha256').update(email).digest('hex');
 	for (let i = 0; i < tries; i++) {
 		const code = db("SELECT JSON_UNQUOTE(JSON_EXTRACT(params_json,'$.code')) " +
-			`FROM oc_ptl_mail_outbox WHERE kind='otp' AND to_hash='${sha}' ` +
+			`FROM oc_kzc_mail_outbox WHERE kind='otp' AND to_hash='${sha}' ` +
 			'AND discard=0 ORDER BY id DESC LIMIT 1;').split('\n').pop().trim();
 		if (/^\d{6}$/.test(code)) return code;
 		await new Promise((r) => setTimeout(r, 500));
@@ -45,13 +45,13 @@ async function shot(page, name) {
 
 async function portalLogin(page, email) {
 	await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
-	await page.locator('#ptl-send-form').waitFor({ state: 'visible', timeout: 15000 });
-	await page.locator('#ptl-email').fill(email);
-	await page.locator('#ptl-send-btn').click();
-	await page.locator('#ptl-verify-form').waitFor({ state: 'visible', timeout: 15000 });
-	await page.locator('#ptl-code').fill(await readOtp(email));
-	await page.locator('#ptl-verify-btn').click();
-	await page.waitForURL('**/apps/portalcheck/portal**', { timeout: 20000 });
+	await page.locator('#kzc-send-form').waitFor({ state: 'visible', timeout: 15000 });
+	await page.locator('#kzc-email').fill(email);
+	await page.locator('#kzc-send-btn').click();
+	await page.locator('#kzc-verify-form').waitFor({ state: 'visible', timeout: 15000 });
+	await page.locator('#kzc-code').fill(await readOtp(email));
+	await page.locator('#kzc-verify-btn').click();
+	await page.waitForURL('**/apps/kanzleicheck/portal**', { timeout: 20000 });
 }
 
 test.describe('portal multi-org picker (v13)', () => {
@@ -60,8 +60,8 @@ test.describe('portal multi-org picker (v13)', () => {
 		const { username, password } = creds();
 		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 		const tag = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-		const email = `ptl-orgpick-${tag}@test.invalid`;
-		const emailSingle = `ptl-orgsingle-${tag}@test.invalid`;
+		const email = `kzc-orgpick-${tag}@test.invalid`;
+		const emailSingle = `kzc-orgsingle-${tag}@test.invalid`;
 		const nameA = `OrgPick Alpha ${tag}`;
 		const nameB = `OrgPick Beta ${tag}`;
 		const api = async (method, u, data) => request.fetch(`${BASE}${APP}${u}`, {
@@ -83,49 +83,49 @@ test.describe('portal multi-org picker (v13)', () => {
 			/* ── multi-org: boot lands on the picker, not an auto-route ── */
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await portalLogin(page, email);
-			const pick = page.locator('.ptl-orgpick');
+			const pick = page.locator('.kzc-orgpick');
 			await pick.waitFor({ state: 'visible', timeout: 20000 });
-			await expect(pick.locator('.ptl-orgpick__btn')).toHaveCount(2);
+			await expect(pick.locator('.kzc-orgpick__btn')).toHaveCount(2);
 			await assertAtlasRenderedSurface(page, {
-				content: '#ptl-view',
-				navExclude: '.ptl-tabbar, nav',
-				listAllow: '.ptl-orgpick, .ptl-tabbar',
+				content: '#kzc-view',
+				navExclude: '.kzc-tabbar, nav',
+				listAllow: '.kzc-orgpick, .kzc-tabbar',
 			});
-			await shot(page, 'ptl-portal-orgpick-light-1280');
+			await shot(page, 'kzc-portal-orgpick-light-1280');
 
 			/* pick Beta → routed into Beta's start view with org context + switch */
-			await pick.locator('.ptl-orgpick__btn', { hasText: nameB }).click();
-			await page.locator('#ptl-view h1').waitFor({ state: 'visible', timeout: 20000 });
-			const ctx = page.locator('.ptl-orgctx');
+			await pick.locator('.kzc-orgpick__btn', { hasText: nameB }).click();
+			await page.locator('#kzc-view h1').waitFor({ state: 'visible', timeout: 20000 });
+			const ctx = page.locator('.kzc-orgctx');
 			await ctx.waitFor({ state: 'visible', timeout: 15000 });
-			await expect(ctx.locator('.ptl-muted')).toHaveText(nameB);
+			await expect(ctx.locator('.kzc-muted')).toHaveText(nameB);
 
 			/* re-entry: switch returns to the picker (no dead end) */
-			await ctx.locator('.ptl-btn').click();
-			await page.locator('.ptl-orgpick').waitFor({ state: 'visible', timeout: 15000 });
+			await ctx.locator('.kzc-btn').click();
+			await page.locator('.kzc-orgpick').waitFor({ state: 'visible', timeout: 15000 });
 			await page.setViewportSize({ width: 375, height: 812 });
-			await shot(page, 'ptl-portal-orgpick-light-375');
+			await shot(page, 'kzc-portal-orgpick-light-375');
 
 			/* pick Alpha → routed into Alpha */
-			await page.locator('.ptl-orgpick__btn', { hasText: nameA }).click();
-			await page.locator('.ptl-orgctx').waitFor({ state: 'visible', timeout: 15000 });
-			await expect(page.locator('.ptl-orgctx .ptl-muted')).toHaveText(nameA);
+			await page.locator('.kzc-orgpick__btn', { hasText: nameA }).click();
+			await page.locator('.kzc-orgctx').waitFor({ state: 'visible', timeout: 15000 });
+			await expect(page.locator('.kzc-orgctx .kzc-muted')).toHaveText(nameA);
 
 			/* ── single-org: auto-route keeps working, no picker, no switch ── */
 			await page.context().clearCookies();
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await portalLogin(page, emailSingle);
-			await page.locator('#ptl-view h1').waitFor({ state: 'visible', timeout: 20000 });
-			await expect(page.locator('.ptl-orgpick')).toHaveCount(0);
-			await expect(page.locator('.ptl-orgctx')).toHaveCount(0);
+			await page.locator('#kzc-view h1').waitFor({ state: 'visible', timeout: 20000 });
+			await expect(page.locator('.kzc-orgpick')).toHaveCount(0);
+			await expect(page.locator('.kzc-orgctx')).toHaveCount(0);
 		} finally {
 			// teardown: offboard fixture orgs, drop member+identity rows
 			try { await api('POST', `/api/portal/orgs/${o1}/offboard`, {}); } catch { /* best effort */ }
 			try { await api('POST', `/api/portal/orgs/${o2}/offboard`, {}); } catch { /* best effort */ }
-			db("DELETE m FROM oc_ptl_member m JOIN oc_ptl_identity i ON m.identity_id=i.id " +
-				"WHERE i.email LIKE 'ptl-orgpick-%@test.invalid' OR i.email LIKE 'ptl-orgsingle-%@test.invalid';");
-			db("DELETE FROM oc_ptl_identity WHERE email LIKE 'ptl-orgpick-%@test.invalid' " +
-				"OR email LIKE 'ptl-orgsingle-%@test.invalid';");
+			db("DELETE m FROM oc_kzc_member m JOIN oc_kzc_identity i ON m.identity_id=i.id " +
+				"WHERE i.email LIKE 'kzc-orgpick-%@test.invalid' OR i.email LIKE 'kzc-orgsingle-%@test.invalid';");
+			db("DELETE FROM oc_kzc_identity WHERE email LIKE 'kzc-orgpick-%@test.invalid' " +
+				"OR email LIKE 'kzc-orgsingle-%@test.invalid';");
 		}
 	});
 });

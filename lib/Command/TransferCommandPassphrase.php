@@ -11,7 +11,7 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Command;
+namespace OCA\KanzleiCheck\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -41,8 +41,8 @@ trait TransferCommandPassphrase
 			$io->error('Empty passphrase.');
 			return null;
 		}
-		if ($enforceStrength && mb_strlen($pass) < \OCA\PortalCheck\ConfigTransfer\TransferCrypto::MIN_PASSPHRASE_LENGTH) {
-			$io->error('Passphrase too short — at least ' . \OCA\PortalCheck\ConfigTransfer\TransferCrypto::MIN_PASSPHRASE_LENGTH . ' characters required.');
+		if ($enforceStrength && mb_strlen($pass) < \OCA\KanzleiCheck\ConfigTransfer\TransferCrypto::MIN_PASSPHRASE_LENGTH) {
+			$io->error('Passphrase too short — at least ' . \OCA\KanzleiCheck\ConfigTransfer\TransferCrypto::MIN_PASSPHRASE_LENGTH . ' characters required.');
 			return null;
 		}
 		return $pass;

@@ -3,17 +3,17 @@
 declare(strict_types=1);
 
 /**
- * `occ portalcheck:config:reconcile` — re-write mirrored keys through the
+ * `occ kanzleicheck:config:reconcile` — re-write mirrored keys through the
  * app's central permission writer. This heals a raw `occ config:import`
  * (which bypasses all validation and never reconciles the platform mirror).
  *
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\Command;
+namespace OCA\KanzleiCheck\Command;
 
-use OCA\PortalCheck\ConfigTransfer\TransferException;
-use OCA\PortalCheck\ConfigTransfer\TransferService;
+use OCA\KanzleiCheck\ConfigTransfer\TransferException;
+use OCA\KanzleiCheck\ConfigTransfer\TransferService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,7 +30,7 @@ class ConfigReconcileCommand extends Command
 	protected function configure(): void
 	{
 		$this
-			->setName('portalcheck:config:reconcile')
+			->setName('kanzleicheck:config:reconcile')
 			->setDescription('Re-run the mirrored-key writer (access door / permission mirror) with the stored values. Use after a raw occ config:import.');
 	}
 

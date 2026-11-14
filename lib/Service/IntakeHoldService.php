@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\IntakeHold;
-use OCA\PortalCheck\Db\IntakeHoldMapper;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Db\IntakeHold;
+use OCA\KanzleiCheck\Db\IntakeHoldMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Exception\NotFoundException;
 use OCP\Files\IAppData;
 use OCP\Files\SimpleFS\ISimpleFolder;
 use Psr\Log\LoggerInterface;
@@ -103,7 +103,7 @@ class IntakeHoldService
 			$orgFolder = $this->docs->orgFolder($orgId, $org->getName(), $org->getFolderId(), $org->getFolderPath());
 			$eingang = $orgFolder !== null ? $this->docs->ensureSubFolder($orgFolder, DocumentService::DIR_INBOX) : null;
 			foreach ($dir->getDirectoryListing() as $node) {
-				$tmp = tempnam(sys_get_temp_dir(), 'ptl_hold_');
+				$tmp = tempnam(sys_get_temp_dir(), 'kzc_hold_');
 				$out = fopen($tmp, 'wb');
 				$in = $node->read();
 				if ($in !== false && $out !== false) {
@@ -125,7 +125,7 @@ class IntakeHoldService
 				} catch (\Throwable $e) {
 					$failed++;
 					$errors[] = $node->getName();
-					$this->logger->warning('portalcheck hold accept file failed', ['file' => $node->getName(), 'e' => $e->getMessage()]);
+					$this->logger->warning('kanzleicheck hold accept file failed', ['file' => $node->getName(), 'e' => $e->getMessage()]);
 				}
 				@unlink($tmp);
 			}
@@ -133,8 +133,8 @@ class IntakeHoldService
 		$hold->setState('accepted');
 		$hold->setReviewedBy($actor);
 		$hold->setReviewedAt(new \DateTimeImmutable());
-		// unique-conflict:ok ptl_intake_hold carries no unique index and these
-		// updates only SET state/reviewer columns; this file never writes ptl_org.
+		// unique-conflict:ok kzc_intake_hold carries no unique index and these
+		// updates only SET state/reviewer columns; this file never writes kzc_org.
 		$this->holds->update($hold);
 		$this->clearBuffer($holdId);
 		$this->audit->log($actor, 'intake_hold.accept', 'intake_hold', $holdId, ['stored' => $stored, 'failed' => $failed, 'errors' => $errors]);
@@ -162,7 +162,7 @@ class IntakeHoldService
 			$dir?->delete();
 		} catch (\Throwable $e) {
 			// best-effort: hold row already settled — residue reaps next sweep
-			$this->logger->warning('portalcheck hold buffer delete failed', ['hold' => $holdId, 'e' => $e->getMessage()]);
+			$this->logger->warning('kanzleicheck hold buffer delete failed', ['hold' => $holdId, 'e' => $e->getMessage()]);
 		}
 	}
 }

@@ -7,16 +7,16 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Conversation;
-use OCA\PortalCheck\Db\ConversationMapper;
-use OCA\PortalCheck\Db\Message;
-use OCA\PortalCheck\Db\MessageMapper;
-use OCA\PortalCheck\Db\ReadMarkerMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\Conversation;
+use OCA\KanzleiCheck\Db\ConversationMapper;
+use OCA\KanzleiCheck\Db\Message;
+use OCA\KanzleiCheck\Db\MessageMapper;
+use OCA\KanzleiCheck\Db\ReadMarkerMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
@@ -49,7 +49,7 @@ class ChatService
 			try {
 				$c = $this->convs->insert($c);
 			} catch (DbException $e) {
-				// ptl_conv_org_uq race: concurrent first message in an org — read the winner
+				// kzc_conv_org_uq race: concurrent first message in an org — read the winner
 				if ($e->getReason() !== DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
 					throw $e;
 				}
@@ -107,7 +107,7 @@ class ChatService
 			$m->setCreatedAt(new \DateTimeImmutable());
 			$m = $this->messages->insert($m);
 			$qb = $this->db->getQueryBuilder();
-			$qb->update('ptl_conv')->set('last_message_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
+			$qb->update('kzc_conv')->set('last_message_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 				->where($qb->expr()->eq('id', $qb->createNamedParameter($convId)));
 			$qb->executeStatement();
 			$this->db->commit();
@@ -148,7 +148,7 @@ class ChatService
 		}
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('c.id', 'c.org_id', 'c.state', 'c.last_message_at')
-			->from('ptl_conv', 'c')
+			->from('kzc_conv', 'c')
 			->where($qb->expr()->in('c.org_id', $qb->createNamedParameter(array_map('intval', $orgIds), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
 			->orderBy('c.last_message_at', 'DESC');
 		$rows = $qb->executeQuery()->fetchAll() ?: [];
@@ -172,7 +172,7 @@ class ChatService
 	public function archiveForOrg(int $orgId): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_conv')->set('state', $qb->createNamedParameter('archived'))
+		$qb->update('kzc_conv')->set('state', $qb->createNamedParameter('archived'))
 			->where($qb->expr()->eq('org_id', $qb->createNamedParameter($orgId)));
 		$qb->executeStatement();
 	}

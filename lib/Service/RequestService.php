@@ -7,18 +7,18 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\DocRequest;
-use OCA\PortalCheck\Db\DocRequestMapper;
-use OCA\PortalCheck\Db\ReqFileMapper;
-use OCA\PortalCheck\Db\ReqItem;
-use OCA\PortalCheck\Db\ReqItemMapper;
-use OCA\PortalCheck\Db\ReqRemindMapper;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Db\DocRequest;
+use OCA\KanzleiCheck\Db\DocRequestMapper;
+use OCA\KanzleiCheck\Db\ReqFileMapper;
+use OCA\KanzleiCheck\Db\ReqItem;
+use OCA\KanzleiCheck\Db\ReqItemMapper;
+use OCA\KanzleiCheck\Db\ReqRemindMapper;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
 
@@ -29,10 +29,10 @@ use OCP\IDBConnection;
  *   item:    open → delivered → accepted | rejected → delivered again
  * Reminders stop on complete/closed or when all items are delivered+.
  *
- * unique-conflict:ok the ptl_req_item write sites (deliver/confirm/review/
- * remind transitions) update state/reviewer columns only — ptl_req_item
- * carries no unique index. The sole unique-index write (ptl_req insert on
- * ptl_req_period_uq) sits inside the transaction above with a REASON_UNIQUE
+ * unique-conflict:ok the kzc_req_item write sites (deliver/confirm/review/
+ * remind transitions) update state/reviewer columns only — kzc_req_item
+ * carries no unique index. The sole unique-index write (kzc_req insert on
+ * kzc_req_period_uq) sits inside the transaction above with a REASON_UNIQUE
  * catch mapped to a periodKey field error.
  */
 class RequestService
@@ -138,7 +138,7 @@ class RequestService
 			return $r;
 		} catch (\Throwable $e) {
 			$this->db->rollBack();
-			// ptl_req_period_uq race: two concurrent creates for the same
+			// kzc_req_period_uq race: two concurrent creates for the same
 			// template+org+period — the loser gets the field error, not a 500
 			if ($e instanceof DbException && $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
 				throw new ValidationException('VALIDATION_FAILED', ['periodKey' => 'duplicate']);
@@ -244,7 +244,7 @@ class RequestService
 	public function closeRequest(int $reqId, string $state = 'closed', string $actor = ''): void
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->update('ptl_req')
+		$qb->update('kzc_req')
 			->set('state', $qb->createNamedParameter($state === 'complete' ? 'complete' : 'closed'))
 			->set('closed_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($reqId)))

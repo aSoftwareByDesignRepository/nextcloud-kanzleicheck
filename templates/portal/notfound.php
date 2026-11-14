@@ -1,11 +1,11 @@
 <?php
-$appId = 'portalcheck';
+$appId = 'kanzleicheck';
 style($appId, 'app');
 style($appId, 'portal');
 ?>
-<div class="ptl-portal">
-	<main class="ptl-card">
-		<h1 class="ptl-title"><?php p($l->t('Not found')); ?></h1>
-		<p class="ptl-muted"><?php p($l->t('There is nothing here (any more).')); ?></p>
+<div class="kzc-portal">
+	<main class="kzc-card">
+		<h1 class="kzc-title"><?php p($l->t('Not found')); ?></h1>
+		<p class="kzc-muted"><?php p($l->t('There is nothing here (any more).')); ?></p>
 	</main>
 </div>

@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_req_remind` — ZF-03 reminder idempotency: row inserted BEFORE the outbox row. */
+/** `kzc_req_remind` — ZF-03 reminder idempotency: row inserted BEFORE the outbox row. */
 class ReqRemindMapper
 {
-	public const TABLE = 'ptl_req_remind';
+	public const TABLE = 'kzc_req_remind';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

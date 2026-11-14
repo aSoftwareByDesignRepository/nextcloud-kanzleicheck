@@ -11,7 +11,7 @@ const { test, expect } = require('@playwright/test');
 const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const PASS = 'atlas-e2e-passphrase-2026';
 const authed = hasCreds();
 
@@ -33,11 +33,11 @@ test.describe('settings transfer surface', () => {
 		const { username, password } = creds();
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
-		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
-		await expect(page.locator('#ptl-transfer-import-card')).toBeVisible();
-		await expect(page.locator('#ptl-transfer-passphrase')).toBeVisible();
-		await expect(page.locator('#ptl-transfer-file')).toBeAttached();
-		await expect(page.locator('#ptl-transfer-import-passphrase')).toBeVisible();
+		await expect(page.locator('#kzc-transfer-export-card')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-import-card')).toBeVisible();
+		await expect(page.locator('#kzc-transfer-passphrase')).toBeVisible();
+		await expect(page.locator('#kzc-transfer-file')).toBeAttached();
+		await expect(page.locator('#kzc-transfer-import-passphrase')).toBeVisible();
 		// nonstaff API path — the section refuses at the page boundary too
 		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
 		const r = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
@@ -59,34 +59,34 @@ test.describe('settings transfer surface', () => {
 
 		await login(page, creds());
 		await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
-		await expect(page.locator('#ptl-transfer-export-card')).toBeVisible({ timeout: 20000 });
+		await expect(page.locator('#kzc-transfer-export-card')).toBeVisible({ timeout: 20000 });
 
 		// strength meter reacts
-		const strength = page.locator('#ptl-transfer-passphrase-strength');
-		await page.locator('#ptl-transfer-passphrase').fill('abc');
+		const strength = page.locator('#kzc-transfer-passphrase-strength');
+		await page.locator('#kzc-transfer-passphrase').fill('abc');
 		await expect(strength).not.toBeEmpty();
-		await page.locator('#ptl-transfer-passphrase').fill(PASS + PASS);
+		await page.locator('#kzc-transfer-passphrase').fill(PASS + PASS);
 		await expect(strength).not.toBeEmpty();
 
 		// wrong passphrase on the real file → uniform file-error, no oracle
-		await page.locator('#ptl-transfer-file').setInputFiles({
+		await page.locator('#kzc-transfer-file').setInputFiles({
 			name: 't.nctransfer', mimeType: 'application/json', buffer: bytes,
 		});
-		await page.locator('#ptl-transfer-import-passphrase').fill('wrong-passphrase-000');
+		await page.locator('#kzc-transfer-import-passphrase').fill('wrong-passphrase-000');
 		// preview auto-runs on file change + passphrase input (debounced 500ms);
-		// a rejected preview surfaces via msg() → #ptl-transfer-result-live and
-		// never opens the report dialog (#ptl-transfer-import-status is only
+		// a rejected preview surfaces via msg() → #kzc-transfer-result-live and
+		// never opens the report dialog (#kzc-transfer-import-status is only
 		// the in-flight hint — it clears on settle, do not assert it).
-		await expect(page.locator('#ptl-transfer-result-live')).not.toBeEmpty({ timeout: 30000 });
-		await expect(page.locator('#ptl-transfer-report')).not.toBeVisible();
+		await expect(page.locator('#kzc-transfer-result-live')).not.toBeEmpty({ timeout: 30000 });
+		await expect(page.locator('#kzc-transfer-report')).not.toBeVisible();
 
 		// correct passphrase → preview → report dialog
-		await page.locator('#ptl-transfer-import-passphrase').fill(PASS);
-		const report = page.locator('#ptl-transfer-report');
+		await page.locator('#kzc-transfer-import-passphrase').fill(PASS);
+		const report = page.locator('#kzc-transfer-report');
 		await expect(report).toBeVisible({ timeout: 30000 });
-		await expect(page.locator('#ptl-transfer-report-verdict')).toBeVisible();
-		await expect(page.locator('#ptl-transfer-report-file')).not.toBeEmpty();
-		await expect(page.locator('#ptl-transfer-report-groups')).not.toBeEmpty();
+		await expect(page.locator('#kzc-transfer-report-verdict')).toBeVisible();
+		await expect(page.locator('#kzc-transfer-report-file')).not.toBeEmpty();
+		await expect(page.locator('#kzc-transfer-report-groups')).not.toBeEmpty();
 
 		// rendered-placeholder contract: no vsprintf residue (%d, %s, %1$s)
 		// may reach the admin — window.t expands {name} tokens only, so the
@@ -94,26 +94,26 @@ test.describe('settings transfer surface', () => {
 		// assert absence of residue + presence of interpolated digits, never
 		// English copy.
 		const residue = /%(?:\d+\$)?[sd]/;
-		await expect(page.locator('#ptl-transfer-report-verdict')).not.toContainText(residue);
-		await expect(page.locator('#ptl-transfer-report-verdict')).toContainText(/\d/);
-		await expect(page.locator('#ptl-transfer-report-file')).not.toContainText(residue);
-		await expect(page.locator('#ptl-transfer-report-file')).toContainText(/\d/);
-		await expect(page.locator('#ptl-transfer-report-groups')).not.toContainText(residue);
-		await expect(page.locator('#ptl-transfer-report-groups')).toContainText(/\d/);
+		await expect(page.locator('#kzc-transfer-report-verdict')).not.toContainText(residue);
+		await expect(page.locator('#kzc-transfer-report-verdict')).toContainText(/\d/);
+		await expect(page.locator('#kzc-transfer-report-file')).not.toContainText(residue);
+		await expect(page.locator('#kzc-transfer-report-file')).toContainText(/\d/);
+		await expect(page.locator('#kzc-transfer-report-groups')).not.toContainText(residue);
+		await expect(page.locator('#kzc-transfer-report-groups')).toContainText(/\d/);
 
 		// Escape closes (dialog-level receiver, host handlers can't swallow it)
 		await page.keyboard.press('Escape');
 		await expect(report).not.toBeVisible();
 
 		// re-preview → apply merge → progress → receipt (input events re-trigger)
-		await page.locator('#ptl-transfer-import-passphrase').fill(PASS + ' ');
-		await page.locator('#ptl-transfer-import-passphrase').fill(PASS);
+		await page.locator('#kzc-transfer-import-passphrase').fill(PASS + ' ');
+		await page.locator('#kzc-transfer-import-passphrase').fill(PASS);
 		await expect(report).toBeVisible({ timeout: 30000 });
-		await page.locator('#ptl-transfer-confirm').click();
-		const progress = page.locator('#ptl-transfer-progress');
+		await page.locator('#kzc-transfer-confirm').click();
+		const progress = page.locator('#kzc-transfer-progress');
 		await expect(progress).toBeVisible({ timeout: 10000 });
 		// progress phase line interpolates 'Phase: %s' — no raw % residue
-		await expect(page.locator('#ptl-transfer-progress-text')).not.toContainText(/%(?:\d+\$)?[sd]/);
+		await expect(page.locator('#kzc-transfer-progress-text')).not.toContainText(/%(?:\d+\$)?[sd]/);
 
 		const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
 		expect(jobId).toMatch(/^\d+$/);

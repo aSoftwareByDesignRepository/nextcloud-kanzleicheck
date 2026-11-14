@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Exception\ValidationException;
+use OCA\KanzleiCheck\Exception\ValidationException;
 
 /**
  * CSV client import (US-P06): UTF-8, `,`/`;` autodetect, BOM-safe,

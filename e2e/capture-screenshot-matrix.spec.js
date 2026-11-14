@@ -4,7 +4,7 @@
  *
  * Drives every surface in e2e/screenshot-matrix.json through the declared
  * viewport × state grid and writes PNGs into
- * .cursor/atlas-farm-v3/artifacts/portalcheck/craft/web/. The companion
+ * .cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web/. The companion
  * gate check-screenshot-matrix.py verifies completeness.
  *
  * States:
@@ -13,7 +13,7 @@
  *   current   — state-invariant chrome (login, 404, settings)
  *
  * Staff surfaces need an app-admin login (tests/e2e/.env). Staff views are
- * one SPA — `nav` selects .ptl-navbtn[data-v] after boot.
+ * one SPA — `nav` selects .kzc-navbtn[data-v] after boot.
  *
  * Run: npx playwright test e2e/capture-screenshot-matrix.spec.js
  */
@@ -22,10 +22,10 @@ const fs = require('fs');
 const path = require('path');
 const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
+const APP = '/index.php/apps/kanzleicheck';
 const HERE = __dirname;
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(HERE, 'screenshot-matrix.json'), 'utf8'));
-const OUT = path.resolve(HERE, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck', MANIFEST.outDir);
+const OUT = path.resolve(HERE, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck', MANIFEST.outDir);
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -39,7 +39,7 @@ async function visitStaff(page, surface) {
 	// nav buttons collapse into a menu at mobile widths and can't be clicked.
 	const target = surface.nav ? `/?view=${surface.nav}` : '/';
 	await page.goto(`${APP}${target}`, { waitUntil: 'domcontentloaded' });
-	await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
+	await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
 	// render-completion proof per surface — a dead view must not be captured
 	// (sleep+shoot let the vOverview fragment crash ship as "populated" PNGs)
 	if (surface.readySelector) {

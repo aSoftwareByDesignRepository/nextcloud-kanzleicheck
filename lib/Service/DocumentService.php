@@ -7,10 +7,10 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
@@ -26,7 +26,7 @@ use OCP\Files\NotFoundException as NcNotFoundException;
  * folder's path under the root — no `..`, no share resolution, no escape
  * even if the root owner has wider permissions (NN-P11).
  *
- * Binding is by file id, never by path: ptl_org.folder_id pins the org
+ * Binding is by file id, never by path: kzc_org.folder_id pins the org
  * folder; Eingang/Dokumente resolve as its children.
  */
 class DocumentService

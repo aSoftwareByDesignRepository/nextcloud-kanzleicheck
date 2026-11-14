@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Tests\Unit;
+namespace OCA\KanzleiCheck\Tests\Unit;
 
-use OCA\PortalCheck\Db\Identity;
-use OCA\PortalCheck\Db\IdentityMapper;
-use OCA\PortalCheck\Db\Member;
-use OCA\PortalCheck\Db\MemberMapper;
-use OCA\PortalCheck\Db\Org;
-use OCA\PortalCheck\Db\OrgMapper;
-use OCA\PortalCheck\Db\SyncBinding;
-use OCA\PortalCheck\Db\SyncBindingMapper;
-use OCA\PortalCheck\Db\Upload;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
-use OCA\PortalCheck\Exception\NotFoundException;
-use OCA\PortalCheck\Service\AccessDoorService;
-use OCA\PortalCheck\Service\AuditService;
-use OCA\PortalCheck\Service\DocumentService;
-use OCA\PortalCheck\Service\ImportService;
-use OCA\PortalCheck\Service\OrgService;
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\SyncBindingService;
+use OCA\KanzleiCheck\Db\Identity;
+use OCA\KanzleiCheck\Db\IdentityMapper;
+use OCA\KanzleiCheck\Db\Member;
+use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Db\Org;
+use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Db\SyncBinding;
+use OCA\KanzleiCheck\Db\SyncBindingMapper;
+use OCA\KanzleiCheck\Db\Upload;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Exception\NotFoundException;
+use OCA\KanzleiCheck\Service\AccessDoorService;
+use OCA\KanzleiCheck\Service\AuditService;
+use OCA\KanzleiCheck\Service\DocumentService;
+use OCA\KanzleiCheck\Service\ImportService;
+use OCA\KanzleiCheck\Service\OrgService;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\SyncBindingService;
 use OCP\Files\Folder;
 use OCP\IDBConnection;
 use OCP\IURLGenerator;
@@ -584,7 +584,7 @@ class SyncBindingTest extends TestCase
 		try {
 			$this->svc->setPerms('admin', 3, 'ro');
 			$this->fail('expected ValidationException');
-		} catch (\OCA\PortalCheck\Exception\ValidationException $e) {
+		} catch (\OCA\KanzleiCheck\Exception\ValidationException $e) {
 			$this->assertSame(['perms' => 'binding_revoked'], $e->getFields());
 		}
 	}
@@ -1076,10 +1076,10 @@ class SyncBindingTest extends TestCase
 		$syncMapper = $this->createMock(SyncBindingMapper::class);
 		$syncMapper->method('countActiveRwByOrg')->willReturn(0);
 		$uploads = $this->createMock(UploadMapper::class);
-		$settings = $this->createMock(\OCA\PortalCheck\Service\SettingsService::class);
+		$settings = $this->createMock(\OCA\KanzleiCheck\Service\SettingsService::class);
 		$docs = $this->createMock(DocumentService::class);
 		$docs->expects($this->never())->method('hashFile'); // no re-hash cost on unbound orgs (AC-4)
-		$svc = new \OCA\PortalCheck\Service\UploadService($uploads, $settings, $docs, $syncMapper);
+		$svc = new \OCA\KanzleiCheck\Service\UploadService($uploads, $settings, $docs, $syncMapper);
 		$u = new Upload();
 		$u->setId(1);
 		$u->setOrgId(9);

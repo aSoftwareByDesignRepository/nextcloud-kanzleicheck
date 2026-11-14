@@ -11,11 +11,11 @@ declare(strict_types=1);
  * macro blocklist, size caps, collision-safe naming.
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\Upload;
-use OCA\PortalCheck\Db\UploadMapper;
-use OCA\PortalCheck\Exception\ApiException;
+use OCA\KanzleiCheck\Db\Upload;
+use OCA\KanzleiCheck\Db\UploadMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
 use OCP\Files\File;
 use OCP\Files\Folder;
 
@@ -25,9 +25,9 @@ use OCP\Files\Folder;
  * FILE_TYPE_BLOCKED before storage. Server-side SHA-256 for duplicate
  * detection (US-P26) — a client-sent hash is never trusted.
  *
- * unique-conflict:ok every write site here targets ptl_upload, which carries
+ * unique-conflict:ok every write site here targets kzc_upload, which carries
  * no unique index (file_id is a fresh node per upload — duplicates are
- * flagged, not blocked). ptl_sync is read-only in this file
+ * flagged, not blocked). kzc_sync is read-only in this file
  * (countActiveRwByOrg for the US-S14 integrity gate).
  */
 class UploadService
@@ -44,7 +44,7 @@ class UploadService
 		private readonly UploadMapper $uploads,
 		private readonly SettingsService $settings,
 		private readonly DocumentService $docs,
-		private readonly ?\OCA\PortalCheck\Db\SyncBindingMapper $syncBindings = null,
+		private readonly ?\OCA\KanzleiCheck\Db\SyncBindingMapper $syncBindings = null,
 	) {
 	}
 
@@ -154,7 +154,7 @@ class UploadService
 	{
 		$u = $this->uploads->find($uploadId);
 		if ($u === null) {
-			throw new \OCA\PortalCheck\Exception\NotFoundException();
+			throw new \OCA\KanzleiCheck\Exception\NotFoundException();
 		}
 		$u = $this->verifyIntegrity($u);
 		if ($u->getIntegrity() === 'deleted_after_upload') {

@@ -7,7 +7,7 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\QBMapper;
@@ -18,7 +18,7 @@ class IntakeHoldMapper extends QBMapper
 {
 	public function __construct(IDBConnection $db)
 	{
-		parent::__construct($db, 'ptl_intake_hold', IntakeHold::class);
+		parent::__construct($db, 'kzc_intake_hold', IntakeHold::class);
 	}
 
 	public function find(int $id): ?IntakeHold

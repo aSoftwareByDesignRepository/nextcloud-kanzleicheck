@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Middleware;
+namespace OCA\KanzleiCheck\Middleware;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Exception\DeviceRevokedException;
-use OCA\PortalCheck\Service\DeviceService;
-use OCA\PortalCheck\Service\IdentityService;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Exception\DeviceRevokedException;
+use OCA\KanzleiCheck\Service\DeviceService;
+use OCA\KanzleiCheck\Service\IdentityService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Middleware;
 use OCP\IRequest;
 
 /**
- * Companion device auth (AF-03): X-PortalCheck-Device header → identity.
+ * Companion device auth (AF-03): X-KanzleiCheck-Device header → identity.
  * Never Authorization (NC core claims that channel). Open: /pair + /bootstrap.
  */
 class DeviceAuthMiddleware extends Middleware
 {
-	public const HEADER = 'X-PortalCheck-Device';
+	public const HEADER = 'X-KanzleiCheck-Device';
 	private const OPEN = ['/api/companion/v1/pair', '/api/companion/v1/bootstrap'];
 
 	public function __construct(
@@ -30,7 +30,7 @@ class DeviceAuthMiddleware extends Middleware
 
 	public function beforeController(Controller $controller, string $methodName): void
 	{
-		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
+		if (!str_starts_with(get_class($controller), 'OCA\\KanzleiCheck\\')) {
 			return;
 		}
 		$rest = $this->restPath();
@@ -56,7 +56,7 @@ class DeviceAuthMiddleware extends Middleware
 			}
 			throw new DeviceRevokedException();
 		}
-		if ($controller instanceof \OCA\PortalCheck\Contracts\CompanionContextAware) {
+		if ($controller instanceof \OCA\KanzleiCheck\Contracts\CompanionContextAware) {
 			$controller->setCompanionContext($identity, $device);
 		}
 	}

@@ -7,10 +7,10 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\IntakeHoldMapper;
-use OCA\PortalCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Db\IntakeHoldMapper;
+use OCA\KanzleiCheck\Db\OrgMapper;
 
 /**
  * Inbound mail intake (US-P24). The IMAP fetch is deliberately thin and
@@ -67,7 +67,7 @@ class IntakeMailService
 		$conn = @imap_open($mailbox, $user, $pass, 0, 1);
 		if ($conn === false) {
 			$stats['error'] = 'CONNECT_FAILED';
-			$this->logger->warning('portalcheck intake IMAP connect failed', ['host' => $host]);
+			$this->logger->warning('kanzleicheck intake IMAP connect failed', ['host' => $host]);
 			return $stats;
 		}
 		try {
@@ -80,7 +80,7 @@ class IntakeMailService
 				} catch (\Throwable $e) {
 					// best-effort: one poison message must not kill the poll batch
 					$stats['skipped']++;
-					$this->logger->warning('portalcheck intake message failed', ['uid' => $uid, 'e' => $e->getMessage()]);
+					$this->logger->warning('kanzleicheck intake message failed', ['uid' => $uid, 'e' => $e->getMessage()]);
 				}
 				// mark seen either way — a poison message must not re-poll forever
 				imap_setflag_full($conn, (string)$uid, '\\Seen', ST_UID);
@@ -155,8 +155,8 @@ class IntakeMailService
 	private function isMemberSender(int $orgId, string $from): bool
 	{
 		$qb = $this->db->getQueryBuilder();
-		$qb->select('m.identity_id')->from('ptl_member', 'm')
-			->join('m', 'ptl_identity', 'i', 'i.id = m.identity_id')
+		$qb->select('m.identity_id')->from('kzc_member', 'm')
+			->join('m', 'kzc_identity', 'i', 'i.id = m.identity_id')
 			->where($qb->expr()->eq('m.org_id', $qb->createNamedParameter($orgId)))
 			->andWhere($qb->expr()->eq('i.email', $qb->createNamedParameter($from)));
 		return $qb->executeQuery()->fetchOne() !== false;
@@ -186,7 +186,7 @@ class IntakeMailService
 			if ($data === '') {
 				continue;
 			}
-			$tmp = tempnam(sys_get_temp_dir(), 'ptl_in_');
+			$tmp = tempnam(sys_get_temp_dir(), 'kzc_in_');
 			file_put_contents($tmp, $data);
 			$out[] = [$name, $tmp];
 			$count++;
@@ -211,7 +211,7 @@ class IntakeMailService
 			} catch (\Throwable $e) {
 				// best-effort: count + log the dropped attachment — silent inbound data loss otherwise
 				$stats['skipped']++;
-				$this->logger->warning('portalcheck intake attachment dropped', ['uid' => $uid, 'name' => (string)$name, 'e' => $e->getMessage()]);
+				$this->logger->warning('kanzleicheck intake attachment dropped', ['uid' => $uid, 'name' => (string)$name, 'e' => $e->getMessage()]);
 			}
 			@unlink($tmp);
 		}
@@ -235,7 +235,7 @@ class IntakeMailService
 		return $body;
 	}
 
-	private function orgOf(int $orgId): ?\OCA\PortalCheck\Db\Org
+	private function orgOf(int $orgId): ?\OCA\KanzleiCheck\Db\Org
 	{
 		return $this->orgs->find($orgId);
 	}

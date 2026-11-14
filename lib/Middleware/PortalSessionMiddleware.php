@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Middleware;
+namespace OCA\KanzleiCheck\Middleware;
 
-use OCA\PortalCheck\AppInfo\Application;
-use OCA\PortalCheck\Exception\UnauthorizedException;
-use OCA\PortalCheck\Service\IdentityService;
-use OCA\PortalCheck\Service\PortalSessionService;
-use OCA\PortalCheck\Service\CsrfService;
-use OCA\PortalCheck\Service\ActorResolver;
+use OCA\KanzleiCheck\AppInfo\Application;
+use OCA\KanzleiCheck\Exception\UnauthorizedException;
+use OCA\KanzleiCheck\Service\IdentityService;
+use OCA\KanzleiCheck\Service\PortalSessionService;
+use OCA\KanzleiCheck\Service\CsrfService;
+use OCA\KanzleiCheck\Service\ActorResolver;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Middleware;
 use OCP\IRequest;
 
 /**
- * Client portal gate: /portal/api/** requires the ptl_session cookie →
+ * Client portal gate: /portal/api/** requires the kzc_session cookie →
  * portal identity + org membership context. Open paths: auth endpoints,
  * magic GET page, upload-link page/api (token-authed separately).
- * CSRF: non-GET requests must present X-PTL-CSRF bound to the session (AF-02).
+ * CSRF: non-GET requests must present X-KZC-CSRF bound to the session (AF-02).
  */
 class PortalSessionMiddleware extends Middleware
 {
-	public const SESSION_COOKIE = 'ptl_session';
+	public const SESSION_COOKIE = 'kzc_session';
 	private const OPEN_PREFIX = [
 		'/portal/api/auth/send', '/portal/api/auth/verify', '/portal/auth/magic/',
 		'/portal/login', '/portal/u/', '/portal/api/u/',
@@ -38,7 +38,7 @@ class PortalSessionMiddleware extends Middleware
 
 	public function beforeController(Controller $controller, string $methodName): void
 	{
-		if (!str_starts_with(get_class($controller), 'OCA\\PortalCheck\\')) {
+		if (!str_starts_with(get_class($controller), 'OCA\\KanzleiCheck\\')) {
 			return;
 		}
 		$rest = $this->restPath();
@@ -63,12 +63,12 @@ class PortalSessionMiddleware extends Middleware
 			throw new UnauthorizedException();
 		}
 		if ($this->request->getMethod() !== 'GET') {
-			$presented = $this->request->getHeader(CsrfService::HEADER) ?: (string)$this->request->getParam('ptl_csrf', '');
+			$presented = $this->request->getHeader(CsrfService::HEADER) ?: (string)$this->request->getParam('kzc_csrf', '');
 			if (!$this->csrf->validate($token, $presented)) {
 				throw new UnauthorizedException('CSRF');
 			}
 		}
-		if ($controller instanceof \OCA\PortalCheck\Contracts\PortalSessionAware) {
+		if ($controller instanceof \OCA\KanzleiCheck\Contracts\PortalSessionAware) {
 			$controller->setPortalIdentity($identity, $token);
 		}
 	}

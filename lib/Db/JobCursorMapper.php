@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_job_cursor` — ZF-06 persisted cursors for time-budgeted jobs. */
+/** `kzc_job_cursor` — ZF-06 persisted cursors for time-budgeted jobs. */
 class JobCursorMapper
 {
-	public const TABLE = 'ptl_job_cursor';
+	public const TABLE = 'kzc_job_cursor';
 
 	public function __construct(private readonly IDBConnection $db)
 	{
@@ -46,7 +46,7 @@ class JobCursorMapper
 			try {
 				$ins->executeStatement();
 			} catch (\Throwable $e) {
-				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('portalcheck job cursor insert failed', ['job' => $job, 'e' => $e->getMessage()]);
+				\OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning('kanzleicheck job cursor insert failed', ['job' => $job, 'e' => $e->getMessage()]);
 				return;
 			}
 		}

@@ -7,13 +7,13 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Copied from ticketcheck@eb42a0f lib/Config/VendorPublicKey.php
- * (COPIED-SOURCES.md) — same Family B vendor key; PTL env names.
+ * (COPIED-SOURCES.md) — same Family B vendor key; KZC env names.
  */
 
-namespace OCA\PortalCheck\Config;
+namespace OCA\KanzleiCheck\Config;
 
 /**
- * Embedded vendor Ed25519 public key (32 bytes) for PTL2 verification.
+ * Embedded vendor Ed25519 public key (32 bytes) for KZC2 verification.
  * Never fetched remotely. Env override allowed ONLY under PHPUnit.
  */
 final class VendorPublicKey
@@ -24,7 +24,7 @@ final class VendorPublicKey
 	public static function publicKeyB64(): string
 	{
 		if (self::envOverrideAllowed()) {
-			$fromEnv = getenv('PTL_VENDOR_PUBLIC_KEY_B64');
+			$fromEnv = getenv('KZC_VENDOR_PUBLIC_KEY_B64');
 			if (is_string($fromEnv) && trim($fromEnv) !== '') {
 				return trim($fromEnv);
 			}
@@ -37,7 +37,7 @@ final class VendorPublicKey
 		if (defined('PHPUNIT_COMPOSER_INSTALL') || defined('PHPUNIT_RUNNING')) {
 			return true;
 		}
-		return getenv('PTL_ALLOW_VENDOR_KEY_OVERRIDE') === '1';
+		return getenv('KZC_ALLOW_VENDOR_KEY_OVERRIDE') === '1';
 	}
 
 	public static function bytes(): string

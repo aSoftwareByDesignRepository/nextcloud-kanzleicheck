@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\AppFramework\Db\Entity;
 
 /**
- * ``ptl_sync`` entity — per-org share binding between a bound identity and an
+ * ``kzc_sync`` entity — per-org share binding between a bound identity and an
  * org folder (nc-user-binding spec §9.1, D-B01). The uid lives on the
- * identity (ptl_identity.nc_uid); this row is share state only.
+ * identity (kzc_identity.nc_uid); this row is share state only.
  *
  * @method int getId()
  * @method void setId(int $id)

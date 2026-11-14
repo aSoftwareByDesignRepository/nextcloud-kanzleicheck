@@ -1,11 +1,11 @@
 // @ts-check
 /**
- * ATLAS ptl-c3 — the offboard response's partialWarning/failed keys must
+ * ATLAS kzc-c3 — the offboard response's partialWarning/failed keys must
  * render a visible warning surface (count + next step), never silently.
  * Forced partial-failure via route stub: a live share-revoke failure is not
  * forceable through the API (SyncBindingService::dropShare swallows share
  * errors by design), so the leg fulfils POST …/offboard with the real
- * partial payload and asserts .ptl-warnbar renders with the failed count.
+ * partial payload and asserts .kzc-warnbar renders with the failed count.
  * Writes a craft PNG to craft/web/.
  */
 const { test, expect } = require('@playwright/test');
@@ -13,8 +13,8 @@ const fs = require('fs');
 const path = require('path');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
-const APP = '/index.php/apps/portalcheck';
-const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/portalcheck/craft/web');
+const APP = '/index.php/apps/kanzleicheck';
+const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -42,8 +42,8 @@ test.describe('staff offboard partial-revoke warning (c3)', () => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#ptl-staff-view .ptl-nav').waitFor({ state: 'visible', timeout: 20000 });
-			await page.locator('.ptl-navbtn[data-v="orgs"]').click();
+			await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('.kzc-navbtn[data-v="orgs"]').click();
 			// filter the list to the unique fixture — deterministic wait for the
 			// filtered response AND the single-row paint before clicking (the
 			// mount fetch may still be in flight; never click mid-race).
@@ -51,28 +51,28 @@ test.describe('staff offboard partial-revoke warning (c3)', () => {
 				(r) => r.url().includes('/api/portal/orgs?q=') && r.request().method() === 'GET',
 				{ timeout: 20000 },
 			);
-			await page.locator('#ptl-q').fill(orgName);
+			await page.locator('#kzc-q').fill(orgName);
 			await filtered;
-			const rows = page.locator('#ptl-orglist .ptl-row');
+			const rows = page.locator('#kzc-orglist .kzc-row');
 			await expect(rows).toHaveCount(1);
 			await rows.first().click();
-			// the org info card is the one carrying .ptl-kv; its .ptl-actions order
+			// the org info card is the one carrying .kzc-kv; its .kzc-actions order
 			// is fixed: [appOn toggle, Offboard, Edit details]
-			const infoCard = page.locator('#ptl-body .ptl-card:has(.ptl-kv)');
+			const infoCard = page.locator('#kzc-body .kzc-card:has(.kzc-kv)');
 			await infoCard.waitFor({ state: 'visible', timeout: 15000 });
-			const actions = infoCard.locator('.ptl-actions .ptl-btn');
+			const actions = infoCard.locator('.kzc-actions .kzc-btn');
 			await expect(actions).toHaveCount(3);
 			await actions.nth(1).click();
 			// confirmDlg → the dialog's primary button carries value="ok"
-			const dlg = page.locator('dialog.ptl-dialog');
+			const dlg = page.locator('dialog.kzc-dialog');
 			await dlg.waitFor({ state: 'visible', timeout: 15000 });
-			await dlg.locator('.ptl-btn--primary').click();
+			await dlg.locator('.kzc-btn--primary').click();
 
-			const warn = page.locator('.ptl-warnbar');
+			const warn = page.locator('.kzc-warnbar');
 			await warn.waitFor({ state: 'visible', timeout: 15000 });
 			await expect(warn).toContainText('2');
 			await expect(warn).toHaveAttribute('role', 'alert');
-			await page.screenshot({ path: path.join(OUT, 'ptl-staff-offboard-warn-light-1280.png'), fullPage: false });
+			await page.screenshot({ path: path.join(OUT, 'kzc-staff-offboard-warn-light-1280.png'), fullPage: false });
 		} finally {
 			// teardown: real offboard call sunsets the fixture (page.route stub is
 			// browser-context only; the request fixture hits the live endpoint)

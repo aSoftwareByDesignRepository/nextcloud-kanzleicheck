@@ -11,10 +11,10 @@ declare(strict_types=1);
  * Synced from apps/_shared/config-transfer — do not edit app-side.
  */
 
-namespace OCA\PortalCheck\BackgroundJob;
+namespace OCA\KanzleiCheck\BackgroundJob;
 
-use OCA\PortalCheck\ConfigTransfer\TransferService;
-use OCA\PortalCheck\Service\UpgradeBackupService;
+use OCA\KanzleiCheck\ConfigTransfer\TransferService;
+use OCA\KanzleiCheck\Service\UpgradeBackupService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\IJobList;
 use OCP\BackgroundJob\QueuedJob;
@@ -56,8 +56,8 @@ class TransferApplyJob extends QueuedJob
 		} catch (LockedException) {
 			$this->jobList->add(self::class, $args);
 			$this->logger->info(
-				'portalcheck: config transfer apply deferred — upgrade backup/restore in progress; job re-queued.',
-				['app' => 'portalcheck'],
+				'kanzleicheck: config transfer apply deferred — upgrade backup/restore in progress; job re-queued.',
+				['app' => 'kanzleicheck'],
 			);
 			return;
 		}

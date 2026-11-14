@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_contact` — responsible staff per org (contact card + notification routing). */
+/** `kzc_contact` — responsible staff per org (contact card + notification routing). */
 class ContactMapper
 {
-	public const TABLE = 'ptl_contact';
+	public const TABLE = 'kzc_contact';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

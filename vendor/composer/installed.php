@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
-        'name' => 'software-by-design/nextcloud-portalcheck',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => '29af4bb1a6153ea077922e21c276e191ae97e030',
+        'name' => 'software-by-design/nextcloud-kanzleicheck',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'bf62b4de95f5f8a0ee9276ac124528750c606f27',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -349,10 +349,10 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
-        'software-by-design/nextcloud-portalcheck' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => '29af4bb1a6153ea077922e21c276e191ae97e030',
+        'software-by-design/nextcloud-kanzleicheck' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'bf62b4de95f5f8a0ee9276ac124528750c606f27',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

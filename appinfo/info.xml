@@ -4,12 +4,12 @@
   - SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-	<id>portalcheck</id>
-	<name>PortalCheck</name>
+	<id>kanzleicheck</id>
+	<name>KanzleiCheck</name>
 	<summary>Client portal for Nextcloud — passwordless client access, chat, documents, requests and approvals</summary>
 	<summary lang="de">Mandantenportal für Nextcloud — passwortloser Kundenzugang, Chat, Dokumente, Anfragen und Freigaben</summary>
 	<description><![CDATA[
-# PortalCheck
+# KanzleiCheck
 
 A client portal that lives entirely inside your Nextcloud: external clients log in
 passwordless with an e-mail code — no Nextcloud accounts, no user slots, no passwords.
@@ -43,7 +43,7 @@ external clients.
 - Working outgoing mail configuration in Nextcloud (client login codes)
 	]]></description>
 	<description lang="de"><![CDATA[
-# PortalCheck
+# KanzleiCheck
 
 Ein Mandantenportal komplett in Ihrer Nextcloud: Externe Kunden melden sich
 passwortlos per E-Mail-Code an — keine Nextcloud-Konten, keine Benutzer-Slots,
@@ -79,12 +79,12 @@ und jedes Team, das externe Kunden betreut.
 	<version>0.2.0</version>
 	<licence>agpl</licence>
 	<author>Alexander Mäule</author>
-	<namespace>PortalCheck</namespace>
+	<namespace>KanzleiCheck</namespace>
 	<category>organization</category>
 	<category>integration</category>
 	<website>https://nextcloud.software-by-design.de/</website>
-	<bugs>https://github.com/aSoftwareByDesignRepository/nextcloud-portalcheck/issues</bugs>
-	<repository>https://github.com/aSoftwareByDesignRepository/nextcloud-portalcheck</repository>
+	<bugs>https://github.com/aSoftwareByDesignRepository/nextcloud-kanzleicheck/issues</bugs>
+	<repository>https://github.com/aSoftwareByDesignRepository/nextcloud-kanzleicheck</repository>
 	<dependencies>
 		<nextcloud min-version="32" max-version="35"/>
 		<database>mysql</database>
@@ -92,21 +92,21 @@ und jedes Team, das externe Kunden betreut.
 		<database>sqlite</database>
 	</dependencies>
 	<background-jobs>
-		<job>OCA\PortalCheck\BackgroundJob\MailOutboxJob</job>
-		<job>OCA\PortalCheck\BackgroundJob\SchedulerJob</job>
-		<job>OCA\PortalCheck\BackgroundJob\RetentionJob</job>
-		<job>OCA\PortalCheck\BackgroundJob\ChunkCleanupJob</job>
-		<job>OCA\PortalCheck\BackgroundJob\SyncReconcileJob</job>
+		<job>OCA\KanzleiCheck\BackgroundJob\MailOutboxJob</job>
+		<job>OCA\KanzleiCheck\BackgroundJob\SchedulerJob</job>
+		<job>OCA\KanzleiCheck\BackgroundJob\RetentionJob</job>
+		<job>OCA\KanzleiCheck\BackgroundJob\ChunkCleanupJob</job>
+		<job>OCA\KanzleiCheck\BackgroundJob\SyncReconcileJob</job>
 	</background-jobs>
 	<repair-steps>
 		<uninstall>
-			<step>OCA\PortalCheck\Repair\UninstallDropTables</step>
+			<step>OCA\KanzleiCheck\Repair\UninstallDropTables</step>
 		</uninstall>
 	</repair-steps>
 	<commands>
-		<command>OCA\PortalCheck\Command\ImportClientsCommand</command>
-		<command>OCA\PortalCheck\Command\ConfigExportCommand</command>
-		<command>OCA\PortalCheck\Command\ConfigImportCommand</command>
-		<command>OCA\PortalCheck\Command\ConfigReconcileCommand</command>
+		<command>OCA\KanzleiCheck\Command\ImportClientsCommand</command>
+		<command>OCA\KanzleiCheck\Command\ConfigExportCommand</command>
+		<command>OCA\KanzleiCheck\Command\ConfigImportCommand</command>
+		<command>OCA\KanzleiCheck\Command\ConfigReconcileCommand</command>
 	</commands>
 </info>

@@ -7,14 +7,14 @@ declare(strict_types=1);
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-namespace OCA\PortalCheck\Db;
+namespace OCA\KanzleiCheck\Db;
 
 use OCP\IDBConnection;
 
-/** `ptl_intake` — per-org intake address state (PK org_id). */
+/** `kzc_intake` — per-org intake address state (PK org_id). */
 class IntakeMapper
 {
-	public const TABLE = 'ptl_intake';
+	public const TABLE = 'kzc_intake';
 
 	public function __construct(private readonly IDBConnection $db)
 	{

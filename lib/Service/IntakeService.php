@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\PortalCheck\Service;
+namespace OCA\KanzleiCheck\Service;
 
-use OCA\PortalCheck\Db\IntakeHold;
-use OCA\PortalCheck\Db\IntakeHoldMapper;
-use OCA\PortalCheck\Db\IntakeMapper;
+use OCA\KanzleiCheck\Db\IntakeHold;
+use OCA\KanzleiCheck\Db\IntakeHoldMapper;
+use OCA\KanzleiCheck\Db\IntakeMapper;
 use OCP\IDBConnection;
 
 /**
