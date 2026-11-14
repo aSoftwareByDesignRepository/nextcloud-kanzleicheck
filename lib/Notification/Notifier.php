@@ -41,7 +41,7 @@ class Notifier implements INotifier
 			default => $l->t('Portal update'),
 		};
 		$notification->setParsedSubject($text)
-			->setIcon($this->urls->getAbsoluteURL($this->urls->imagePath(Application::APP_ID, 'app.svg')));
+			->setIcon($this->urls->getAbsoluteURL($this->urls->imagePath(Application::APP_ID, 'app-dark.svg')));
 		return $notification;
 	}
 }

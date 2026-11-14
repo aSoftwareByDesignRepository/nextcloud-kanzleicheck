@@ -71,16 +71,24 @@ $lastReceipt = is_array($_['transferLastReceipt'] ?? null) ? $_['transferLastRec
 	</p>
 	<?php endif; ?>
 	<form id="ptl-transfer-import-form" class="ptl-form" novalidate>
-		<fieldset class="ptl-form-row ptl-fieldset">
+		<fieldset class="ptl-form-row ptl-fieldset" aria-describedby="ptl-transfer-replace-hint">
 			<legend><?php p($l->t('Mode')); ?></legend>
-			<label class="ptl-radio">
-				<input type="radio" name="mode" value="merge" checked>
-				<span><strong><?php p($l->t('Merge')); ?></strong> — <?php p($l->t('add and update; nothing is deleted')); ?></span>
-			</label>
-			<label class="ptl-radio ptl-radio--danger">
-				<input type="radio" name="mode" value="replace" <?php if (!$isSystemAdmin): ?>disabled<?php endif; ?>>
-				<span><strong><?php p($l->t('Replace')); ?></strong> — <?php p($l->t('make identical to the file; prod-only rows are deleted')); ?></span>
-			</label>
+			<div class="ptl-choice-cards">
+				<label class="ptl-choice-card">
+					<input type="radio" name="mode" value="merge" checked>
+					<span class="ptl-choice-card__copy">
+						<span class="ptl-choice-card__title"><?php p($l->t('Merge')); ?></span>
+						<span class="ptl-choice-card__hint"><?php p($l->t('add and update; nothing is deleted')); ?></span>
+					</span>
+				</label>
+				<label class="ptl-choice-card ptl-choice-card--danger">
+					<input type="radio" name="mode" value="replace" <?php if (!$isSystemAdmin): ?>disabled<?php endif; ?>>
+					<span class="ptl-choice-card__copy">
+						<span class="ptl-choice-card__title"><?php p($l->t('Replace')); ?></span>
+						<span class="ptl-choice-card__hint"><?php p($l->t('make identical to the file; prod-only rows are deleted')); ?></span>
+					</span>
+				</label>
+			</div>
 			<p class="ptl-form-row__hint" id="ptl-transfer-replace-hint">
 				<?php if ($isSystemAdmin): ?>
 					<?php p($l->t('Replace needs maintenance mode ON (occ maintenance:mode --on) — you will type REPLACE in the preview to confirm.')); ?>
