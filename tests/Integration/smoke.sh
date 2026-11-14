@@ -29,6 +29,7 @@ cd "$(dirname "$0")/../../../.." 2>/dev/null || true
 docker compose exec -T mariadb mariadb -unextcloud -pnextcloud_password nextcloud -e "
 DELETE FROM oc_kzc_member WHERE identity_id IN (SELECT id FROM oc_kzc_identity WHERE email='smoke@test.invalid');
 DELETE FROM oc_kzc_identity WHERE email='smoke@test.invalid';
+DELETE FROM oc_kzc_otp WHERE email='smoke@test.invalid';
 DELETE FROM oc_kzc_org WHERE ref='SMOKE-1';
 INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Smoke Mandat','SMOKE-1','company','active',0,'system:smoke',NOW(),NOW());
 INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('smoke@test.invalid','Smoke Client','active',NOW());

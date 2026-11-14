@@ -8,12 +8,21 @@
 const { test } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 
 const APP = '/index.php/apps/kanzleicheck';
 const OUT = path.resolve(__dirname, '../../../../.cursor/atlas-farm-v3/artifacts/kanzleicheck/craft/web');
+const COMPOSE_ROOT = path.resolve(__dirname, '../../..');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
+
+function db(sql) {
+	const r = spawnSync('docker', ['compose', 'exec', '-T', 'mariadb', 'mariadb',
+		'-unextcloud', '-pnextcloud_password', 'nextcloud', '-N', '-e', sql],
+	{ cwd: COMPOSE_ROOT, encoding: 'utf8', timeout: 60_000 });
+	return (r.stdout || '').trim();
+}
 
 async function shot(page, name) {
 	await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: false });
@@ -149,6 +158,10 @@ test.describe('craft web', () => {
 	});
 	test('guest login invalid-code field-error 1280', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 800 });
+		// OTP cap hygiene: fixed-identity fixture sends count toward the
+		// per-email 5/h cap even on the invalid-code path — clear so craft
+		// re-runs inside the hour keep minting a real row.
+		db("DELETE FROM oc_kzc_otp WHERE email='kzc-craft-invalid@test.invalid';");
 		await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-send-form').waitFor({ state: 'visible', timeout: 15000 });
 		await page.locator('#kzc-email').fill('kzc-craft-invalid@test.invalid');

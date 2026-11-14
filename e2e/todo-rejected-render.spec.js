@@ -64,6 +64,11 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		const errors = [];
 		page.on('pageerror', (e) => errors.push(String(e)));
 
+		// OTP cap hygiene: fixed-identity fixture logs in via OTP — clear its
+		// trailing-hour sends (per-email cap 5/h) so a suite re-run within the
+		// hour cannot hit the discard path or replay a consumed code.
+		db("DELETE FROM oc_kzc_otp WHERE email='lena.brandt@mueller-soehne.example';");
+
 		await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-send-form').waitFor({ state: 'visible', timeout: 15000 });
 		await page.locator('#kzc-email').fill('lena.brandt@mueller-soehne.example');

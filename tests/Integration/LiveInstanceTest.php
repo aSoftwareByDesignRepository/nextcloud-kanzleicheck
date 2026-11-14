@@ -78,6 +78,7 @@ class LiveInstanceTest extends TestCase
 	{
 		self::db("DELETE FROM oc_kzc_member WHERE identity_id IN (SELECT id FROM oc_kzc_identity WHERE email='int@test.invalid');
 DELETE FROM oc_kzc_identity WHERE email='int@test.invalid';
+DELETE FROM oc_kzc_otp WHERE email='int@test.invalid';
 DELETE FROM oc_kzc_org WHERE ref='INT-1';
 INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Int Mandat','INT-1','company','active',0,'system:test',NOW(),NOW());
 INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('int@test.invalid','Int Client','active',NOW());
