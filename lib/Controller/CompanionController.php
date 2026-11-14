@@ -99,6 +99,7 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 		private readonly IUserManager $userManager,
 		private readonly PresetCatalog $presets,
 		private readonly \OCP\ICacheFactory $cacheFactory,
+		private readonly \OCP\App\IAppManager $appManager,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -191,7 +192,7 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 			'pushAvailable' => false,
 			'portal' => ['enabled' => $status !== 'expired', 'licenseStatus' => $status, 'orgs' => $orgs],
 			'licensing' => ['status' => $status, 'product' => 'kanzleicheck'],
-			'server' => ['appVersion' => '0.1.0', 'companionMin' => 1],
+			'server' => ['appVersion' => $this->appManager->getAppVersion(\OCA\KanzleiCheck\AppInfo\Application::APP_ID), 'companionMin' => 1],
 		]);
 	}
 

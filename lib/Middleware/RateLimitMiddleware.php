@@ -22,8 +22,23 @@ class RateLimitMiddleware extends Middleware
 		['needles' => ['/portal/api/auth/send'], 'verbs' => ['POST'], 'action' => 'kzc_otp_send', 'sleep' => 250],
 		['needles' => ['/portal/api/auth/verify'], 'verbs' => ['POST'], 'action' => 'kzc_otp_verify', 'sleep' => 400],
 		['needles' => ['/portal/api/u/'], 'verbs' => ['POST'], 'action' => 'kzc_upload_link', 'sleep' => 300],
+		['needles' => ['/portal/u/'], 'verbs' => ['GET'], 'action' => 'kzc_ulink_page', 'sleep' => 200],
 		['needles' => ['/api/companion/v1/pair'], 'verbs' => ['POST'], 'action' => 'kzc_device_pair', 'sleep' => 400],
 		['needles' => ['/approvals/', '/start'], 'verbs' => ['POST'], 'action' => 'kzc_otp_send', 'sleep' => 250],
+		['needles' => ['/approvals/', '/decide'], 'verbs' => ['POST'], 'action' => 'kzc_otp_verify', 'sleep' => 400],
+		// authenticated write surfaces — bound abusive sessions/companions (L-02)
+		['needles' => ['/portal/api/orgs/', '/messages'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/portal/api/orgs/', '/uploads'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/portal/api/orgs/', '/chunks'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/portal/api/chunks/'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 100],
+		['needles' => ['/portal/api/orgs/', '/notify'], 'verbs' => ['PUT'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/portal/api/forms/'], 'verbs' => ['PUT', 'POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/portal/api/requests/'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/api/companion/v1/orgs/', '/messages'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/api/companion/v1/orgs/', '/uploads'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/api/companion/v1/uploads/'], 'verbs' => ['PUT', 'POST'], 'action' => 'kzc_portal_write', 'sleep' => 100],
+		['needles' => ['/api/companion/v1/forms/'], 'verbs' => ['PUT', 'POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
+		['needles' => ['/api/companion/v1/requests/'], 'verbs' => ['POST'], 'action' => 'kzc_portal_write', 'sleep' => 150],
 	];
 
 	public function __construct(

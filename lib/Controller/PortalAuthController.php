@@ -48,6 +48,7 @@ class PortalAuthController extends Controller
 		private readonly MailOutboxService $outbox,
 		private readonly SettingsService $settings,
 		private readonly IURLGenerator $urls,
+		private readonly CsrfService $csrf,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -103,10 +104,10 @@ class PortalAuthController extends Controller
 	private function issueSessionResponse(int $identityId, string $redirect): JSONResponse
 	{
 		[$token, $session] = $this->sessions->create($identityId, (string)($this->request->getHeader('User-Agent') ?? ''));
-		$resp = $this->ok(['redirect' => $redirect, 'csrf' => (new CsrfService())->tokenFor($token)]);
+		$resp = $this->ok(['redirect' => $redirect, 'csrf' => $this->csrf->tokenFor($token)]);
 		// NC emits app cookies HttpOnly + Secure(on https) at render time.
 		$resp->addCookie(self::SESSION_COOKIE, $token, null, 'Lax');
-		$resp->addCookie(CsrfService::COOKIE_NAME, (new CsrfService())->tokenFor($token), null, 'Lax');
+		$resp->addCookie(CsrfService::COOKIE_NAME, $this->csrf->tokenFor($token), null, 'Lax');
 		return $resp;
 	}
 
