@@ -417,6 +417,7 @@ OC.L10N.register(
 	"Title" : "Tittel",
 	"To do" : "Å gjøre",
 	"Too many attempts — wait a minute and try again." : "For mange forsøk — vent et minutt og prøv igjen.",
+	"Too many requests" : "For mange forespørsler",
 	"Too short — at least 12 characters." : "For kort — minst 12 tegn.",
 	"Transfer configuration" : "Overføringskonfigurasjon",
 	"Transfer file" : "Overføringsfil",

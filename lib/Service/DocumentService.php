@@ -71,7 +71,7 @@ class DocumentService
 			return null;
 		}
 		if ($storedFolderId !== null && $storedFolderId > 0) {
-			$nodes = $this->rootFolder->getById($storedFolderId);
+			$nodes = $root->getById($storedFolderId);
 			$node = $nodes[0] ?? null;
 			if ($node instanceof Folder && $this->inside($root, $node)) {
 				return $node;
@@ -139,12 +139,16 @@ class DocumentService
 	 */
 	public function orgNodeForOrg(int $orgId, int $fileId, ?string $subdir): File
 	{
-		$node = $this->findNodeById($fileId);
-		if (!$node instanceof File) {
+		$root = $this->rootFolder();
+		if ($root === null) {
 			throw new NotFoundException();
 		}
-		$root = $this->rootFolder();
-		if ($root === null || !$this->inside($root, $node)) {
+		// Resolve inside the docs root itself: IRootFolder->getById can pick a
+		// different mount (owner vs sharee) than rootFolder(), and view paths
+		// of different mounts are not comparable.
+		$nodes = $root->getById($fileId);
+		$node = $nodes[0] ?? null;
+		if (!$node instanceof File) {
 			throw new NotFoundException();
 		}
 		$parts = explode('/', trim($node->getPath(), '/'));

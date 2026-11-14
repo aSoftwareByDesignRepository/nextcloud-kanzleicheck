@@ -417,6 +417,7 @@ OC.L10N.register(
 	"Title" : "标题",
 	"To do" : "待办",
 	"Too many attempts — wait a minute and try again." : "尝试次数过多——请等待一分钟后重试。",
+	"Too many requests" : "请求过多",
 	"Too short — at least 12 characters." : "太短——至少 12 个字符。",
 	"Transfer configuration" : "传输配置",
 	"Transfer file" : "传输文件",

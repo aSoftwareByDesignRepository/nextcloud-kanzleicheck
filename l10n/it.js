@@ -417,6 +417,7 @@ OC.L10N.register(
 	"Title" : "Titolo",
 	"To do" : "Da fare",
 	"Too many attempts — wait a minute and try again." : "Troppi tentativi — attendi un minuto e riprova.",
+	"Too many requests" : "Troppe richieste",
 	"Too short — at least 12 characters." : "Troppo corta — almeno 12 caratteri.",
 	"Transfer configuration" : "Configurazione del trasferimento",
 	"Transfer file" : "File di trasferimento",

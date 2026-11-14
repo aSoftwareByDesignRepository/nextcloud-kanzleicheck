@@ -149,6 +149,15 @@ class ApiExceptionMiddleware extends Middleware
 				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
 			], 'guest'))->setStatus(Http::STATUS_NOT_FOUND);
 		}
+		if ($exception instanceof RateLimitException) {
+			return (new TemplateResponse(Application::APP_ID, 'access-denied', [
+				'title' => $l->t('Too many requests'),
+				'message' => $l->t('Too many attempts — wait a minute and try again.'),
+				'hint' => '',
+				'homeUrl' => $this->urlGenerator->linkToDefaultPageUrl(),
+			], 'guest'))->setStatus(Http::STATUS_TOO_MANY_REQUESTS)
+				->addHeader('Retry-After', (string)$exception->getRetryAfter());
+		}
 		// Non-gate failure on a page route: rethrow so core renders its HTML
 		// error page — a JSON envelope is a dead surface in a browser.
 		throw $exception;

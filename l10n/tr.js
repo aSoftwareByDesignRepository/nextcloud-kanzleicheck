@@ -417,6 +417,7 @@ OC.L10N.register(
 	"Title" : "Başlık",
 	"To do" : "Yapılacak",
 	"Too many attempts — wait a minute and try again." : "Çok fazla deneme — bir dakika bekleyip tekrar deneyin.",
+	"Too many requests" : "Çok fazla istek",
 	"Too short — at least 12 characters." : "Çok kısa — en az 12 karakter.",
 	"Transfer configuration" : "Aktarım yapılandırması",
 	"Transfer file" : "Aktarım dosyası",
