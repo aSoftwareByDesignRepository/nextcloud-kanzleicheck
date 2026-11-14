@@ -155,9 +155,21 @@ test.describe('craft web', () => {
 		await page.locator('#kzc-send-form button[type="submit"], #kzc-send-form .kzc-btn--primary').first().click();
 		const verify = page.locator('#kzc-verify-form');
 		await verify.waitFor({ state: 'visible', timeout: 15000 });
+		// 6-digit input auto-submits — no click: a second POST would burn the
+		// shared /portal/api/auth/verify AnonRateLimit budget (20/300s per IP,
+		// non-JSON 429 → generic status line) twice and saturate the suite.
+		// Capture the response so a throttled env answer is named in the
+		// failure instead of surfacing as a bare visibility timeout.
+		const verifyResps = [];
+		page.on('response', r => {
+			if (r.url().includes('/portal/api/auth/verify')) verifyResps.push(r.status());
+		});
 		await page.locator('#kzc-code').fill('000000');
-		await verify.locator('button[type="submit"], .kzc-btn--primary').first().click();
-		await page.locator('.kzc-field-error:not([hidden])').first().waitFor({ state: 'visible', timeout: 15000 });
+		try {
+			await page.locator('.kzc-field-error:not([hidden])').first().waitFor({ state: 'visible', timeout: 15000 });
+		} catch (e) {
+			throw new Error('INVALID_CODE never reached .kzc-field-error; verify responses: ' + JSON.stringify(verifyResps));
+		}
 		// kzc-v14: one failure, one surface — a field-scoped error must NOT be
 		// mirrored verbatim into the status line.
 		const st = (await page.locator('#kzc-login-status').textContent()) || '';
@@ -209,10 +221,11 @@ test.describe('craft web', () => {
 		test.skip(!(u && p), 'no nonstaff creds');
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, { username: u, password: p });
-		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn[data-v="settings"]').click();
-		await page.waitForTimeout(1500);
+		// fail-closed deny: page boundary answers 403 + access-denied card
+		// (deny_page_status_200 — no staff chrome ever mounts for nonstaff)
+		const resp = await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
+		if (resp.status() !== 403) throw new Error(`expected 403 deny, got ${resp.status()}`);
+		await page.locator('.kzc-portal .kzc-card[role="alert"] #kzc-denied-title').waitFor({ state: 'visible', timeout: 20000 });
 		await shot(page, 'kzc-staff-settings-deny-light-1280');
 	});
 });

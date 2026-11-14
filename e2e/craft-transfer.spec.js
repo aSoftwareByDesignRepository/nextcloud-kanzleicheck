@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
+const { acquireTransferApplyLock } = require('../tests/e2e/helpers/transfer-apply-lock.js');
 const { assertAtlasRenderedSurface } = require('../../_shared/e2e/atlas-rendered-surface-contract.js');
 
 const APP = '/index.php/apps/kanzleicheck';
@@ -159,34 +160,43 @@ test.describe('craft transfer', () => {
 		await assertDialogGeometry(report, 'centered');
 		await shot(page, 'kzc-staff-transfer-report-dialog-light-1280');
 
-		// apply → progress dialog stays open while the job waits queued
-		await page.locator('#kzc-transfer-confirm').click();
-		const progress = page.locator('#kzc-transfer-progress');
-		await expect(progress).toBeVisible({ timeout: 10000 });
-		await expect(page.locator('#kzc-transfer-progress-text')).not.toBeEmpty();
-		await shot(page, 'kzc-staff-transfer-progress-light-1280');
+		// apply → progress dialog stays open while the job waits queued.
+		// Serialize the mutating leg: apply holds an exclusive server mutex
+		// over a single job/receipt slot — settings-transfer's apply leg
+		// would race it in a parallel worker (loser dies TRANSFER_IN_PROGRESS
+		// and its progress dialog flash-closes before any poll sees it).
+		const releaseApplyLock = await acquireTransferApplyLock();
+		try {
+			await page.locator('#kzc-transfer-confirm').click();
+			const progress = page.locator('#kzc-transfer-progress');
+			await expect(progress).toBeVisible({ timeout: 30000 });
+			await expect(page.locator('#kzc-transfer-progress-text')).not.toBeEmpty();
+			await shot(page, 'kzc-staff-transfer-progress-light-1280');
 
-		const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
-		expect(jobId).toMatch(/^\d+$/);
-		const before = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
-		const priorReceiptId = (((await before.json()).data || {}).lastReceipt || {}).id || '';
-		occ(`background-job:execute ${jobId}`);
+			const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
+			expect(jobId).toMatch(/^\d+$/);
+			const before = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
+			const priorReceiptId = (((await before.json()).data || {}).lastReceipt || {}).id || '';
+			occ(`background-job:execute ${jobId}`);
 
-		let receipt = {};
-		for (let i = 0; i < 60; i++) {
-			const s = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
-			receipt = (((await s.json()).data || {}).lastReceipt) || {};
-			if (receipt.id && receipt.id !== priorReceiptId
-				&& (receipt.result === 'applied' || receipt.result === 'failed')) break;
-			await new Promise((r) => setTimeout(r, 1000));
+			let receipt = {};
+			for (let i = 0; i < 60; i++) {
+				const s = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
+				receipt = (((await s.json()).data || {}).lastReceipt) || {};
+				if (receipt.id && receipt.id !== priorReceiptId
+					&& (receipt.result === 'applied' || receipt.result === 'failed')) break;
+				await new Promise((r) => setTimeout(r, 1000));
+			}
+			expect(receipt.result).toBe('applied');
+
+			// page reloads itself on done — settle, then capture post-apply state
+			await page.waitForLoadState('domcontentloaded');
+			await expect(page.locator('#kzc-transfer-last')).toBeVisible({ timeout: 20000 });
+			await page.waitForTimeout(600);
+			await shot(page, 'kzc-staff-transfer-after-apply-light-1280');
+		} finally {
+			releaseApplyLock();
 		}
-		expect(receipt.result).toBe('applied');
-
-		// page reloads itself on done — settle, then capture post-apply state
-		await page.waitForLoadState('domcontentloaded');
-		await expect(page.locator('#kzc-transfer-last')).toBeVisible({ timeout: 20000 });
-		await page.waitForTimeout(600);
-		await shot(page, 'kzc-staff-transfer-after-apply-light-1280');
 	});
 
 	test('staff transfer surface mobile 375', async ({ page, request }) => {

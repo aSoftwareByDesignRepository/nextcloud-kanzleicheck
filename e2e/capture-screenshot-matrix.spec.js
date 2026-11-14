@@ -37,9 +37,13 @@ async function visitStaff(page, surface) {
 	await login(page, creds());
 	// deep-link boot param (same ?view= mechanism notification mails use) —
 	// nav buttons collapse into a menu at mobile widths and can't be clicked.
-	const target = surface.nav ? `/?view=${surface.nav}` : '/';
+	// Dedicated template routes (e.g. /settings/about) go straight to path;
+	// they carry no .kzc-nav, so the chrome wait keys off #kzc-staff-view.
+	const dedicated = surface.path && surface.path !== '/';
+	const target = dedicated ? surface.path : (surface.nav ? `/?view=${surface.nav}` : '/');
 	await page.goto(`${APP}${target}`, { waitUntil: 'domcontentloaded' });
-	await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+	await page.locator(dedicated ? '#kzc-staff-view' : '#kzc-staff-view .kzc-nav')
+		.waitFor({ state: 'visible', timeout: 20000 });
 	// render-completion proof per surface — a dead view must not be captured
 	// (sleep+shoot let the vOverview fragment crash ship as "populated" PNGs)
 	if (surface.readySelector) {

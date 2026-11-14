@@ -10,6 +10,7 @@
 const { test, expect } = require('@playwright/test');
 const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
+const { acquireTransferApplyLock } = require('../tests/e2e/helpers/transfer-apply-lock.js');
 
 const APP = '/index.php/apps/kanzleicheck';
 const PASS = 'atlas-e2e-passphrase-2026';
@@ -109,32 +110,41 @@ test.describe('settings transfer surface', () => {
 		await page.locator('#kzc-transfer-import-passphrase').fill(PASS + ' ');
 		await page.locator('#kzc-transfer-import-passphrase').fill(PASS);
 		await expect(report).toBeVisible({ timeout: 30000 });
-		await page.locator('#kzc-transfer-confirm').click();
-		const progress = page.locator('#kzc-transfer-progress');
-		await expect(progress).toBeVisible({ timeout: 10000 });
-		// progress phase line interpolates 'Phase: %s' — no raw % residue
-		await expect(page.locator('#kzc-transfer-progress-text')).not.toContainText(/%(?:\d+\$)?[sd]/);
+		// Serialize the mutating leg: apply holds an exclusive server mutex
+		// over a single job/receipt slot — craft-transfer's apply leg would
+		// race it in a parallel worker (loser dies TRANSFER_IN_PROGRESS and
+		// its progress dialog flash-closes before any poll sees it).
+		const releaseApplyLock = await acquireTransferApplyLock();
+		try {
+			await page.locator('#kzc-transfer-confirm').click();
+			const progress = page.locator('#kzc-transfer-progress');
+			await expect(progress).toBeVisible({ timeout: 30000 });
+			// progress phase line interpolates 'Phase: %s' — no raw % residue
+			await expect(page.locator('#kzc-transfer-progress-text')).not.toContainText(/%(?:\d+\$)?[sd]/);
 
-		const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
-		expect(jobId).toMatch(/^\d+$/);
-		// receipt id of the PREVIOUS run — the poll must wait for a NEW one,
-		// otherwise it latches onto the stale 'applied' receipt immediately.
-		const before = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
-		const priorReceiptId = (((await before.json()).data || {}).lastReceipt || {}).id || '';
-		occ(`background-job:execute ${jobId}`);
+			const jobId = db("SELECT id FROM oc_jobs WHERE class LIKE '%TransferApplyJob%' ORDER BY id DESC LIMIT 1");
+			expect(jobId).toMatch(/^\d+$/);
+			// receipt id of the PREVIOUS run — the poll must wait for a NEW one,
+			// otherwise it latches onto the stale 'applied' receipt immediately.
+			const before = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
+			const priorReceiptId = (((await before.json()).data || {}).lastReceipt || {}).id || '';
+			occ(`background-job:execute ${jobId}`);
 
-		// poll status until THIS apply's receipt lands
-		let receipt = {};
-		for (let i = 0; i < 60; i++) {
-			const s = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
-			const d = (await s.json()).data || {};
-			receipt = d.lastReceipt || {};
-			if (receipt.id && receipt.id !== priorReceiptId
-				&& (receipt.result === 'applied' || receipt.result === 'failed')) break;
-			await new Promise((r) => setTimeout(r, 1000));
+			// poll status until THIS apply's receipt lands
+			let receipt = {};
+			for (let i = 0; i < 60; i++) {
+				const s = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
+				const d = (await s.json()).data || {};
+				receipt = d.lastReceipt || {};
+				if (receipt.id && receipt.id !== priorReceiptId
+					&& (receipt.result === 'applied' || receipt.result === 'failed')) break;
+				await new Promise((r) => setTimeout(r, 1000));
+			}
+			expect(receipt.id).not.toBe(priorReceiptId);
+			expect(receipt.result).toBe('applied');
+			expect(receipt.mode).toBe('merge');
+		} finally {
+			releaseApplyLock();
 		}
-		expect(receipt.id).not.toBe(priorReceiptId);
-		expect(receipt.result).toBe('applied');
-		expect(receipt.mode).toBe('merge');
 	});
 });

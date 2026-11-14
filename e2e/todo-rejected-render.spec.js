@@ -70,7 +70,9 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		await page.locator('#kzc-send-btn').click();
 		await page.locator('#kzc-verify-form').waitFor({ state: 'visible', timeout: 15000 });
 		await page.locator('#kzc-code').fill(await readOtp('lena.brandt@mueller-soehne.example'));
-		await page.locator('#kzc-verify-btn').click();
+		// 6-digit input auto-submits — no click: a second POST burns the shared
+		// /portal/api/auth/verify AnonRateLimit budget (20/300s per IP, non-JSON
+		// 429 → generic status line) twice per login and saturates the suite.
 		await page.waitForURL('**/apps/kanzleicheck/portal**', { timeout: 20000 });
 
 		// Multi-org identities land on the org picker first — pick the fixture

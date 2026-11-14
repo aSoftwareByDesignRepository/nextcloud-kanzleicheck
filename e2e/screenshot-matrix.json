@@ -93,6 +93,15 @@
     "current"
    ],
    "readySelector": "#kzc-body .kzc-card"
+  },
+  {
+   "id": "staff-settings-about",
+   "path": "/settings/about",
+   "staff": true,
+   "states": [
+    "current"
+   ],
+   "readySelector": "#kzc-about-sponsor-card"
   }
  ]
 }
