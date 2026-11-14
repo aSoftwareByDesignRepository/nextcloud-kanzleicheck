@@ -146,12 +146,18 @@ class ChatService
 		if ($orgIds === []) {
 			return [];
 		}
-		$qb = $this->db->getQueryBuilder();
-		$qb->select('c.id', 'c.org_id', 'c.state', 'c.last_message_at')
-			->from('kzc_conv', 'c')
-			->where($qb->expr()->in('c.org_id', $qb->createNamedParameter(array_map('intval', $orgIds), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-			->orderBy('c.last_message_at', 'DESC');
-		$rows = $qb->executeQuery()->fetchAll() ?: [];
+		// NC rejects >1000-expression IN lists for Oracle portability —
+		// chunk and merge, then re-sort by last activity.
+		$rows = [];
+		foreach (array_chunk(array_map('intval', $orgIds), 1000) as $chunk) {
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('c.id', 'c.org_id', 'c.state', 'c.last_message_at')
+				->from('kzc_conv', 'c')
+				->where($qb->expr()->in('c.org_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+				->orderBy('c.last_message_at', 'DESC');
+			$rows = array_merge($rows, $qb->executeQuery()->fetchAll() ?: []);
+		}
+		usort($rows, static fn ($a, $b) => strcmp((string)($b['last_message_at'] ?? ''), (string)($a['last_message_at'] ?? '')));
 		$out = [];
 		foreach ($rows as $r) {
 			$convId = (int)$r['id'];

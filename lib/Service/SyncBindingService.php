@@ -183,8 +183,13 @@ class SyncBindingService
 		if ($identity->getNcUid() !== null && $identity->getNcUid() !== '') {
 			throw new ApiException(409, 'SYNC_ALREADY_BOUND', 'identity is already bound — unbind first');
 		}
-		$other = $this->identities->findByNcUid($ncUid);
-		$shared = $other !== null && (int)$other->getId() !== $identityId;
+		$shared = false;
+		foreach ($this->identities->findAllByNcUid($ncUid) as $other) {
+			if ((int)$other->getId() !== $identityId) {
+				$shared = true;
+				break;
+			}
+		}
 		if ($shared && !$acceptShared) {
 			throw new ApiException(409, 'SYNC_UID_SHARED', 'account is already bound to a different identity');
 		}
@@ -590,9 +595,10 @@ class SyncBindingService
 		if (!$user->isEnabled()) {
 			return 'uid_disabled';
 		}
-		$other = $this->identities->findByNcUid($ncUid);
-		if ($other !== null && IdentityService::normalizeEmail($other->getEmail()) !== IdentityService::normalizeEmail($identityEmail)) {
-			return 'uid_shared';
+		foreach ($this->identities->findAllByNcUid($ncUid) as $other) {
+			if (IdentityService::normalizeEmail($other->getEmail()) !== IdentityService::normalizeEmail($identityEmail)) {
+				return 'uid_shared';
+			}
 		}
 		$ncMail = IdentityService::normalizeEmail((string)($user->getEMailAddress() ?? ''));
 		if ($ncMail === '' || $ncMail !== IdentityService::normalizeEmail($identityEmail)) {

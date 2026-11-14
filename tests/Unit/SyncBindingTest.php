@@ -132,7 +132,7 @@ class SyncBindingTest extends TestCase
 		$this->door->method('isRestricted')->willReturn(true);
 		$this->door->method('isStaff')->willReturn(false);
 		$this->userManager->method('get')->willReturn($this->user('max'));
-		$this->identities->method('findByNcUid')->willReturn(null);
+		$this->identities->method('findAllByNcUid')->willReturn([]);
 		$this->identities->expects($this->once())->method('update')->with($i);
 		$out = $this->svc->attach('admin', 7, 'max');
 		$this->assertSame('max', $out->getNcUid());
@@ -195,9 +195,28 @@ class SyncBindingTest extends TestCase
 		$this->door->method('isStaff')->willReturn(false);
 		$this->userManager->method('get')->willReturn($this->user('shared'));
 		$other = $this->identity(8, 'other@x.de', 'shared');
-		$this->identities->method('findByNcUid')->willReturn($other);
+		$this->identities->method('findAllByNcUid')->willReturn([$other]);
 		$this->assertSame('SYNC_UID_SHARED', $this->code(fn() => $this->svc->attach('admin', 7, 'shared')));
 		// explicit flag binds + audit detail marks shared_uid
+		$this->identities->expects($this->once())->method('update');
+		$out = $this->svc->attach('admin', 7, 'shared', false, true);
+		$this->assertSame('shared', $out->getNcUid());
+	}
+
+	public function testAttachDuplicateNcUidRowsStillGates(): void
+	{
+		// regression: acceptShared binds leave multiple identities on one uid —
+		// lookup must not throw >1-row and must still gate the next attach
+		$this->identities->method('find')->willReturn($this->identity());
+		$this->userManager->method('userExists')->willReturn(true);
+		$this->door->method('isRestricted')->willReturn(true);
+		$this->door->method('isStaff')->willReturn(false);
+		$this->userManager->method('get')->willReturn($this->user('shared'));
+		$this->identities->method('findAllByNcUid')->willReturn([
+			$this->identity(8, 'other@x.de', 'shared'),
+			$this->identity(9, 'other2@x.de', 'shared'),
+		]);
+		$this->assertSame('SYNC_UID_SHARED', $this->code(fn() => $this->svc->attach('admin', 7, 'shared')));
 		$this->identities->expects($this->once())->method('update');
 		$out = $this->svc->attach('admin', 7, 'shared', false, true);
 		$this->assertSame('shared', $out->getNcUid());
@@ -838,7 +857,21 @@ class SyncBindingTest extends TestCase
 		$this->userManager->method('get')->willReturn($this->user('shared', 'a@b.de'));
 		$this->door->method('isStaff')->willReturn(false);
 		// uid bound to a DIFFERENT email → shared bucket
-		$this->identities->method('findByNcUid')->willReturn($this->identity(9, 'other@x.de', 'shared'));
+		$this->identities->method('findAllByNcUid')->willReturn([$this->identity(9, 'other@x.de', 'shared')]);
+		$this->assertSame('uid_shared', $this->svc->classifyNcUid('shared', 'a@b.de'));
+	}
+
+	public function testClassifySharedUidLaterRowMismatch(): void
+	{
+		// regression: with duplicate bound rows a mismatching email on ANY
+		// row must classify shared — a first-row-only check misses it
+		$this->door->method('isRestricted')->willReturn(true);
+		$this->userManager->method('get')->willReturn($this->user('shared', 'a@b.de'));
+		$this->door->method('isStaff')->willReturn(false);
+		$this->identities->method('findAllByNcUid')->willReturn([
+			$this->identity(9, 'a@b.de', 'shared'),
+			$this->identity(10, 'other@x.de', 'shared'),
+		]);
 		$this->assertSame('uid_shared', $this->svc->classifyNcUid('shared', 'a@b.de'));
 	}
 
@@ -937,7 +970,7 @@ class SyncBindingTest extends TestCase
 		$this->door->method('isRestricted')->willReturn(true);
 		$this->userManager->method('get')->willReturnCallback(fn($u) => $u === 'okuid' ? $this->user('okuid', 'a@b.de') : null);
 		$this->door->method('isStaff')->willReturn(false);
-		$this->identities->method('findByNcUid')->willReturn(null);
+		$this->identities->method('findAllByNcUid')->willReturn([]);
 		$this->assertSame('ok', $this->svc->classifyNcUid('  okuid  ', 'a@b.de'));
 	}
 
@@ -1042,7 +1075,7 @@ class SyncBindingTest extends TestCase
 			default => null,
 		});
 		$this->door->method('isStaff')->willReturnCallback(fn($uid) => $uid === 'staffer');
-		$this->identities->method('findByNcUid')->willReturn(null);
+		$this->identities->method('findAllByNcUid')->willReturn([]);
 		$this->assertSame('ok', $this->svc->classifyNcUid('okuid', 'a@b.de'));
 		$this->assertSame('uid_unknown', $this->svc->classifyNcUid('ghost', 'a@b.de'));
 		$this->assertSame('staff_uid', $this->svc->classifyNcUid('staffer', 'a@b.de'));

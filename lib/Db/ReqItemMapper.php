@@ -74,12 +74,17 @@ class ReqItemMapper extends QBMapper
 		if ($reqIds === []) {
 			return [];
 		}
-		$qb = $this->db->getQueryBuilder();
-		$qb->select('req_id', 'state', $qb->func()->count('*', 'n'))->from($this->getTableName())
-			->where($qb->expr()->in('req_id', $qb->createNamedParameter(array_map('intval', $reqIds), \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-			->groupBy('req_id', 'state');
+		// NC rejects >1000-expression IN lists for Oracle portability — chunk.
+		$rows = [];
+		foreach (array_chunk(array_map('intval', $reqIds), 1000) as $chunk) {
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('req_id', 'state', $qb->func()->count('*', 'n'))->from($this->getTableName())
+				->where($qb->expr()->in('req_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+				->groupBy('req_id', 'state');
+			$rows = array_merge($rows, $qb->executeQuery()->fetchAll() ?: []);
+		}
 		$out = [];
-		foreach ($qb->executeQuery()->fetchAll() ?: [] as $row) {
+		foreach ($rows as $row) {
 			$rid = (int)$row['req_id'];
 			$out[$rid]['total'] = ($out[$rid]['total'] ?? 0) + (int)$row['n'];
 			$out[$rid]['accepted'] = $out[$rid]['accepted'] ?? 0;

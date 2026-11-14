@@ -131,7 +131,7 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 			}
 			db(`DELETE FROM oc_kzc_sync WHERE org_id=${orgId};
 DELETE FROM oc_kzc_member WHERE org_id=${orgId};
-DELETE FROM oc_kzc_identity WHERE email='${email}';
+DELETE FROM oc_kzc_identity WHERE email='${email}' OR nc_uid='kzc_atlas_nonstaff';
 DELETE FROM oc_kzc_org WHERE ref='SYN-${tag}';
 UPDATE oc_appconfig SET configvalue='${origAdmins.replace(/'/g, "''")}' WHERE appid='kanzleicheck' AND configkey='app_admins';`);
 		}

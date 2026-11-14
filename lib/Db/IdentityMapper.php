@@ -71,17 +71,24 @@ class IdentityMapper extends QBMapper
 		}
 	}
 
-	/** Identity bound to a given NC uid (attach binding), or null. */
-	public function findByNcUid(string $ncUid): ?Identity
+	/**
+	 * Identities bound to a given NC uid. acceptShared binds make duplicate
+	 * nc_uid rows a legitimate state — findEntity would throw >1-row.
+	 * @return list<Identity>
+	 */
+	public function findAllByNcUid(string $ncUid): array
 	{
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')->from($this->getTableName())
 			->where($qb->expr()->eq('nc_uid', $qb->createNamedParameter($ncUid)));
-		try {
-			return $this->findEntity($qb);
-		} catch (DoesNotExistException) {
-			return null;
-		}
+		return $this->findEntities($qb);
+	}
+
+	/** Identity bound to a given NC uid (attach binding), or null. */
+	public function findByNcUid(string $ncUid): ?Identity
+	{
+		$rows = $this->findAllByNcUid($ncUid);
+		return $rows[0] ?? null;
 	}
 
 	/** @return list<Identity> */

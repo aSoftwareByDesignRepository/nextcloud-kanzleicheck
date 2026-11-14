@@ -106,13 +106,15 @@ class TaskMapper extends QBMapper
 
 	public function countOpenByOrgs(array $orgIds): int
 	{
-		if ($orgIds === []) {
-			return 0;
+		// NC rejects >1000-expression IN lists for Oracle portability — chunk.
+		$total = 0;
+		foreach (array_chunk(array_map('intval', $orgIds), 1000) as $chunk) {
+			$qb = $this->db->getQueryBuilder();
+			$qb->select($qb->func()->count('*'))->from($this->getTableName())
+				->where($qb->expr()->in('org_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+				->andWhere($qb->expr()->neq('status', $qb->createNamedParameter('done')));
+			$total += (int)$qb->executeQuery()->fetchOne();
 		}
-		$qb = $this->db->getQueryBuilder();
-		$qb->select($qb->func()->count('*'))->from($this->getTableName())
-			->where($qb->expr()->in('org_id', $qb->createNamedParameter($orgIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-			->andWhere($qb->expr()->neq('status', $qb->createNamedParameter('done')));
-		return (int)$qb->executeQuery()->fetchOne();
+		return $total;
 	}
 }
