@@ -2,3 +2,4 @@ node_modules/
 test-results/
 tests/e2e/.env
 var/
+infection.log

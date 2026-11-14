@@ -1,0 +1,14 @@
+{
+	"$schema": "vendor/infection/infection/resources/schema.json",
+	"source": {
+		"directories": ["lib/Service", "lib/Middleware"],
+		"excludes": ["lib/Service/Migration"]
+	},
+	"logs": { "text": "infection.log" },
+	"mutators": { "@default": true },
+	"timeout": 30,
+	"tmpDir": "/tmp/kzc-infection",
+	"phpUnit": { "customPath": "vendor/bin/phpunit" },
+	"minMsi": 0,
+	"minCoveredMsi": 0
+}
