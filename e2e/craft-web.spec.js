@@ -203,11 +203,15 @@ test.describe('craft web', () => {
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		const orgId = await page.evaluate(async () => {
-			const r = await fetch('api/portal/orgs', { headers: { Accept: 'application/json' } }).then((x) => x.json());
-			const orgs = (r && r.data && r.data.orgs) || [];
-			return orgs.length ? orgs[0].id : 0;
+			// Must be an org WITH messages and an OPEN conversation — orgs[0]
+			// can be an import-fixture with none (empty #kzc-msgs → hidden),
+			// and an archived conversation has its composer removed on paint.
+			const r = await fetch('api/portal/inbox', { headers: { Accept: 'application/json' } }).then((x) => x.json());
+			const convs = (r && r.data && r.data.conversations) || [];
+			const open = convs.find((c) => c.state !== 'archived');
+			return open ? open.orgId : 0;
 		});
-		test.skip(!orgId, 'no org fixture');
+		test.skip(!orgId, 'no conversation fixture');
 		await page.goto(`${APP}/?view=inbox&org=${orgId}`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		await page.locator('#app-navigation .kzc-nav__link.is-active[href*="view=inbox"]').waitFor({ state: 'visible', timeout: 15000 });

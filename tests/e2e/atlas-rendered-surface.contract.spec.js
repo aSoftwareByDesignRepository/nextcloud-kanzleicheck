@@ -19,6 +19,9 @@ test.describe('Rendered-surface contract', () => {
 			content: '.kzc-portal',
 			navExclude: 'nav',
 			listAllow: '.kzc-tabbar',
+			// OTP code box: centered + letter-spaced is the deliberate
+			// one-time-code anatomy, not inherited shell centering.
+			centerAllow: '.kzc-input--code',
 		});
 	});
 

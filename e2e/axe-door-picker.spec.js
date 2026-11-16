@@ -1,0 +1,23 @@
+const {test,expect}=require('@playwright/test');
+const {AxeBuilder}=require('/home/alex/Development/nextcloud-dev/nextcloud/apps/bookingcheck/node_modules/@axe-core/playwright');
+const {login,hasCreds,creds}=require('../tests/e2e/helpers/auth.js');
+const APP='/index.php/apps/kanzleicheck';
+test('axe door pickers + resp-staff dialog',async({page})=>{
+  test.skip(!hasCreds(),'no creds');
+  await login(page,creds());
+  await page.goto(APP+'/settings/access');
+  await page.waitForSelector('#d-users',{timeout:15000});
+  await page.fill('#d-users','kzc');
+  await page.waitForSelector('.kzc-picker__results:not([hidden]) li',{timeout:8000});
+  const r=await new AxeBuilder({page}).include('#app-content').analyze();
+  console.log('access+listbox violations:',r.violations.length,JSON.stringify(r.violations.map(v=>({id:v.id,n:v.nodes.length}))));
+  await page.goto(APP+'/?view=orgs');
+  await page.waitForSelector('button.kzc-row',{timeout:15000});
+  await page.locator('button.kzc-row').first().click();
+  await page.waitForSelector('#kzc-resp',{timeout:12000});
+  await page.getByRole('button',{name:/Set responsible staff|Zuständige Mitarbeiter/}).click();
+  await page.waitForSelector('dialog[open] .kzc-picker',{timeout:8000});
+  const r2=await new AxeBuilder({page}).analyze();
+  console.log('resp-dlg violations:',r2.violations.length,JSON.stringify(r2.violations.map(v=>({id:v.id,nodes:v.nodes.slice(0,3).map(n=>n.target)}))));
+  expect(r.violations.length+r2.violations.length).toBe(0);
+});

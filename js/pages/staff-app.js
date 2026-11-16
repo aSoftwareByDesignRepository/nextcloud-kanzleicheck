@@ -96,10 +96,18 @@ function field(id,label,type,val,hint){
   return '<div class="kzc-field"><label class="kzc-label" for="'+id+'">'+esc(label)+'</label><input id="'+id+'" class="kzc-input" type="'+esc(type||'text')+'" value="'+esc(val==null?'':val)+'">'+(hint?'<p class="kzc-field__hint kzc-muted">'+esc(hint)+'</p>':'')+'</div>';
 }
 function checkField(id,label){return '<label class="kzc-check"><input type="checkbox" id="'+id+'"> '+esc(label)+'</label>';}
+function pickerField(id,label,ph){return '<div class="kzc-field"><label class="kzc-label" for="'+id+'">'+esc(label)+'</label><div class="kzc-picker"><input id="'+id+'" class="kzc-input" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="'+id+'-results" placeholder="'+esc(ph)+'"><ul id="'+id+'-results" class="kzc-picker__results" role="listbox" hidden></ul><div class="kzc-picker__chips" role="list"></div></div></div>';}
 const status=t=>{const s=document.getElementById('kzc-live');if(s)s.textContent=t||'';document.getElementById('kzc-loading')?.remove();};
 const ok=m=>{if(window.KZCToasts)KZCToasts.success(m);else status(m);};
 const warnT=m=>{if(window.KZCToasts)KZCToasts.warn(m);else status(m);};
 const err=m=>{if(window.KZCToasts)KZCToasts.error(m);else status(m);};
+/* Directory search feed for every people/group picker — directory pick only,
+   never raw uid/gid typing (access-door + staff-picker mandate). */
+const searchDir=async(path,term,signal)=>{
+  const r=await fetch(base+path+'?q='+encodeURIComponent(term),{headers:{Accept:'application/json'},signal}).then(x=>x.json()).catch(e=>{if(e&&e.name==='AbortError')throw e;return{};});
+  return ((r&&r.data&&(r.data.users||r.data.groups))||[]).map(u=>({id:u.uid||u.gid,label:(u.displayName&&u.displayName!==u.uid)?u.displayName+' ('+(u.uid||u.gid)+')':(u.uid||u.gid)}));
+};
+const dirPicker=(root,initial,path,onChange)=>KZC.initPicker({input:root.querySelector('input'),results:root.querySelector('.kzc-picker__results'),chips:root.querySelector('.kzc-picker__chips'),selected:(initial||[]).map(v=>({id:v,label:v})),search:(term,signal)=>searchDir(path,term,signal),onChange});
 let ME_ADMIN=false;
 /* per-loader generation counters — a superseded list fetch must never paint
    over a newer result (stale_response_render_clobber). Module scope so view
@@ -533,11 +541,17 @@ async function openOrg(id){
   const rc=card(t('Responsible staff'),t('Colleagues assigned to this client — shown in "Only my clients" filters.'));
   rc.body.appendChild(h('<div id="kzc-resp" class="kzc-list"></div>'));
   rc.actions.appendChild(btn(t('Set responsible staff'),async()=>{
-    const f=await ask(t('Responsible staff'),t('NC user ids (comma-separated, max 5)'),t('Save'));
-    if(f===null)return;
-    const uids=f.v.split(',').map(x=>x.trim()).filter(Boolean).slice(0,5);
-    const rr=await put('/api/portal/orgs/'+id+'/contacts',{userIds:uids});
-    rr.success||rr.status===204?ok(t('Saved.')):err(rr.message||t('Error'));openOrg(id);
+    const dlg=dlgShell(t('Set responsible staff'),pickerField('rs-q',t('Responsible staff'),t('Search users…')),t('Save'));
+    document.body.appendChild(dlg);
+    let pk;
+    pk=dirPicker(dlg.querySelector('.kzc-picker'),(r.data.contacts||[]).map(c=>c.user_id||c.userId),'/api/portal/users/search',ids=>{if(ids.length>5){pk.setSelected(pk.getSelected().slice(0,5));warnT(t('Choose up to five colleagues.'));}});
+    dlg.addEventListener('close',async()=>{
+      if(dlg.returnValue!=='ok'){dlg.remove();return;}
+      const uids=pk.getSelected().map(x=>x.id).slice(0,5);
+      const rr=await put('/api/portal/orgs/'+id+'/contacts',{userIds:uids});
+      rr.success||rr.status===204?ok(t('Saved.')):err(rr.message||t('Error'));dlg.remove();openOrg(id);
+    });
+    dlg.showModal();
   },{sm:true}));
   body.appendChild(rc.card);
   const resp=document.getElementById('kzc-resp');
@@ -844,13 +858,14 @@ async function vSettings(section){
     body.appendChild(c.card);
   }else if(sec==='access'){
     const dc=card(t('Access (door)'),t('Who may open the staff area — restrict to groups/users, plus the app-admin role.'));
-    const door=h('<div>'+checkField('d-restr',t('Restricted (selected groups/users only)'))+'<p class="kzc-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p>'+field('d-users',t('Allowed users (comma-separated)'))+field('d-admins',t('App admins (comma-separated)'))+'<div class="kzc-actions"></div></div>').firstElementChild;
+    const door=h('<div>'+checkField('d-restr',t('Restricted (selected groups/users only)'))+'<p class="kzc-muted">'+esc(t('Platform restriction:'))+' '+(d.platformGroups.length?esc(d.platformGroups.join(', ')):esc(t('none')))+'</p>'+pickerField('d-groups',t('Allowed groups'),t('Search groups…'))+pickerField('d-users',t('Allowed users'),t('Search users…'))+pickerField('d-admins',t('App admins'),t('Search users…'))+'<div class="kzc-actions"></div></div>').firstElementChild;
     door.querySelector('#d-restr').checked=d.restricted;
-    door.querySelector('#d-users').value=(d.allowedUsers||[]).join(', ');
-    door.querySelector('#d-admins').value=(d.appAdmins||[]).join(', ');
+    const pGroups=dirPicker(door.querySelector('#d-groups').closest('.kzc-picker'),d.allowedGroups,'/api/portal/groups/search');
+    const pUsers=dirPicker(door.querySelector('#d-users').closest('.kzc-picker'),d.allowedUsers,'/api/portal/users/search');
+    const pAdmins=dirPicker(door.querySelector('#d-admins').closest('.kzc-picker'),d.appAdmins,'/api/portal/users/search');
     door.querySelector('.kzc-actions').appendChild(btn(t('Save door'),async()=>{
-      const csv=v=>v.split(',').map(x=>x.trim()).filter(Boolean);
-      const rr=await put('/api/portal/door',{restricted:door.querySelector('#d-restr').checked,groups:[],users:csv(door.querySelector('#d-users').value),appAdmins:csv(door.querySelector('#d-admins').value)});
+      const ids=p=>p.getSelected().map(x=>x.id);
+      const rr=await put('/api/portal/door',{restricted:door.querySelector('#d-restr').checked,groups:ids(pGroups),users:ids(pUsers),appAdmins:ids(pAdmins)});
       rr.success?ok(t('Saved.')):err(rr.message||t('Error'));
     },{variant:'primary'}));
     dc.body.appendChild(door);

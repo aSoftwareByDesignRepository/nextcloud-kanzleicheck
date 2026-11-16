@@ -735,7 +735,7 @@ dialog .kzc-btn--primary:active,
 
 /* Key/value detail rows (org detail, form answers). */
 .kzc-kvrow{display:flex;gap:var(--kzc-space-3,12px);padding:6px 0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 8%,transparent));}
-.kzc-kvrow span{min-width:140px;color:var(--color-text-maxcontrast);}
+.kzc-kvrow>span{min-width:140px;color:var(--color-text-maxcontrast);}
 
 /* Chat thread (US-P07). */
 .kzc-msgs{display:flex;flex-direction:column;gap:var(--kzc-space-2,8px);max-height:50vh;overflow-y:auto;padding:var(--kzc-space-2,8px) 0;}

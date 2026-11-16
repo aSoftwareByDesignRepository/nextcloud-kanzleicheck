@@ -46,6 +46,7 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\StreamResponse;
+use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
@@ -101,6 +102,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		private readonly ActorResolver $actors,
 		private readonly IURLGenerator $urls,
 		private readonly IUserManager $userManager,
+		private readonly IGroupManager $groupManager,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -646,6 +648,27 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 			}
 		}
 		return $this->ok(['users' => $out]);
+	}
+
+	/** Group picker for the access door — directory pick only, no raw gid typing. */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function searchGroups(): JSONResponse
+	{
+		$q = trim((string)$this->request->getParam('q', ''));
+		$out = [];
+		if ($q !== '') {
+			foreach ((array)$this->groupManager->search($q, 20, 0) as $g) {
+				$gid = (string)$g->getGID();
+				if ($gid === '' || $gid === 'admin') {
+					continue;
+				}
+				$out[] = ['gid' => $gid, 'displayName' => $g->getDisplayName()];
+				if (count($out) >= 20) {
+					break;
+				}
+			}
+		}
+		return $this->ok(['groups' => $out]);
 	}
 
 	private function syncBindings(): \OCA\KanzleiCheck\Service\SyncBindingService

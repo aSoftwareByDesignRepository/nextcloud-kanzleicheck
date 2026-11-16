@@ -85,6 +85,46 @@
       "readySelector": "#kzc-body .kzc-table"
     },
     {
+      "id": "staff-inbox",
+      "path": "/",
+      "staff": true,
+      "nav": "inbox",
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-body .kzc-card"
+    },
+    {
+      "id": "staff-holds",
+      "path": "/",
+      "staff": true,
+      "nav": "holds",
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-body .kzc-card"
+    },
+    {
+      "id": "staff-forms",
+      "path": "/",
+      "staff": true,
+      "nav": "forms",
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-body .kzc-card"
+    },
+    {
+      "id": "staff-people",
+      "path": "/",
+      "staff": true,
+      "nav": "people",
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-plist"
+    },
+    {
       "id": "staff-settings",
       "path": "/settings/general",
       "staff": true,
@@ -92,6 +132,60 @@
         "current"
       ],
       "readySelector": "#kzc-settings-pages"
+    },
+    {
+      "id": "staff-settings-access",
+      "path": "/settings/access",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#d-restr"
+    },
+    {
+      "id": "staff-settings-documents",
+      "path": "/settings/documents",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#s-max"
+    },
+    {
+      "id": "staff-settings-mail",
+      "path": "/settings/mail",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#m-en"
+    },
+    {
+      "id": "staff-settings-license",
+      "path": "/settings/license",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#l-actions"
+    },
+    {
+      "id": "staff-settings-diagnostics",
+      "path": "/settings/diagnostics",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": ".kzc-kvrow"
+    },
+    {
+      "id": "staff-settings-transfer",
+      "path": "/settings/transfer",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-transfer-export-form"
     },
     {
       "id": "staff-settings-about",

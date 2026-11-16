@@ -84,6 +84,16 @@
 	background: color-mix(in srgb, var(--color-main-text) 5%, var(--color-main-background));
 }
 
+/* Secondary text inside a tinted callout: --color-text-maxcontrast is only
+ * calibrated against --color-main-background and falls below WCAG AA 4.5:1
+ * on the tint fills (axe-measured 3.7–4.19 on info/warning). Pull the muted
+ * ink toward main-text so the hierarchy survives on every tint. */
+#app-content.kzc-app .kzc-callout .kzc-muted,
+.kzc-nc-admin-settings .kzc-callout .kzc-muted,
+.modal-backdrop .kzc-callout .kzc-muted {
+	color: var(--kzc-muted-on-tint, color-mix(in srgb, var(--color-text-maxcontrast) 55%, var(--color-main-text)));
+}
+
 /* Semantic panel panel tints: common/semantic-surfaces.css */
 
 /* ── Icon wells: pale tint + semantic stroke (same model as .kzc-page-header__icon) ── */
