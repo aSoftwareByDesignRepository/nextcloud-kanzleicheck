@@ -6,6 +6,11 @@
 
 /* ── Shell ── */
 .kzc-portal{min-height:100vh;display:flex;flex-direction:column;align-items:stretch;padding:var(--kzc-space-5,24px) var(--kzc-space-3,12px);padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));font-size:var(--kzc-fs-md,1rem);background:var(--kzc-bg-soft,color-mix(in srgb,var(--color-main-background) 96%,var(--color-main-text) 4%));color:var(--color-main-text);text-align:start;}
+/* The HTML `hidden` attribute alone loses to component display rules
+ * (.kzc-form{display:flex} un-hid the guest login verify form). The synced
+ * surfaces.css guard scopes to #app-content.kzc-app, which guest pages
+ * never render — port it under the portal root (same defect class). */
+.kzc-portal [hidden]{display:none!important;}
 .kzc-portal,.kzc-portal *,.kzc-portal *::before,.kzc-portal *::after{box-sizing:border-box;}
 .kzc-view{width:100%;max-width:680px;margin:0 auto;}
 .kzc-portal > main.kzc-card{margin:0 auto;text-align:center;}
@@ -73,7 +78,7 @@
 .kzc-dev .kzc-btn{min-height:36px;font-size:.875rem;}
 .kzc-kvrow{display:flex;gap:var(--kzc-space-3,12px);padding:8px 0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 8%,transparent));}
 .kzc-kvrow:last-child{border-bottom:0;}
-.kzc-kvrow span{flex:1;min-width:0;color:var(--color-text-maxcontrast);}
+.kzc-kvrow>span{flex:1;min-width:0;color:var(--color-text-maxcontrast);}
 .kzc-kvrow b{text-align:end;}
 
 /* ── Callouts + empty states ── */
