@@ -618,12 +618,31 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		$q = trim((string)$this->request->getParam('q', ''));
 		$out = [];
 		if ($q !== '') {
-			foreach ($this->userManager->search($q, 20) as $u) {
-				// Staff pickers never offer deactivated accounts — they cannot sign in.
-				if (!$u->isEnabled()) {
-					continue;
+			// search() only matches the user id on some backends — merge with the
+			// display-name search so staff are found by name either way.
+			$byName = [];
+			try {
+				$byName = (array)$this->userManager->searchDisplayName($q, 40, 0);
+			} catch (\Throwable) {
+				$byName = [];
+			}
+			$seen = [];
+			foreach ([(array)$this->userManager->search($q, 40, 0), $byName] as $batch) {
+				foreach ($batch as $u) {
+					// Staff pickers never offer deactivated accounts — they cannot sign in.
+					if (!$u->isEnabled()) {
+						continue;
+					}
+					$uid = (string)$u->getUID();
+					if ($uid === '' || isset($seen[$uid])) {
+						continue;
+					}
+					$seen[$uid] = true;
+					$out[] = ['uid' => $uid, 'displayName' => $u->getDisplayName(), 'email' => $u->getEMailAddress(), 'staff' => $this->door->isStaff($uid)];
+					if (count($out) >= 20) {
+						break 2;
+					}
 				}
-				$out[] = ['uid' => $u->getUID(), 'displayName' => $u->getDisplayName(), 'email' => $u->getEMailAddress(), 'staff' => $this->door->isStaff($u->getUID())];
 			}
 		}
 		return $this->ok(['users' => $out]);
