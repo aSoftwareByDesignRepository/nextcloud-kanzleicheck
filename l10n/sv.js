@@ -1,12 +1,6 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
-	"%d row(s) need a value on this instance" : "%d rad(er) behöver ett värde på den här instansen",
-	"%d row(s) skipped and %d reference(s) unresolved — see the groups below." : "%d rad(er) hoppades över och %d referens(er) olösta — se grupperna nedan.",
-	"(%d env-bound value(s) emptied)" : "(%d instansbundna värde(n) tömda)",
-	"(%d filtered)" : "(%d filtrerade)",
-	"(%d secret(s) redacted)" : "(%d hemlighet(er) maskerade)",
-	"(%d unresolved ref)" : "(%d olöst referens)",
 	"(archived)" : "(arkiverad)",
 	"(opens in a new tab)" : "(öppnas i en ny flik)",
 	"(revoked)" : "(återkallad)",
@@ -263,7 +257,6 @@ OC.L10N.register(
 	"Off" : "Av",
 	"off" : "av",
 	"Offboard" : "Inaktivera",
-	"Offboarded — but" : "Inaktiverad — men",
 	"OK" : "OK",
 	"ok" : "ok",
 	"OK — a longer passphrase is safer." : "OK — en längre lösenfras är säkrare.",
@@ -391,7 +384,6 @@ OC.L10N.register(
 	"Submitted. Thank you!" : "Inskickat. Tack!",
 	"Switch organisation" : "Byt organisation",
 	"Sync off." : "Synkronisering av.",
-	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synkroniserade delning(ar) kunde inte återkallas. Öppna Skrivbordssynkronisering nedan och återkalla dem igen.",
 	"Tasks" : "Uppgifter",
 	"Template" : "Mall",
 	"Templates" : "Mallar",
@@ -448,7 +440,6 @@ OC.L10N.register(
 	"Verifying references" : "Verifierar referenser",
 	"Waiting" : "Väntar",
 	"Waiting for the job…" : "Väntar på jobbet…",
-	"Warning: %d row(s) will be permanently deleted, then the file data is loaded." : "Varning: %d rad(er) raderas permanent, sedan laddas fildatan in.",
 	"We have sent you a code." : "Vi har skickat dig en kod.",
 	"We sent you a confirmation code by e-mail. Enter the code:" : "Vi skickade dig en bekräftelsekod via e-post. Ange koden:",
 	"We will let you know when we need something." : "Vi meddelar dig när vi behöver något.",
@@ -466,6 +457,15 @@ OC.L10N.register(
 	"You do not have the rights for this action." : "Du har inte behörighet för den här åtgärden.",
 	"Your contact person" : "Din kontaktperson",
 	"Your provider" : "Din leverantör",
-	"Your sign-in is linked to more than one organisation." : "Din inloggning är kopplad till fler än en organisation."
+	"Your sign-in is linked to more than one organisation." : "Din inloggning är kopplad till fler än en organisation.",
+	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 instansbundet värde tömt)","(%n instansbundna värden tömda)"],
+	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrerad)","(%n filtrerade)"],
+	"_(1 secret redacted)_::_(%n secrets redacted)_" : ["(1 hemlighet maskerad)","(%n hemligheter maskerade)"],
+	"_(1 unresolved ref)_::_(%n unresolved refs)_" : ["(1 olöst referens)","(%n olösta referenser)"],
+	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referens är olöst — se grupperna nedan.","%n referenser är olösta — se grupperna nedan."],
+	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 rad behöver ett värde på den här instansen","%n rader behöver ett värde på den här instansen"],
+	"_1 row skipped._::_%n rows skipped._" : ["1 rad hoppades över.","%n rader hoppades över."],
+	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Varning: 1 rad raderas permanent, sedan läses filens data in.","Varning: %n rader raderas permanent, sedan läses filens data in."],
+	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Inaktiverad — men 1 synkroniserad delning kunde inte återkallas. Öppna Skrivbordssynkronisering nedan och återkalla den igen.","Inaktiverad — men %n synkroniserade delningar kunde inte återkallas. Öppna Skrivbordssynkronisering nedan och återkalla dem igen."]
 	}
 );

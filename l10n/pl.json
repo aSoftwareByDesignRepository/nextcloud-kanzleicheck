@@ -1,11 +1,5 @@
 {
 	"translations": {
-		"%d row(s) need a value on this instance": "%d wiersz(y) wymagają wartości na tej instancji",
-		"%d row(s) skipped and %d reference(s) unresolved — see the groups below.": "%d wiersz(y) pominiętych i %d odwołanie(ań) nierozwiązanych — patrz grupy poniżej.",
-		"(%d env-bound value(s) emptied)": "(%d wartość(i) związanych z instancją wyczyszczonych)",
-		"(%d filtered)": "(%d odfiltrowane)",
-		"(%d secret(s) redacted)": "(%d sekret(y) zatajonych)",
-		"(%d unresolved ref)": "(%d nierozwiązane odwołanie)",
 		"(archived)": "(zarchiwizowano)",
 		"(opens in a new tab)": "(otwiera się w nowej karcie)",
 		"(revoked)": "(unieważniono)",
@@ -262,7 +256,6 @@
 		"Off": "Wył.",
 		"off": "wyłączone",
 		"Offboard": "Dezaktywuj",
-		"Offboarded — but": "Dezaktywowano — ale",
 		"OK": "OK",
 		"ok": "ok",
 		"OK — a longer passphrase is safer.": "OK — dłuższe hasło jest bezpieczniejsze.",
@@ -390,7 +383,6 @@
 		"Submitted. Thank you!": "Wysłano. Dziękujemy!",
 		"Switch organisation": "Zmień organizację",
 		"Sync off.": "Synchronizacja wyłączona.",
-		"synced share(s) could not be revoked. Open Desktop sync below and revoke them again.": "zsynchronizowanych udostępnień nie można było unieważnić. Otwórz poniżej Synchronizację z komputerem i unieważnij je ponownie.",
 		"Tasks": "Zadania",
 		"Template": "Szablon",
 		"Templates": "Szablony",
@@ -447,7 +439,6 @@
 		"Verifying references": "Weryfikowanie odwołań",
 		"Waiting": "Oczekuje",
 		"Waiting for the job…": "Oczekiwanie na zadanie…",
-		"Warning: %d row(s) will be permanently deleted, then the file data is loaded.": "Ostrzeżenie: %d wiersz(y) zostanie trwale usuniętych, a następnie zostaną załadowane dane z pliku.",
 		"We have sent you a code.": "Wysłaliśmy Ci kod.",
 		"We sent you a confirmation code by e-mail. Enter the code:": "Wysłaliśmy Ci kod potwierdzający e-mailem. Wpisz kod:",
 		"We will let you know when we need something.": "Powiadomimy Cię, gdy czegoś będziemy potrzebować.",
@@ -465,6 +456,42 @@
 		"You do not have the rights for this action.": "Nie masz uprawnień do tej czynności.",
 		"Your contact person": "Twoja osoba kontaktowa",
 		"Your provider": "Twój dostawca",
-		"Your sign-in is linked to more than one organisation.": "Twój login jest powiązany z więcej niż jedną organizacją."
+		"Your sign-in is linked to more than one organisation.": "Twój login jest powiązany z więcej niż jedną organizacją.",
+		"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_": [
+			"(1 opróżniona wartość związana z instancją)",
+			"(%n opróżnionych wartości związanych z instancją)"
+		],
+		"_(1 filtered)_::_(%n filtered)_": [
+			"(1 odfiltrowane)",
+			"(%n odfiltrowanych)"
+		],
+		"_(1 secret redacted)_::_(%n secrets redacted)_": [
+			"(1 ukryty sekret)",
+			"(%n ukrytych sekretów)"
+		],
+		"_(1 unresolved ref)_::_(%n unresolved refs)_": [
+			"(1 nierozwiązane odwołanie)",
+			"(%n nierozwiązanych odwołań)"
+		],
+		"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._": [
+			"Nierozwiązano 1 odwołanie — zobacz grupy poniżej.",
+			"Nierozwiązano %n odwołań — zobacz grupy poniżej."
+		],
+		"_1 row needs a value on this instance_::_%n rows need a value on this instance_": [
+			"1 wiersz wymaga wartości na tej instancji",
+			"%n wierszy wymaga wartości na tej instancji"
+		],
+		"_1 row skipped._::_%n rows skipped._": [
+			"Pominięto 1 wiersz.",
+			"Pominięto %n wierszy."
+		],
+		"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._": [
+			"Ostrzeżenie: 1 wiersz zostanie trwale usunięty, a następnie dane z pliku zostaną wczytane.",
+			"Ostrzeżenie: %n wierszy zostanie trwale usuniętych, a następnie dane z pliku zostaną wczytane."
+		],
+		"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._": [
+			"Dezaktywowano — ale 1 zsynchronizowanego udostępnienia nie można było unieważnić. Otwórz poniżej Synchronizację z komputerem i unieważnij je ponownie.",
+			"Dezaktywowano — ale %n zsynchronizowanych udostępnień nie można było unieważnić. Otwórz poniżej Synchronizację z komputerem i unieważnij je ponownie."
+		]
 	}
 }

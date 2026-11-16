@@ -1,12 +1,6 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
-	"%d row(s) need a value on this instance" : "%d rad(er) trenger en verdi på denne instansen",
-	"%d row(s) skipped and %d reference(s) unresolved — see the groups below." : "%d rad(er) hoppet over og %d referanse(r) uløst — se gruppene nedenfor.",
-	"(%d env-bound value(s) emptied)" : "(%d instansbundne verdi(er) tømt)",
-	"(%d filtered)" : "(%d filtrert)",
-	"(%d secret(s) redacted)" : "(%d hemmelighet(er) sladdet)",
-	"(%d unresolved ref)" : "(%d uløst referanse)",
 	"(archived)" : "(arkivert)",
 	"(opens in a new tab)" : "(åpnes i en ny fane)",
 	"(revoked)" : "(tilbakekalt)",
@@ -263,7 +257,6 @@ OC.L10N.register(
 	"Off" : "Av",
 	"off" : "av",
 	"Offboard" : "Deaktivere",
-	"Offboarded — but" : "Deaktivert — men",
 	"OK" : "OK",
 	"ok" : "ok",
 	"OK — a longer passphrase is safer." : "OK — en lengre passordfrase er tryggere.",
@@ -391,7 +384,6 @@ OC.L10N.register(
 	"Submitted. Thank you!" : "Sendt inn. Takk!",
 	"Switch organisation" : "Bytt organisasjon",
 	"Sync off." : "Synkronisering av.",
-	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synkroniserte deling(er) kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall dem igjen.",
 	"Tasks" : "Oppgaver",
 	"Template" : "Mal",
 	"Templates" : "Maler",
@@ -448,7 +440,6 @@ OC.L10N.register(
 	"Verifying references" : "Verifiserer referanser",
 	"Waiting" : "Venter",
 	"Waiting for the job…" : "Venter på jobben…",
-	"Warning: %d row(s) will be permanently deleted, then the file data is loaded." : "Advarsel: %d rad(er) slettes permanent, deretter lastes fildataene inn.",
 	"We have sent you a code." : "Vi har sendt deg en kode.",
 	"We sent you a confirmation code by e-mail. Enter the code:" : "Vi sendte deg en bekreftelseskode på e-post. Skriv inn koden:",
 	"We will let you know when we need something." : "Vi gir beskjed når vi trenger noe.",
@@ -466,6 +457,15 @@ OC.L10N.register(
 	"You do not have the rights for this action." : "Du har ikke rettigheter til denne handlingen.",
 	"Your contact person" : "Din kontaktperson",
 	"Your provider" : "Din leverandør",
-	"Your sign-in is linked to more than one organisation." : "Påloggingen din er knyttet til mer enn én organisasjon."
+	"Your sign-in is linked to more than one organisation." : "Påloggingen din er knyttet til mer enn én organisasjon.",
+	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 instansbunden verdi tømt)","(%n instansbundne verdier tømt)"],
+	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrert)","(%n filtrert)"],
+	"_(1 secret redacted)_::_(%n secrets redacted)_" : ["(1 hemmelighet sladdet)","(%n hemmeligheter sladdet)"],
+	"_(1 unresolved ref)_::_(%n unresolved refs)_" : ["(1 uløst referanse)","(%n uløste referanser)"],
+	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referanse uløst — se gruppene nedenfor.","%n referanser uløst — se gruppene nedenfor."],
+	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 rad trenger en verdi på denne instansen","%n rader trenger en verdi på denne instansen"],
+	"_1 row skipped._::_%n rows skipped._" : ["1 rad hoppet over.","%n rader hoppet over."],
+	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Advarsel: 1 rad slettes permanent, deretter lastes fildataene inn.","Advarsel: %n rader slettes permanent, deretter lastes fildataene inn."],
+	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Deaktivert — men 1 synkronisert deling kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall den igjen.","Deaktivert — men %n synkroniserte delinger kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall dem igjen."]
 	}
 );

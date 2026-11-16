@@ -3,6 +3,7 @@
    Clients · Uploads · Settings. esc() for all user data — no innerHTML. */
 const el=document.getElementById('kzc-staff-view'),base=location.pathname.split('/apps/kanzleicheck')[0]+'/apps/kanzleicheck';
 const t=s=>(window.OC&&OC.L10N&&OC.L10N.translate)?OC.L10N.translate('kanzleicheck',s):s;
+const n=(sg,pl,c)=>{const x=Number.isFinite(Number(c))?Number(c):0;return(typeof window.n==='function')?window.n('kanzleicheck',sg,pl,x):String(x===1?sg:pl).replace('%n',String(x));};
 const api=async(u,o)=>{const r=await fetch(base+u,Object.assign({headers:{'Content-Type':'application/json'}},o||{}));if(r.status===204)return{success:true};return r.json().catch(()=>({success:false}));};
 const get=u=>api(u),post=(u,b)=>api(u,{method:'POST',body:JSON.stringify(b||{})}),put=(u,b)=>api(u,{method:'PUT',body:JSON.stringify(b||{})}),del=u=>api(u,{method:'DELETE'});
 const esc=t=>{const d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;};
@@ -374,7 +375,7 @@ async function openOrg(id){
     if(wn>0){
       // failed share revokes leave live oc_share rows — surface, never silently
       const w=h('<p class="kzc-chip kzc-chip--warn kzc-warnbar" role="alert"></p>').firstElementChild;
-      w.textContent=t('Offboarded — but')+' '+wn+' '+t('synced share(s) could not be revoked. Open Desktop sync below and revoke them again.');
+      w.textContent=n('Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again.','Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again.',wn);
       const pb=document.getElementById('kzc-body');if(pb)pb.prepend(w);
     }else if(rr&&rr.success===false){status(rr.message||t('Error'));}
   }));

@@ -1,11 +1,5 @@
 {
 	"translations": {
-		"%d row(s) need a value on this instance": "%d ligne(s) nécessitent une valeur sur cette instance",
-		"%d row(s) skipped and %d reference(s) unresolved — see the groups below.": "%d ligne(s) ignorée(s) et %d référence(s) non résolue(s) — voir les groupes ci-dessous.",
-		"(%d env-bound value(s) emptied)": "(%d valeur(s) liées à l’instance vidées)",
-		"(%d filtered)": "(%d filtré(s))",
-		"(%d secret(s) redacted)": "(%d secret(s) masqué(s))",
-		"(%d unresolved ref)": "(%d référence non résolue)",
 		"(archived)": "(archivé)",
 		"(opens in a new tab)": "(s’ouvre dans un nouvel onglet)",
 		"(revoked)": "(révoqué)",
@@ -262,7 +256,6 @@
 		"Off": "Désactivée",
 		"off": "désactivé",
 		"Offboard": "Désactiver",
-		"Offboarded — but": "Désactivé — mais",
 		"OK": "OK",
 		"ok": "ok",
 		"OK — a longer passphrase is safer.": "OK — une phrase secrète plus longue est plus sûre.",
@@ -390,7 +383,6 @@
 		"Submitted. Thank you!": "Envoyé. Merci !",
 		"Switch organisation": "Changer d'organisation",
 		"Sync off.": "Synchronisation désactivée.",
-		"synced share(s) could not be revoked. Open Desktop sync below and revoke them again.": "partage(s) synchronisé(s) n’ont pas pu être révoqués. Ouvrez « Synchronisation bureau » ci-dessous et révoquez-les à nouveau.",
 		"Tasks": "Tâches",
 		"Template": "Modèle",
 		"Templates": "Modèles",
@@ -447,7 +439,6 @@
 		"Verifying references": "Vérification des références",
 		"Waiting": "En attente",
 		"Waiting for the job…": "En attente de la tâche…",
-		"Warning: %d row(s) will be permanently deleted, then the file data is loaded.": "Avertissement : %d ligne(s) seront définitivement supprimées, puis les données du fichier seront chargées.",
 		"We have sent you a code.": "Nous vous avons envoyé un code.",
 		"We sent you a confirmation code by e-mail. Enter the code:": "Nous vous avons envoyé un code de confirmation par e-mail. Saisissez le code :",
 		"We will let you know when we need something.": "Nous vous préviendrons lorsque nous aurons besoin de quelque chose.",
@@ -465,6 +456,42 @@
 		"You do not have the rights for this action.": "Vous n’avez pas les droits pour cette action.",
 		"Your contact person": "Votre interlocuteur",
 		"Your provider": "Votre prestataire",
-		"Your sign-in is linked to more than one organisation.": "Votre connexion est liée à plusieurs organisations."
+		"Your sign-in is linked to more than one organisation.": "Votre connexion est liée à plusieurs organisations.",
+		"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_": [
+			"(1 valeur liée à l’instance vidée)",
+			"(%n valeurs liées à l’instance vidées)"
+		],
+		"_(1 filtered)_::_(%n filtered)_": [
+			"(1 filtrée)",
+			"(%n filtrées)"
+		],
+		"_(1 secret redacted)_::_(%n secrets redacted)_": [
+			"(1 secret masqué)",
+			"(%n secrets masqués)"
+		],
+		"_(1 unresolved ref)_::_(%n unresolved refs)_": [
+			"(1 référence non résolue)",
+			"(%n références non résolues)"
+		],
+		"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._": [
+			"1 référence non résolue — voir les groupes ci-dessous.",
+			"%n références non résolues — voir les groupes ci-dessous."
+		],
+		"_1 row needs a value on this instance_::_%n rows need a value on this instance_": [
+			"1 ligne nécessite une valeur sur cette instance",
+			"%n lignes nécessitent une valeur sur cette instance"
+		],
+		"_1 row skipped._::_%n rows skipped._": [
+			"1 ligne ignorée.",
+			"%n lignes ignorées."
+		],
+		"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._": [
+			"Avertissement : 1 ligne sera définitivement supprimée, puis les données du fichier seront chargées.",
+			"Avertissement : %n lignes seront définitivement supprimées, puis les données du fichier seront chargées."
+		],
+		"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._": [
+			"Désactivé — mais 1 partage synchronisé n'a pas pu être révoqué. Ouvrez « Synchronisation bureau » ci-dessous et révoquez-le à nouveau.",
+			"Désactivé — mais %n partages synchronisés n'ont pas pu être révoqués. Ouvrez « Synchronisation bureau » ci-dessous et révoquez-les à nouveau."
+		]
 	}
 }

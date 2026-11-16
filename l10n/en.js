@@ -1,12 +1,6 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
-	"%d row(s) need a value on this instance" : "%d row(s) need a value on this instance",
-	"%d row(s) skipped and %d reference(s) unresolved — see the groups below." : "%d row(s) skipped and %d reference(s) unresolved — see the groups below.",
-	"(%d env-bound value(s) emptied)" : "(%d env-bound value(s) emptied)",
-	"(%d filtered)" : "(%d filtered)",
-	"(%d secret(s) redacted)" : "(%d secret(s) redacted)",
-	"(%d unresolved ref)" : "(%d unresolved ref)",
 	"(archived)" : "(archived)",
 	"(opens in a new tab)" : "(opens in a new tab)",
 	"(revoked)" : "(revoked)",
@@ -263,7 +257,6 @@ OC.L10N.register(
 	"Off" : "Off",
 	"off" : "off",
 	"Offboard" : "Offboard",
-	"Offboarded — but" : "Offboarded — but",
 	"OK" : "OK",
 	"ok" : "ok",
 	"OK — a longer passphrase is safer." : "OK — a longer passphrase is safer.",
@@ -391,7 +384,6 @@ OC.L10N.register(
 	"Submitted. Thank you!" : "Submitted. Thank you!",
 	"Switch organisation" : "Switch organisation",
 	"Sync off." : "Sync off.",
-	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "synced share(s) could not be revoked. Open Desktop sync below and revoke them again.",
 	"Tasks" : "Tasks",
 	"Template" : "Template",
 	"Templates" : "Templates",
@@ -448,7 +440,6 @@ OC.L10N.register(
 	"Verifying references" : "Verifying references",
 	"Waiting" : "Waiting",
 	"Waiting for the job…" : "Waiting for the job…",
-	"Warning: %d row(s) will be permanently deleted, then the file data is loaded." : "Warning: %d row(s) will be permanently deleted, then the file data is loaded.",
 	"We have sent you a code." : "We have sent you a code.",
 	"We sent you a confirmation code by e-mail. Enter the code:" : "We sent you a confirmation code by e-mail. Enter the code:",
 	"We will let you know when we need something." : "We will let you know when we need something.",
@@ -466,6 +457,15 @@ OC.L10N.register(
 	"You do not have the rights for this action." : "You do not have the rights for this action.",
 	"Your contact person" : "Your contact person",
 	"Your provider" : "Your provider",
-	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation."
+	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation.",
+	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 env-bound value emptied)","(%n env-bound values emptied)"],
+	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtered)","(%n filtered)"],
+	"_(1 secret redacted)_::_(%n secrets redacted)_" : ["(1 secret redacted)","(%n secrets redacted)"],
+	"_(1 unresolved ref)_::_(%n unresolved refs)_" : ["(1 unresolved ref)","(%n unresolved refs)"],
+	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 reference unresolved — see the groups below.","%n references unresolved — see the groups below."],
+	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 row needs a value on this instance","%n rows need a value on this instance"],
+	"_1 row skipped._::_%n rows skipped._" : ["1 row skipped.","%n rows skipped."],
+	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Warning: 1 row will be permanently deleted, then the file data is loaded.","Warning: %n rows will be permanently deleted, then the file data is loaded."],
+	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again.","Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again."]
 	}
 );

@@ -1,11 +1,5 @@
 {
 	"translations": {
-		"%d row(s) need a value on this instance": "%d riga/he richiedono un valore su questa istanza",
-		"%d row(s) skipped and %d reference(s) unresolved — see the groups below.": "%d riga/he saltata/e e %d riferimento/i non risolto/i — vedi i gruppi qui sotto.",
-		"(%d env-bound value(s) emptied)": "(%d valore/i legati all’istanza svuotati)",
-		"(%d filtered)": "(%d filtrato/i)",
-		"(%d secret(s) redacted)": "(%d segreto/i oscurato/i)",
-		"(%d unresolved ref)": "(%d riferimento non risolto)",
 		"(archived)": "(archiviato)",
 		"(opens in a new tab)": "(si apre in una nuova scheda)",
 		"(revoked)": "(revocato)",
@@ -262,7 +256,6 @@
 		"Off": "Disattivata",
 		"off": "disattivato",
 		"Offboard": "Disattiva",
-		"Offboarded — but": "Disattivato — ma",
 		"OK": "OK",
 		"ok": "ok",
 		"OK — a longer passphrase is safer.": "OK — una passphrase più lunga è più sicura.",
@@ -390,7 +383,6 @@
 		"Submitted. Thank you!": "Inviato. Grazie!",
 		"Switch organisation": "Cambia organizzazione",
 		"Sync off.": "Sincronizzazione disattivata.",
-		"synced share(s) could not be revoked. Open Desktop sync below and revoke them again.": "condivisione/i sincronizzata/e non revocata/e. Apri Sincronizzazione desktop qui sotto e revocale di nuovo.",
 		"Tasks": "Attività",
 		"Template": "Modello",
 		"Templates": "Modelli",
@@ -447,7 +439,6 @@
 		"Verifying references": "Verifica dei riferimenti",
 		"Waiting": "In attesa",
 		"Waiting for the job…": "In attesa del job…",
-		"Warning: %d row(s) will be permanently deleted, then the file data is loaded.": "Attenzione: %d riga/e verranno eliminate definitivamente, poi i dati del file saranno caricati.",
 		"We have sent you a code.": "Ti abbiamo inviato un codice.",
 		"We sent you a confirmation code by e-mail. Enter the code:": "Ti abbiamo inviato un codice di conferma via e-mail. Inserisci il codice:",
 		"We will let you know when we need something.": "Ti faremo sapere quando avremo bisogno di qualcosa.",
@@ -465,6 +456,42 @@
 		"You do not have the rights for this action.": "Non hai i diritti per questa azione.",
 		"Your contact person": "Il tuo referente",
 		"Your provider": "Il tuo fornitore",
-		"Your sign-in is linked to more than one organisation.": "Il tuo accesso è collegato a più di un'organizzazione."
+		"Your sign-in is linked to more than one organisation.": "Il tuo accesso è collegato a più di un'organizzazione.",
+		"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_": [
+			"(1 valore legato all’istanza svuotato)",
+			"(%n valori legati all’istanza svuotati)"
+		],
+		"_(1 filtered)_::_(%n filtered)_": [
+			"(1 filtrata)",
+			"(%n filtrate)"
+		],
+		"_(1 secret redacted)_::_(%n secrets redacted)_": [
+			"(1 segreto oscurato)",
+			"(%n segreti oscurati)"
+		],
+		"_(1 unresolved ref)_::_(%n unresolved refs)_": [
+			"(1 riferimento non risolto)",
+			"(%n riferimenti non risolti)"
+		],
+		"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._": [
+			"1 riferimento non risolto — vedi i gruppi sotto.",
+			"%n riferimenti non risolti — vedi i gruppi sotto."
+		],
+		"_1 row needs a value on this instance_::_%n rows need a value on this instance_": [
+			"1 riga richiede un valore su questa istanza",
+			"%n righe richiedono un valore su questa istanza"
+		],
+		"_1 row skipped._::_%n rows skipped._": [
+			"1 riga saltata.",
+			"%n righe saltate."
+		],
+		"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._": [
+			"Attenzione: 1 riga verrà eliminata definitivamente, quindi verranno caricati i dati del file.",
+			"Attenzione: %n righe verranno eliminate definitivamente, quindi verranno caricati i dati del file."
+		],
+		"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._": [
+			"Disattivato — ma 1 condivisione sincronizzata non è stata revocata. Apri Sincronizzazione desktop qui sotto e revocala di nuovo.",
+			"Disattivato — ma %n condivisioni sincronizzate non sono state revocate. Apri Sincronizzazione desktop qui sotto e revocale di nuovo."
+		]
 	}
 }

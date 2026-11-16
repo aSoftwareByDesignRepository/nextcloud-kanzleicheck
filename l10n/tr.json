@@ -1,11 +1,5 @@
 {
 	"translations": {
-		"%d row(s) need a value on this instance": "%d satır bu örnekte bir değer gerektiriyor",
-		"%d row(s) skipped and %d reference(s) unresolved — see the groups below.": "%d satır atlandı ve %d referans çözümlenemedi — aşağıdaki gruplara bakın.",
-		"(%d env-bound value(s) emptied)": "(%d örneğe bağlı değer boşaltıldı)",
-		"(%d filtered)": "(%d filtrelendi)",
-		"(%d secret(s) redacted)": "(%d gizli bilgi gizlendi)",
-		"(%d unresolved ref)": "(%d çözümlenemeyen referans)",
 		"(archived)": "(arşivlendi)",
 		"(opens in a new tab)": "(yeni sekmede açılır)",
 		"(revoked)": "(geri alındı)",
@@ -262,7 +256,6 @@
 		"Off": "Kapalı",
 		"off": "kapalı",
 		"Offboard": "Çıkar",
-		"Offboarded — but": "Çıkarıldı — ancak",
 		"OK": "Tamam",
 		"ok": "tamam",
 		"OK — a longer passphrase is safer.": "Tamam — daha uzun bir parola daha güvenlidir.",
@@ -390,7 +383,6 @@
 		"Submitted. Thank you!": "Gönderildi. Teşekkürler!",
 		"Switch organisation": "Kurum değiştir",
 		"Sync off.": "Eşitleme kapalı.",
-		"synced share(s) could not be revoked. Open Desktop sync below and revoke them again.": "eşitlenen paylaşımlar geri alınamadı. Aşağıdan Masaüstü eşitleme'yi açın ve yeniden geri alın.",
 		"Tasks": "Görevler",
 		"Template": "Şablon",
 		"Templates": "Şablonlar",
@@ -447,7 +439,6 @@
 		"Verifying references": "Referanslar doğrulanıyor",
 		"Waiting": "Bekliyor",
 		"Waiting for the job…": "İş bekleniyor…",
-		"Warning: %d row(s) will be permanently deleted, then the file data is loaded.": "Uyarı: %d satır kalıcı olarak silinecek, ardından dosya verileri yüklenecek.",
 		"We have sent you a code.": "Size bir kod gönderdik.",
 		"We sent you a confirmation code by e-mail. Enter the code:": "Size e-posta ile bir doğrulama kodu gönderdik. Kodu girin:",
 		"We will let you know when we need something.": "Bir şeye ihtiyacımız olduğunda size haber vereceğiz.",
@@ -465,7 +456,43 @@
 		"You do not have the rights for this action.": "Bu işlem için yetkiniz yok.",
 		"Your contact person": "İrtibat kişiniz",
 		"Your provider": "Sağlayıcınız",
-		"Your sign-in is linked to more than one organisation.": "Oturum açma bilgileriniz birden fazla kuruma bağlı."
+		"Your sign-in is linked to more than one organisation.": "Oturum açma bilgileriniz birden fazla kuruma bağlı.",
+		"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_": [
+			"(1 örneğe bağlı değer boşaltıldı)",
+			"(%n örneğe bağlı değer boşaltıldı)"
+		],
+		"_(1 filtered)_::_(%n filtered)_": [
+			"(1 filtrelendi)",
+			"(%n filtrelendi)"
+		],
+		"_(1 secret redacted)_::_(%n secrets redacted)_": [
+			"(1 sır gizlendi)",
+			"(%n sır gizlendi)"
+		],
+		"_(1 unresolved ref)_::_(%n unresolved refs)_": [
+			"(1 çözümlenemeyen başvuru)",
+			"(%n çözümlenemeyen başvuru)"
+		],
+		"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._": [
+			"1 başvuru çözümlenemedi — aşağıdaki gruplara bakın.",
+			"%n başvuru çözümlenemedi — aşağıdaki gruplara bakın."
+		],
+		"_1 row needs a value on this instance_::_%n rows need a value on this instance_": [
+			"1 satırın bu örnekte bir değere ihtiyacı var",
+			"%n satırın bu örnekte bir değere ihtiyacı var"
+		],
+		"_1 row skipped._::_%n rows skipped._": [
+			"1 satır atlandı.",
+			"%n satır atlandı."
+		],
+		"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._": [
+			"Uyarı: 1 satır kalıcı olarak silinecek, ardından dosya verileri yüklenecek.",
+			"Uyarı: %n satır kalıcı olarak silinecek, ardından dosya verileri yüklenecek."
+		],
+		"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._": [
+			"Çıkarıldı — ancak 1 eşitlenen paylaşım geri alınamadı. Aşağıdan Masaüstü eşitleme'yi açın ve yeniden geri alın.",
+			"Çıkarıldı — ancak %n eşitlenen paylaşım geri alınamadı. Aşağıdan Masaüstü eşitleme'yi açın ve yeniden geri alın."
+		]
 	},
 	"pluralForm": "nplurals=2; plural=(n != 1);"
 }

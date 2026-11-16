@@ -1,12 +1,6 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
-	"%d row(s) need a value on this instance" : "%d 行需要在此实例上设置值",
-	"%d row(s) skipped and %d reference(s) unresolved — see the groups below." : "%d 行被跳过，%d 个引用未解析——请参阅下方分组。",
-	"(%d env-bound value(s) emptied)" : "（%d 个实例绑定值已清空）",
-	"(%d filtered)" : "（已过滤 %d 项）",
-	"(%d secret(s) redacted)" : "（%d 个敏感信息已遮蔽）",
-	"(%d unresolved ref)" : "（%d 个未解析的引用）",
 	"(archived)" : "（已归档）",
 	"(opens in a new tab)" : "（在新标签页中打开）",
 	"(revoked)" : "（已撤销）",
@@ -263,7 +257,6 @@ OC.L10N.register(
 	"Off" : "关",
 	"off" : "关",
 	"Offboard" : "办理退出",
-	"Offboarded — but" : "已办理退出——但",
 	"OK" : "OK",
 	"ok" : "正常",
 	"OK — a longer passphrase is safer." : "可以——更长的密码更安全。",
@@ -391,7 +384,6 @@ OC.L10N.register(
 	"Submitted. Thank you!" : "已提交。谢谢！",
 	"Switch organisation" : "切换组织",
 	"Sync off." : "同步已关闭。",
-	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "无法撤销已同步的共享。请在下方打开“桌面同步”并再次撤销。",
 	"Tasks" : "任务",
 	"Template" : "模板",
 	"Templates" : "模板",
@@ -448,7 +440,6 @@ OC.L10N.register(
 	"Verifying references" : "正在校验引用",
 	"Waiting" : "等待中",
 	"Waiting for the job…" : "正在等待任务…",
-	"Warning: %d row(s) will be permanently deleted, then the file data is loaded." : "警告：%d 行将被永久删除，然后加载文件数据。",
 	"We have sent you a code." : "我们已向您发送验证码。",
 	"We sent you a confirmation code by e-mail. Enter the code:" : "我们已通过邮件向您发送确认码。请输入验证码：",
 	"We will let you know when we need something." : "有需要时我们会通知您。",
@@ -466,6 +457,15 @@ OC.L10N.register(
 	"You do not have the rights for this action." : "您没有执行此操作的权限。",
 	"Your contact person" : "您的联系人",
 	"Your provider" : "您的提供商",
-	"Your sign-in is linked to more than one organisation." : "您的登录账号关联了多个组织。"
+	"Your sign-in is linked to more than one organisation." : "您的登录账号关联了多个组织。",
+	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["（已清空 1 个实例绑定值）","（已清空 %n 个实例绑定值）"],
+	"_(1 filtered)_::_(%n filtered)_" : ["（已过滤 1 项）","（已过滤 %n 项）"],
+	"_(1 secret redacted)_::_(%n secrets redacted)_" : ["（已遮蔽 1 个机密）","（已遮蔽 %n 个机密）"],
+	"_(1 unresolved ref)_::_(%n unresolved refs)_" : ["（1 个引用未解析）","（%n 个引用未解析）"],
+	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 个引用未能解析——请查看下方分组。","%n 个引用未能解析——请查看下方分组。"],
+	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 行需要在此实例上填写值","%n 行需要在此实例上填写值"],
+	"_1 row skipped._::_%n rows skipped._" : ["已跳过 1 行。","已跳过 %n 行。"],
+	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["警告：1 行将被永久删除，然后加载文件数据。","警告：%n 行将被永久删除，然后加载文件数据。"],
+	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["已办理退出——但 1 个已同步的共享无法撤销。请在下方打开“桌面同步”并再次撤销。","已办理退出——但 %n 个已同步的共享无法撤销。请在下方打开“桌面同步”并再次撤销。"]
 	}
 );

@@ -1,12 +1,6 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
-	"%d row(s) need a value on this instance" : "%d linha(s) precisam de um valor nesta instância",
-	"%d row(s) skipped and %d reference(s) unresolved — see the groups below." : "%d linha(s) ignorada(s) e %d referência(s) não resolvida(s) — ver os grupos abaixo.",
-	"(%d env-bound value(s) emptied)" : "(%d valor(es) ligados à instância esvaziados)",
-	"(%d filtered)" : "(%d filtrada(s))",
-	"(%d secret(s) redacted)" : "(%d segredo(s) ocultado(s))",
-	"(%d unresolved ref)" : "(%d referência não resolvida)",
 	"(archived)" : "(arquivado)",
 	"(opens in a new tab)" : "(abre num novo separador)",
 	"(revoked)" : "(revogado)",
@@ -263,7 +257,6 @@ OC.L10N.register(
 	"Off" : "Desativada",
 	"off" : "desativado",
 	"Offboard" : "Desativar",
-	"Offboarded — but" : "Desativado — mas",
 	"OK" : "OK",
 	"ok" : "ok",
 	"OK — a longer passphrase is safer." : "OK — uma frase-passe mais longa é mais segura.",
@@ -391,7 +384,6 @@ OC.L10N.register(
 	"Submitted. Thank you!" : "Enviado. Obrigado!",
 	"Switch organisation" : "Mudar de organização",
 	"Sync off." : "Sincronização desativada.",
-	"synced share(s) could not be revoked. Open Desktop sync below and revoke them again." : "partilha(s) sincronizada(s) não puderam ser revogadas. Abra Sincronização de desktop abaixo e revogue-as novamente.",
 	"Tasks" : "Tarefas",
 	"Template" : "Modelo",
 	"Templates" : "Modelos",
@@ -448,7 +440,6 @@ OC.L10N.register(
 	"Verifying references" : "A verificar referências",
 	"Waiting" : "A aguardar",
 	"Waiting for the job…" : "À espera da tarefa…",
-	"Warning: %d row(s) will be permanently deleted, then the file data is loaded." : "Aviso: %d linha(s) serão eliminadas permanentemente e, em seguida, os dados do ficheiro serão carregados.",
 	"We have sent you a code." : "Enviámos-lhe um código.",
 	"We sent you a confirmation code by e-mail. Enter the code:" : "Enviámos-lhe um código de confirmação por e-mail. Introduza o código:",
 	"We will let you know when we need something." : "Avisá-lo-emos quando precisarmos de algo.",
@@ -466,6 +457,15 @@ OC.L10N.register(
 	"You do not have the rights for this action." : "Não tem permissões para esta ação.",
 	"Your contact person" : "A sua pessoa de contacto",
 	"Your provider" : "O seu fornecedor",
-	"Your sign-in is linked to more than one organisation." : "O seu início de sessão está associado a mais de uma organização."
+	"Your sign-in is linked to more than one organisation." : "O seu início de sessão está associado a mais de uma organização.",
+	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 valor ligado à instância esvaziado)","(%n valores ligados à instância esvaziados)"],
+	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrada)","(%n filtradas)"],
+	"_(1 secret redacted)_::_(%n secrets redacted)_" : ["(1 segredo ocultado)","(%n segredos ocultados)"],
+	"_(1 unresolved ref)_::_(%n unresolved refs)_" : ["(1 referência por resolver)","(%n referências por resolver)"],
+	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referência por resolver — vê os grupos abaixo.","%n referências por resolver — vê os grupos abaixo."],
+	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 linha precisa de um valor nesta instância","%n linhas precisam de um valor nesta instância"],
+	"_1 row skipped._::_%n rows skipped._" : ["1 linha ignorada.","%n linhas ignoradas."],
+	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Aviso: 1 linha será eliminada permanentemente e, depois, os dados do ficheiro serão carregados.","Aviso: %n linhas serão eliminadas permanentemente e, depois, os dados do ficheiro serão carregados."],
+	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Desativado — mas 1 partilha sincronizada não pôde ser revogada. Abra Sincronização de desktop abaixo e revogue-a novamente.","Desativado — mas %n partilhas sincronizadas não puderam ser revogadas. Abra Sincronização de desktop abaixo e revogue-as novamente."]
 	}
 );
