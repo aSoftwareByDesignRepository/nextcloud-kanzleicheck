@@ -22,7 +22,7 @@ test('door pickers — directory pick, save, re-read',async({page})=>{
   await root.locator('.kzc-picker__result').first().click();
   expect(await root.locator('.kzc-chip').count()).toBe(1);
   const before=await (await page.request.get(APP+'/api/portal/settings')).json();
-  await page.locator('.kzc-btn--primary', {hasText:'Save door'}).first().click();
+  await page.locator('.kzc-card:has(#d-restr) .kzc-actions .kzc-btn--primary').evaluate(el=>el.click());
   await page.waitForTimeout(800);
   const after=await (await page.request.get(APP+'/api/portal/settings')).json();
   console.log('BEFORE',JSON.stringify(before.data.door),'AFTER',JSON.stringify(after.data.door));

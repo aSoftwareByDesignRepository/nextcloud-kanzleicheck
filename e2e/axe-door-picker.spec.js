@@ -15,7 +15,7 @@ test('axe door pickers + resp-staff dialog',async({page})=>{
   await page.waitForSelector('button.kzc-row',{timeout:15000});
   await page.locator('button.kzc-row').first().click();
   await page.waitForSelector('#kzc-resp',{timeout:12000});
-  await page.locator('.kzc-card:has(#kzc-resp) .kzc-actions .kzc-btn').click();
+  await page.locator('.kzc-card:has(#kzc-resp) .kzc-card__header-actions .kzc-btn').evaluate(el=>el.click());
   await page.waitForSelector('dialog[open] .kzc-picker',{timeout:8000});
   const r2=await new AxeBuilder({page}).analyze();
   console.log('resp-dlg violations:',r2.violations.length,JSON.stringify(r2.violations.map(v=>({id:v.id,nodes:v.nodes.slice(0,3).map(n=>n.target)}))));
