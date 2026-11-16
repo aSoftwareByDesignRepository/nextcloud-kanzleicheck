@@ -1,0 +1,860 @@
+/* Shell chrome parity with arbeitszeitcheck (prefix dc-). */
+/* ── Skip link / live regions ─────────────────────────────── */
+.kzc-skip-link {
+	min-height: var(--kzc-touch, 44px);
+	position: absolute;
+	left: -9999px;
+	top: var(--kzc-space-2);
+	padding: var(--kzc-space-2) var(--kzc-space-4);
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	border-radius: var(--kzc-radius-sm);
+	z-index: 1000;
+	font-weight: 600;
+	text-decoration: none;
+}
+.kzc-skip-link:focus,
+.kzc-skip-link:focus-visible {
+	left: var(--kzc-space-3);
+	outline: 3px solid var(--color-primary-element-text);
+	outline-offset: 2px;
+}
+
+/* ===== Skip links (AZ parity) — CRITICAL =====
+ * The nav skip link is the first child of the flex app wrapper. Without
+ * position:absolute it becomes a full-height flex column and destroys the
+ * sidebar/content layout. Hide off-screen until :focus / :focus-visible.
+ */
+#content.app-kanzleicheck .skip-link,
+#content.app-kanzleicheck a.kzc-skip-link--nav {
+	position: absolute !important;
+	left: -9999px;
+	top: var(--kzc-space-2, 8px);
+	z-index: 10000;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-height: 44px;
+	width: max-content;
+	max-width: calc(100vw - 1rem);
+	height: auto;
+	margin: 0;
+	padding: var(--kzc-space-2, 8px) var(--kzc-space-4, 16px);
+	flex: none;
+	align-self: flex-start;
+	box-sizing: border-box;
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	border-radius: var(--kzc-radius-sm, 6px);
+	font-weight: 600;
+	text-decoration: none;
+	line-height: 1.3;
+}
+#content.app-kanzleicheck .skip-link:focus,
+#content.app-kanzleicheck .skip-link:focus-visible,
+#content.app-kanzleicheck a.kzc-skip-link--nav:focus,
+#content.app-kanzleicheck a.kzc-skip-link--nav:focus-visible {
+	left: 6px;
+	top: 6px;
+	outline: 3px solid var(--color-primary-element-text);
+	outline-offset: 2px;
+}
+#content.app-kanzleicheck #kanzleicheck-app,
+#content.app-kanzleicheck .kanzleicheck-app {
+	position: relative;
+}
+
+/* Buttons — AZ components.css touch targets (WCAG 2.5.5) */
+#content.app-kanzleicheck .kzc-btn,
+#content.app-kanzleicheck .button,
+#content.app-kanzleicheck button.button,
+#content.app-kanzleicheck a.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--kzc-space-2, 0.5rem);
+	/* px token, not rem: NC root font-size can be 15px → 2.75rem = 41.25px,
+	 * below the 44px touch floor. --kzc-touch is an absolute guarantee. */
+	min-height: var(--kzc-touch, 44px);
+	min-width: var(--kzc-touch, 44px);
+	padding: 0.625rem 1.15rem;
+	box-sizing: border-box;
+	border-radius: var(--kzc-radius-md, 12px);
+	font-weight: 600;
+	line-height: 1.25;
+	text-decoration: none;
+	cursor: pointer;
+}
+#content.app-kanzleicheck .kzc-btn--sm,
+#content.app-kanzleicheck .button.small,
+#content.app-kanzleicheck .button--sm {
+	/* WCAG / product: touch targets ≥44×44 — never ship 36px “compact” chrome */
+	min-height: var(--kzc-touch, 44px);
+	min-width: var(--kzc-touch, 44px);
+	padding: 0.35rem 0.75rem;
+}
+/* ===== END AZ skip/btn parity ===== */
+
+/* ===== AZ content surfaces — cards/sections/buttons (match azc-card / azc-btn) ===== */
+#content.app-kanzleicheck #app-content .kzc-card,
+#content.app-kanzleicheck #app-content .kzc-section,
+#content.app-kanzleicheck #app-content .kzc-filter-panel {
+	background: var(--kzc-bg-card, var(--color-main-background));
+	border: 1px solid var(--kzc-border, var(--kzc-form-border));
+	border-radius: var(--kzc-radius-md, 12px);
+	box-shadow: var(--kzc-shadow-sm, 0 1px 2px color-mix(in srgb, var(--color-main-text) 8%, transparent));
+	box-sizing: border-box;
+}
+#content.app-kanzleicheck #app-content .kzc-card,
+#content.app-kanzleicheck #app-content .kzc-section {
+	padding: var(--kzc-space-5, 24px);
+	margin-top: var(--kzc-space-5, 24px);
+}
+#content.app-kanzleicheck #app-content .kzc-section:first-child,
+#content.app-kanzleicheck #app-content .kzc-main > .kzc-section:first-of-type,
+#content.app-kanzleicheck #app-content .kzc-main > .kzc-card:first-of-type,
+#content.app-kanzleicheck #app-content .kzc-main > .kzc-filter-panel:first-of-type {
+	margin-top: 0;
+}
+#content.app-kanzleicheck #app-content .kzc-section__title,
+#content.app-kanzleicheck #app-content .kzc-card__title {
+	margin: 0 0 var(--kzc-space-3, 12px);
+	font-size: var(--kzc-fs-lg, 1.125rem);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight, 1.2);
+	color: var(--kzc-text, var(--color-main-text));
+}
+/*
+ * Bachus / AZ parity: structured cards must match Filter panel chrome.
+ * Plain .kzc-card { padding } above is (2,2,0) — without this peer rule, list
+ * headers stay inset on white and look nothing like dc-filter-panel__head.
+ */
+#content.app-kanzleicheck #app-content .kzc-card:has(.kzc-card__header),
+#content.app-kanzleicheck #app-content .kzc-card:has(.kzc-card__body),
+#content.app-kanzleicheck #app-content .kzc-filter-panel {
+	padding: 0;
+	overflow: hidden;
+}
+#content.app-kanzleicheck #app-content .kzc-filter-panel__head,
+#content.app-kanzleicheck #app-content .kzc-filter-panel > header,
+#content.app-kanzleicheck #app-content .kzc-card__header {
+	padding: var(--kzc-space-5, 24px);
+	border-bottom: 1px solid var(--kzc-border, var(--color-border));
+	background: var(--kzc-bg-soft, color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%));
+}
+#content.app-kanzleicheck #app-content .kzc-card__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--kzc-space-3, 12px) var(--kzc-space-4, 16px);
+}
+#content.app-kanzleicheck #app-content .kzc-card__header .kzc-card__title {
+	margin: 0;
+}
+#content.app-kanzleicheck #app-content .kzc-card__header .kzc-card__lead {
+	margin: var(--kzc-space-2, 8px) 0 0;
+	max-width: 65ch;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: var(--kzc-line-base, 1.5);
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+}
+#content.app-kanzleicheck #app-content .kzc-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-4, 16px);
+	padding: var(--kzc-space-5, 24px);
+}
+/* Empty JS mount points must not consume a gap slot — an empty list region
+   would add a phantom band inside the card body. :empty un-matches as soon
+   as JS fills the node. */
+#content.app-kanzleicheck #app-content .kzc-card__body > :empty {
+	display: none;
+}
+#content.app-kanzleicheck #app-content .kzc-card__body--table {
+	padding: 0;
+}
+#content.app-kanzleicheck #app-content .kzc-filter-panel__form,
+#content.app-kanzleicheck #app-content .kzc-filter-panel__body,
+#content.app-kanzleicheck #app-content .kzc-filter-panel > form,
+#content.app-kanzleicheck #app-content .kzc-filter-panel > .form {
+	padding: var(--kzc-space-5, 24px);
+}
+/* Body already pads — nested form must not double the inset (Claim / Assets). */
+#content.app-kanzleicheck #app-content .kzc-filter-panel__body > .kzc-filter-panel__form,
+#content.app-kanzleicheck #app-content .kzc-filter-panel__body > form.kzc-filter-panel__form,
+#content.app-kanzleicheck #app-content .kzc-filter-panel__body > form {
+	padding: 0;
+}
+/* Buttons — AZ azc-btn uses radius-md (12px), not sm */
+#content.app-kanzleicheck #app-content .kzc-btn,
+#content.app-kanzleicheck #app-content .button,
+#content.app-kanzleicheck #app-content button.button,
+#content.app-kanzleicheck #app-content a.button {
+	border-radius: var(--kzc-radius-md, 12px);
+	min-height: var(--kzc-touch, 44px);
+	padding: 0.625rem 1.15rem;
+	font-weight: 600;
+}
+#content.app-kanzleicheck #app-content .kzc-btn--sm,
+#content.app-kanzleicheck #app-content .button.small,
+#content.app-kanzleicheck #app-content .button--sm {
+	border-radius: var(--kzc-radius-sm, 6px);
+	min-height: 44px;
+	min-width: 44px;
+	padding: 0.35rem 0.75rem;
+}
+#content.app-kanzleicheck #app-content .kzc-table-wrap {
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-radius: var(--kzc-radius-md, 12px);
+	overflow-x: auto;
+	overflow-y: visible;
+	background: var(--kzc-bg-card, var(--color-main-background));
+}
+/* §3.7 one frame: inside a card/section/dialog the wrap drops its own
+   box — the outer frame is the only frame. Dialog rules stay bare:
+   <dialog> renders in the top layer outside #content. */
+#content.app-kanzleicheck #app-content .kzc-card .kzc-table-wrap,
+#content.app-kanzleicheck #app-content .section .kzc-table-wrap,
+#content.app-kanzleicheck #app-content .kzc-card .table-container,
+#content.app-kanzleicheck #app-content .kzc-card .table-responsive,
+.kzc-dialog .kzc-table-wrap {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+/* Empty states — AZ-like bordered soft panel (never page how-to guides) */
+#content.app-kanzleicheck #app-content .kzc-empty:not(.kzc-page-guide),
+#content.app-kanzleicheck #app-content .kzc-empty-state {
+	border: 1px solid var(--kzc-border-strong, var(--color-border));
+	border-radius: var(--kzc-radius-md, 12px);
+	padding: var(--kzc-space-7, 48px) var(--kzc-space-5, 24px);
+	text-align: center;
+	background: var(--kzc-bg-soft, transparent);
+}
+/* ===== END AZ content surfaces ===== */
+
+
+/* ===== AZ table parity (prefix dc) =====
+ * Matches arbeitszeitcheck/css/common/components.css table chrome.
+ * Covers both .kzc-table and legacy .table / .grid-table.
+ */
+#content.app-kanzleicheck .kzc-table-wrap,
+#content.app-kanzleicheck .table-container,
+#content.app-kanzleicheck .table-responsive {
+	overflow-x: auto;
+	overflow-y: visible;
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-radius: var(--kzc-radius-md, 12px);
+	background-color: var(--kzc-bg-card, var(--color-main-background));
+	-webkit-overflow-scrolling: touch;
+	width: 100%;
+	box-sizing: border-box;
+}
+/* Same one-frame rule for the flat wrap selectors above (1-ID tier). */
+#content.app-kanzleicheck .kzc-card .kzc-table-wrap,
+#content.app-kanzleicheck .section .kzc-table-wrap,
+#content.app-kanzleicheck .kzc-card .table-container,
+#content.app-kanzleicheck .kzc-card .table-responsive,
+.kzc-dialog .kzc-table-wrap,
+.kzc-dialog .table-container,
+.kzc-dialog .table-responsive {
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+#content.app-kanzleicheck .kzc-table,
+#content.app-kanzleicheck .table,
+#content.app-kanzleicheck .grid-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	margin-bottom: 0;
+}
+#content.app-kanzleicheck .kzc-table thead,
+#content.app-kanzleicheck .table thead,
+#content.app-kanzleicheck .grid-table thead {
+	background-color: var(--color-background-dark, var(--kzc-bg-stripe, transparent));
+}
+#content.app-kanzleicheck .kzc-table th,
+#content.app-kanzleicheck .table th,
+#content.app-kanzleicheck .grid-table th {
+	padding: var(--kzc-space-3, 0.75rem) var(--kzc-space-4, 1rem);
+	text-align: left;
+	font-weight: 600;
+	color: var(--kzc-text, var(--color-main-text));
+	border-bottom: 1px solid var(--kzc-border, var(--color-border));
+	white-space: nowrap;
+	vertical-align: middle;
+	background-color: var(--color-background-dark, var(--kzc-bg-stripe, color-mix(in srgb, var(--color-main-text) 12%, transparent)));
+}
+#content.app-kanzleicheck .kzc-table td,
+#content.app-kanzleicheck .table td,
+#content.app-kanzleicheck .grid-table td {
+	padding: var(--kzc-space-3, 0.75rem) var(--kzc-space-4, 1rem);
+	border-bottom: 1px solid var(--kzc-border, var(--color-border));
+	color: var(--kzc-text, var(--color-main-text));
+	vertical-align: middle;
+}
+#content.app-kanzleicheck .kzc-table tbody tr:last-child td,
+#content.app-kanzleicheck .table tbody tr:last-child td,
+#content.app-kanzleicheck .grid-table tbody tr:last-child td {
+	border-bottom: none;
+}
+#content.app-kanzleicheck .kzc-table.table--hover tbody tr:hover,
+#content.app-kanzleicheck .kzc-table--hover tbody tr:hover,
+#content.app-kanzleicheck .table--hover tbody tr:hover,
+#content.app-kanzleicheck .grid-table.table--hover tbody tr:hover {
+	background-color: var(--color-background-hover);
+}
+/* ===== END AZ table parity ===== */
+
+
+.kzc-sr-only {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	min-width: 0 !important;
+	min-height: 0 !important;
+	max-width: 1px !important;
+	max-height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	border: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+	inset-inline-start: 0 !important;
+	inset-block-start: 0 !important;
+}
+
+/* ── App shell ─────────────────────────────────────────────── */
+/* Sidebar alignment: see navigation.css (canonical); keep minimal guard here too */
+#content.app-kanzleicheck #app-navigation .nav-menu a,
+#content.app-kanzleicheck #app-navigation .nav-submenu a,
+#content.app-kanzleicheck #app-navigation .nav-parent-toggle {
+	justify-content: flex-start;
+	text-align: left;
+}
+
+#app-content.kzc-app {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	text-align: left;
+	min-height: 100%;
+	background: var(--kzc-bg-soft);
+}
+#app-content.kzc-app #app-content-wrapper.kzc-shell {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	text-align: left;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: var(--kzc-space-5) var(--kzc-space-5) var(--kzc-space-7);
+	/* Notched phones: keep CTAs clear of home indicator (NC mobile) */
+	padding-left: max(var(--kzc-space-5), env(safe-area-inset-left, 0px));
+	padding-right: max(var(--kzc-space-5), env(safe-area-inset-right, 0px));
+	padding-bottom: max(var(--kzc-space-7), env(safe-area-inset-bottom, 0px));
+	box-sizing: border-box;
+}
+#app-content.kzc-app--dashboard .kzc-dashboard-alerts .kzc-callout {
+	margin: 0;
+}
+#app-content.kzc-app #kzc-main-content.kzc-main,
+#app-content.kzc-app #kzc-main-content.kzc-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	text-align: left;
+	gap: var(--kzc-space-5);
+	outline: none;
+}
+#app-content.kzc-app--admin-notifications #kzc-main-content,
+#app-content.kzc-app--admin-settings #kzc-main-content {
+	gap: var(--kzc-space-4);
+}
+#kzc-main-content.kzc-main:focus-visible,
+#kzc-main-content.kzc-main:focus-visible {
+	outline: var(--kzc-focus, 3px solid var(--color-primary-element));
+	outline-offset: var(--kzc-focus-offset, 2px);
+}
+
+/* Heading contrast in all NC themes */
+#app-content.kzc-app h1,
+#app-content.kzc-app h2,
+#app-content.kzc-app h3 {
+	color: var(--kzc-text) !important;
+	opacity: 1 !important;
+}
+
+/* ── Header / breadcrumb ───────────────────────────────────── */
+.kzc-page-header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3);
+	margin-bottom: var(--kzc-space-5);
+}
+#app-content.kzc-app .kzc-breadcrumb {
+	font-size: var(--kzc-fs-sm);
+	line-height: var(--kzc-line-tight);
+	color: var(--kzc-muted);
+}
+#app-content.kzc-app .kzc-breadcrumb__list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+#app-content.kzc-app .kzc-breadcrumb__item {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	max-width: 100%;
+}
+#app-content.kzc-app .kzc-breadcrumb__item:not(:last-child)::after {
+	content: '/';
+	margin-inline: var(--kzc-space-2);
+	color: var(--kzc-muted);
+	font-weight: 400;
+	opacity: 0.65;
+	pointer-events: none;
+	user-select: none;
+}
+#app-content.kzc-app .kzc-breadcrumb__link {
+	color: var(--color-primary-element);
+	font-weight: 600;
+	text-decoration: none;
+	border-radius: var(--kzc-radius-sm);
+	padding-block: 2px;
+	/* WCAG 2.5.8: the anchor is the target — give it a >=24px box
+	   (was ~20px text-line; ds_chrome sweep touch probe). */
+	display: inline-flex;
+	align-items: center;
+	min-block-size: 24px;
+}
+#app-content.kzc-app .kzc-breadcrumb__link:hover {
+	text-decoration: underline;
+}
+#app-content.kzc-app .kzc-breadcrumb__link:focus-visible {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+}
+#app-content.kzc-app .kzc-breadcrumb__text {
+	color: var(--kzc-muted);
+	font-weight: 500;
+}
+#app-content.kzc-app .kzc-breadcrumb__item--current {
+	color: var(--kzc-text);
+	min-width: 0;
+}
+#app-content.kzc-app .kzc-breadcrumb__current {
+	font-weight: 600;
+	color: var(--kzc-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: min(100%, 28rem);
+}
+/* Mobile-first: icon + title; actions full-width below (no 3-col squeeze at 320px) */
+.kzc-page-header__main {
+	display: grid;
+	grid-template-columns: 56px minmax(0, 1fr);
+	gap: var(--kzc-space-3) var(--kzc-space-4);
+	align-items: start;
+}
+.kzc-page-header__actions {
+	grid-column: 1 / -1;
+	justify-content: flex-start;
+}
+/* ≥768px tablet+: icon | title | actions on one row (NC tablet / desktop) */
+@media (min-width: 769px) {
+	.kzc-page-header__main {
+		/* minmax(0,…) — the title column must be able to shrink below its
+		   min-content (long compounds, inline chips), else it shoves the
+		   actions column off the card. Same rule as the mobile track. */
+		grid-template-columns: 56px minmax(0, 1fr) auto;
+		gap: var(--kzc-space-4);
+	}
+	.kzc-page-header__actions {
+		grid-column: auto;
+		justify-content: flex-end;
+	}
+}
+.kzc-page-header__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	border-radius: var(--kzc-radius-md);
+	background: var(--kzc-tint-info);
+	color: var(--color-primary-element);
+}
+.kzc-page-header__icon-svg {
+	width: 28px;
+	height: 28px;
+	max-width: none;
+	stroke: currentColor;
+	fill: none;
+	color: inherit;
+	stroke-width: var(--kzc-icon-stroke, 2);
+}
+.kzc-page-header__text h1 {
+	margin: 0 0 var(--kzc-space-1);
+	font-size: var(--kzc-fs-2xl);
+	line-height: var(--kzc-line-tight);
+	/* Long compounds (de "Zugriffssteuerung") must wrap or hyphenate —
+	   never clip mid-glyph at the 320px viewport edge. break-word (not
+	   anywhere): headings keep normal word breaks and only split as a
+	   last resort — anywhere tears mid-word on full lines. */
+	overflow-wrap: break-word;
+	hyphens: auto;
+}
+/* ≤480px phone: the title track is ~200px (viewport − shell padding − 56px
+   icon − gap). fs-2xl brand compounds ("NachweisCheck" ≈ 215px) overflow
+   it and break-word tears mid-word — family defect
+   nw-vis-mobile-h1-midword-break. fs-xl keeps the word inside the track;
+   break-word stays last-resort for genuinely overlong words. */
+@media (max-width: 480px) {
+	.kzc-page-header__text h1 {
+		font-size: var(--kzc-fs-xl);
+	}
+}
+.kzc-page-header__lead {
+	margin: 0;
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-md);
+	line-height: var(--kzc-line-base);
+	max-width: 60ch;
+}
+.kzc-page-header__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+	align-items: center;
+	/* grid-column / justify set with .kzc-page-header__main (mobile-first above) */
+}
+
+/* ── Scope strip ───────────────────────────────────────────── */
+.kzc-scope-strip {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--kzc-space-2);
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-sm);
+	background: var(--kzc-bg-card);
+	font-size: var(--kzc-fs-sm);
+}
+.kzc-scope-strip--quiet {
+	padding: var(--kzc-space-1) var(--kzc-space-3);
+	border-style: dashed;
+	/* Never dim the whole strip — opacity tanks WCAG contrast on muted labels. */
+}
+.kzc-scope-strip__label {
+	color: var(--kzc-text, var(--color-main-text));
+	font-weight: 600;
+}
+.kzc-scope-strip__value {
+	font-weight: 600;
+	color: var(--kzc-text);
+}
+.kzc-scope-strip__sep {
+	color: var(--kzc-muted);
+}
+.kzc-scope-strip__chip {
+	text-decoration: none;
+}
+.kzc-scope-strip__select {
+	min-height: 44px;
+	min-width: min(12rem, 100%);
+	padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+	border: 1px solid var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-sm);
+	background-color: var(--kzc-bg-card);
+	color: var(--kzc-text);
+	font: inherit;
+	font-weight: 600;
+}
+.kzc-scope-strip__select:focus-visible {
+	outline: 3px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+/* ── Buttons (dc-btn taxonomy) ──────────────────────────────── */
+.kzc-btn,
+.kzc-app .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--kzc-space-2);
+	min-height: 44px;
+	min-width: 44px;
+	padding: var(--kzc-space-2) var(--kzc-space-4);
+	border-radius: var(--kzc-radius-sm);
+	font-size: var(--kzc-fs-md);
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	border: 1px solid transparent;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.kzc-btn:focus-visible,
+.kzc-app .btn:focus-visible {
+	outline: var(--kzc-focus, 3px solid var(--color-primary-element));
+	outline-offset: var(--kzc-focus-offset, 2px);
+}
+.kzc-btn--primary,
+.kzc-app .btn--primary {
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	/* Border == fill: painted edge like .kzc-btn--danger — the boundary is the
+	   fill vs the surface (WCAG 1.4.11), never a transparent border. */
+	border-color: var(--color-primary-element);
+}
+.kzc-btn--secondary,
+.kzc-app .btn--secondary {
+	background: color-mix(in srgb, var(--color-main-background) 82%, var(--color-main-text) 18%);
+	color: var(--kzc-text);
+	border-color: var(--kzc-control-border, var(--kzc-border-strong));
+}
+/* NC core `button:not(.button-vue)` (0-1-1) repaints every <button> with
+   --color-primary-element-light + border:none, and its :hover/:focus leg
+   (0-2-1) repaints again — every single-class variant rule (0-1-0) loses,
+   so all <button> elements collapse to the identical pale tint. Same fix
+   as .kzc-btn--danger: ID-scope + !important, full border shorthand (core
+   sets border-style:none, so border-color alone would paint nothing).
+   `#content.app-kanzleicheck` also reaches guest/public pages — layout.public.php
+   has no #app-content wrapper. */
+
+/* Base .kzc-btn: same core-repaint guard as the variants — an unguarded
+   single-class base collapses to --color-primary-element-light on <button>
+   while <a> siblings stay transparent (button_variant_specificity_collapse).
+   .kzc-dialog scope included: JS-built dialogs mount on document.body,
+   outside every ID-scoped root.
+   ORDER MATTERS: this block must precede the variant blocks — same
+   specificity, so the variant fill/border rules below must win the
+   declaration order for `.kzc-btn .kzc-btn--*` composites. */
+#app-content.kzc-app .kzc-btn,
+#app-content-wrapper .kzc-btn,
+#content.app-kanzleicheck .kzc-btn,
+.kzc-dialog .kzc-btn,
+#app-content.kzc-app .btn,
+#app-content-wrapper .btn,
+#content.app-kanzleicheck .btn {
+	background: transparent !important;
+	color: var(--kzc-text) !important;
+	border: 1px solid transparent !important;
+}
+#app-content.kzc-app .kzc-btn--primary,
+#app-content-wrapper .kzc-btn--primary,
+#content.app-kanzleicheck .kzc-btn--primary,
+.kzc-dialog .kzc-btn--primary,
+#app-content.kzc-app .btn--primary,
+#app-content-wrapper .btn--primary,
+#content.app-kanzleicheck .btn--primary {
+	background: var(--color-primary-element) !important;
+	color: var(--color-primary-element-text) !important;
+	border: 1px solid var(--color-primary-element) !important;
+}
+#app-content.kzc-app .kzc-btn--secondary,
+#app-content-wrapper .kzc-btn--secondary,
+#content.app-kanzleicheck .kzc-btn--secondary,
+.kzc-dialog .kzc-btn--secondary,
+#app-content.kzc-app .btn--secondary,
+#app-content-wrapper .btn--secondary,
+#content.app-kanzleicheck .btn--secondary {
+	background: color-mix(in srgb, var(--color-main-background) 82%, var(--color-main-text) 18%) !important;
+	color: var(--kzc-text) !important;
+	border: 1px solid var(--kzc-control-border, var(--kzc-border-strong)) !important;
+}
+#app-content.kzc-app .kzc-btn--ghost,
+#app-content-wrapper .kzc-btn--ghost,
+#content.app-kanzleicheck .kzc-btn--ghost,
+.kzc-dialog .kzc-btn--ghost {
+	background: transparent !important;
+	color: var(--kzc-text) !important;
+	border: 1px solid var(--kzc-control-border, var(--kzc-border-strong)) !important;
+}
+.kzc-btn--flat {
+	background: transparent;
+	color: var(--kzc-text);
+	border-color: transparent;
+}
+#app-content.kzc-app .kzc-btn--flat,
+#app-content-wrapper .kzc-btn--flat,
+#content.app-kanzleicheck .kzc-btn--flat,
+.kzc-dialog .kzc-btn--flat {
+	background: transparent !important;
+	color: var(--kzc-text) !important;
+	border: 1px solid transparent !important;
+}
+/* Core hover repaint is also blocked by !important — restore hover feedback
+   the way .kzc-btn--danger does (filter survives because core sets none). */
+.kzc-btn--primary:hover,
+.kzc-app .btn--primary:hover,
+.kzc-btn--secondary:hover,
+.kzc-app .btn--secondary:hover,
+.kzc-btn--ghost:hover,
+.kzc-btn--flat:hover {
+	filter: brightness(0.94);
+}
+#app-content.kzc-app .kzc-btn--danger,
+#app-content-wrapper .kzc-btn--danger,
+#content.app-kanzleicheck .kzc-btn--danger,
+.kzc-dialog .kzc-btn--danger,
+.kzc-app .btn--danger {
+	/* Solid fill — never pale --color-error tint (WCAG 1.4.3 / design-system §3.3).
+	   ID-scoped + !important: NC core button:not(...) (0-1-1) otherwise paints
+	   --color-primary-element-light over the danger fill. */
+	background: var(--kzc-danger-fill) !important;
+	color: var(--kzc-danger-on-fill) !important;
+	/* Border == fill so the control keeps a painted edge (boundary = fill vs
+	   surface, WCAG 1.4.11) instead of a transparent border. Full shorthand:
+	   core's `border:none` wins border-style at 0-1-1, so border-color alone
+	   paints nothing. */
+	border: 1px solid var(--kzc-danger-fill) !important;
+}
+.kzc-btn--danger:hover,
+.kzc-app .btn--danger:hover {
+	filter: brightness(0.92);
+}
+.kzc-btn--danger:focus-visible,
+.kzc-app .btn--danger:focus-visible {
+	filter: brightness(0.92);
+	outline: 3px solid var(--kzc-danger-fill);
+	outline-offset: var(--kzc-focus-offset);
+}
+.kzc-btn--ghost {
+	background: transparent;
+	color: var(--kzc-text);
+	border-color: var(--kzc-control-border, var(--kzc-border-strong));
+}
+.kzc-btn--sm {
+	min-height: 44px;
+	min-width: 44px;
+	padding: var(--kzc-space-1) var(--kzc-space-3);
+	font-size: var(--kzc-fs-sm);
+}
+.kzc-btn[aria-busy="true"] {
+	opacity: 0.7;
+	pointer-events: none;
+}
+
+/* Badges: css/common/badges.css (loaded after app-vanilla to override legacy rules) */
+
+/* ── Cards / callouts ──────────────────────────────────────── */
+.kzc-card {
+	background: var(--kzc-bg-card);
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-md);
+	padding: var(--kzc-space-5);
+	box-shadow: var(--kzc-shadow-sm);
+}
+#app-content.kzc-app .kzc-card:has(.kzc-card__header),
+#app-content.kzc-app .kzc-card:has(.kzc-card__body) {
+	padding: 0;
+}
+#app-content.kzc-app .kzc-card__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--kzc-space-3) var(--kzc-space-4);
+	padding: var(--kzc-space-5);
+	border-bottom: 1px solid var(--kzc-border);
+	background: var(--kzc-bg-soft);
+}
+#app-content.kzc-app .kzc-card__header-text {
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+#app-content.kzc-app .kzc-card__header-actions {
+	flex: 0 0 auto;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--kzc-space-2);
+}
+#app-content.kzc-app .kzc-card__title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight);
+	color: var(--kzc-text);
+}
+#app-content.kzc-app .kzc-card__lead {
+	margin: var(--kzc-space-2) 0 0;
+	max-width: 52rem;
+	font-size: var(--kzc-fs-sm);
+	line-height: var(--kzc-line-base);
+	color: var(--kzc-muted);
+}
+#app-content.kzc-app .kzc-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-4);
+	padding: var(--kzc-space-5);
+}
+/* Empty JS mount points must not consume a gap slot — otherwise an empty
+   list region adds a phantom space-4 band inside every card body. :empty
+   un-matches automatically once JS fills the node. */
+#app-content.kzc-app .kzc-card__body > :empty {
+	display: none;
+}
+#app-content.kzc-app .kzc-btn .kzc-btn__icon,
+#app-content.kzc-app .kzc-btn .kzc-icon {
+	width: var(--kzc-icon-md);
+	height: var(--kzc-icon-md);
+	flex-shrink: 0;
+}
+#app-content.kzc-app .kzc-btn--sm .kzc-btn__icon,
+#app-content.kzc-app .kzc-btn--sm .kzc-icon {
+	width: var(--kzc-icon-sm);
+	height: var(--kzc-icon-sm);
+}
+/* Legacy card header shim (compliance/dashboard until fully migrated) */
+#app-content.kzc-app .card-header--with-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--kzc-space-3) var(--kzc-space-4);
+	padding: var(--kzc-space-4) var(--kzc-space-5);
+	margin-bottom: 0;
+	border-bottom: 1px solid var(--kzc-border);
+	background: var(--kzc-bg-soft);
+}
+#app-content.kzc-app .card-header--with-actions .card-title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	font-weight: 600;
+	color: var(--kzc-text);
+}
+#app-content.kzc-app .card-header--with-actions .kzc-btn {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+#app-content.kzc-app .kzc-card + .kzc-card {
+	margin-top: var(--kzc-space-5);
+}
+#app-content.kzc-app .compliance-dashboard__status .kzc-callout {
+	margin-bottom: 0;
+}
+

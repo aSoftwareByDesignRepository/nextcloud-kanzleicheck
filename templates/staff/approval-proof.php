@@ -1,6 +1,7 @@
 <?php
 /** Approval proof — hash-bound decision record (US-P23). Printable. */
 $appId = 'kanzleicheck';
+style($appId, 'common/tokens');
 style($appId, 'app');
 style($appId, 'portal');
 ?>

@@ -159,7 +159,7 @@ test.describe('staff conv poll-chain + stale-response guards (c7/c8)', () => {
 			await expect.poll(() => gate.state.pending.length, { timeout: 15000 }).toBe(1);
 
 			// Switch to conversation B while A's response is still in flight.
-			await page.locator('.kzc-navbtn[data-v="inbox"]').click();
+			await page.locator('#app-navigation .kzc-nav__link[href*="view=inbox"]').click();
 			const rowB = page.locator('.kzc-row', { hasText: `StaleB ${tag}` });
 			await rowB.waitFor({ state: 'visible', timeout: 20000 });
 			await rowB.click();

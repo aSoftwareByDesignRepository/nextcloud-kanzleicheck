@@ -247,7 +247,7 @@ test.describe('craft transfer', () => {
 		// Full-form pinned-control sweep (cramped_form_controls): every text
 		// control on the transfer surface must escape the NC-core 130px pin.
 		await assertAtlasRenderedSurface(page, {
-			content: '#kzc-staff-view',
+			content: '#kzc-main-content',
 			navExclude: '.kzc-tabbar, nav',
 		});
 
@@ -306,7 +306,7 @@ test.describe('craft transfer', () => {
 		// padding-inline-start is indentation, not lost-marker residue); the
 		// identical rendered state shipped in the r24/r25 report-dialog crafts.
 		await assertAtlasRenderedSurface(page, {
-			content: '#kzc-staff-view',
+			content: '#kzc-main-content',
 			navExclude: '.kzc-tabbar, nav',
 			listAllow: '.kzc-transfer-group',
 		});

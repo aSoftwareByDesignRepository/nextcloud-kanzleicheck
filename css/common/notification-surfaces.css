@@ -1,0 +1,644 @@
+/* Adapted from arbeitszeitcheck notification-surfaces.css (kzc- prefix). */
+/**
+ * Notifications: callouts, alerts, toasts, inline-notice — theme-safe (WCAG 2.1 AA).
+ * Uses NC --color-*-text / *-rgb for contrast on light, dark, and custom themes.
+ * Icon wells: semantic fill + contrasting glyph (not low-contrast outline-only).
+ */
+
+/* Base callout geometry (modifiers set tint + accent border) */
+#app-content.kzc-app .kzc-callout:not(.kzc-semantic-panel),
+.kzc-nc-admin-settings .kzc-callout,
+.modal-backdrop .kzc-callout:not(.kzc-semantic-panel) {
+	display: block;
+	padding: var(--kzc-space-4);
+	margin: var(--kzc-space-4) 0;
+	border-radius: var(--kzc-radius-md);
+	border: 1px solid var(--kzc-border-strong);
+	border-left-width: 5px;
+	border-left-color: var(--color-primary-element);
+	background: var(--kzc-tint-info);
+	color: var(--color-main-text);
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+/* ── Panel accents (visible border + tint on light, dark, custom NC themes) ── */
+#app-content.kzc-app .kzc-callout--info:not(.kzc-semantic-panel),
+.kzc-nc-admin-settings .kzc-callout--info,
+.modal-backdrop .kzc-callout--info:not(.kzc-semantic-panel),
+#app-content.kzc-app .inline-notice--info,
+.modal-backdrop .inline-notice--info,
+.toast--info {
+	border-color: var(--color-primary-element);
+	border-left-width: 5px;
+	border-left-color: var(--color-primary-element);
+	background: var(--kzc-tint-info);
+}
+
+#app-content.kzc-app .kzc-callout--warning:not(.kzc-semantic-panel),
+.kzc-nc-admin-settings .kzc-callout--warning,
+.modal-backdrop .kzc-callout--warning:not(.kzc-semantic-panel),
+#app-content.kzc-app .inline-notice--warning,
+.modal-backdrop .inline-notice--warning,
+.toast--warning,
+#app-content.kzc-app .alert--warning,
+.modal-backdrop .alert--warning {
+	border-color: var(--color-warning-text, var(--color-warning));
+	border-left-width: 5px;
+	border-left-color: var(--color-warning-text, var(--color-warning));
+	background: var(--kzc-tint-warning);
+}
+
+#app-content.kzc-app .kzc-callout--success:not(.kzc-semantic-panel),
+.kzc-nc-admin-settings .kzc-callout--success,
+.modal-backdrop .kzc-callout--success:not(.kzc-semantic-panel),
+.toast--success,
+#app-content.kzc-app .alert--success,
+.modal-backdrop .alert--success {
+	border-color: var(--color-success-text, var(--color-success));
+	border-left-width: 5px;
+	border-left-color: var(--color-success-text, var(--color-success));
+	background: var(--kzc-tint-success);
+}
+
+#app-content.kzc-app .kzc-callout--danger:not(.kzc-semantic-panel),
+#app-content.kzc-app .kzc-callout--error:not(.kzc-semantic-panel),
+.kzc-nc-admin-settings .kzc-callout--danger,
+.kzc-nc-admin-settings .kzc-callout--error,
+.modal-backdrop .kzc-callout--danger:not(.kzc-semantic-panel),
+.modal-backdrop .kzc-callout--error:not(.kzc-semantic-panel),
+.toast--error,
+#app-content.kzc-app .alert--error,
+.modal-backdrop .alert--error {
+	border-color: var(--color-error-text, var(--color-error));
+	border-left-width: 5px;
+	border-left-color: var(--color-error-text, var(--color-error));
+	background: var(--kzc-tint-danger);
+}
+
+#app-content.kzc-app .kzc-callout--neutral:not(.kzc-semantic-panel),
+.modal-backdrop .kzc-callout--neutral:not(.kzc-semantic-panel) {
+	border-color: var(--kzc-border-strong);
+	border-left-width: 2px;
+	background: color-mix(in srgb, var(--color-main-text) 5%, var(--color-main-background));
+}
+
+/* Semantic panel panel tints: common/semantic-surfaces.css */
+
+/* ── Icon wells: pale tint + semantic stroke (same model as .kzc-page-header__icon) ── */
+.kzc-notif-icon-well,
+#app-content.kzc-app .kzc-callout__icon,
+.modal-backdrop .kzc-callout__icon,
+#app-content.kzc-app .alert-icon,
+.modal-backdrop .alert-icon,
+.toast-icon,
+#app-content.kzc-app .inline-notice__icon,
+.modal-backdrop .inline-notice__icon,
+.kzc-status-icon-well {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--kzc-icon-well, 2.25rem);
+	height: var(--kzc-icon-well, 2.25rem);
+	min-width: var(--kzc-icon-well, 2.25rem);
+	min-height: var(--kzc-icon-well, 2.25rem);
+	border-radius: var(--kzc-radius-sm, 6px);
+	border: 2px solid var(--kzc-border-strong, var(--color-border));
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	box-shadow: none;
+}
+
+.kzc-notif-icon-well .kzc-icon,
+.kzc-notif-icon-well .kzc-callout__icon-svg,
+.kzc-notif-icon-well svg,
+#app-content.kzc-app .kzc-callout__icon .kzc-icon,
+#app-content.kzc-app .kzc-callout__icon .kzc-callout__icon-svg,
+#app-content.kzc-app .kzc-callout__icon-svg,
+.modal-backdrop .kzc-callout__icon .kzc-icon,
+.modal-backdrop .kzc-callout__icon .kzc-callout__icon-svg,
+.modal-backdrop .kzc-callout__icon-svg,
+.alert-icon .kzc-icon,
+.alert-icon svg,
+.toast-icon .kzc-icon,
+.toast-icon svg,
+.toast-icon .toast__icon-svg,
+#app-content.kzc-app .inline-notice__icon .kzc-icon,
+#app-content.kzc-app .inline-notice__icon .inline-notice__glyph,
+#app-content.kzc-app .inline-notice__icon svg,
+.modal-backdrop .inline-notice__icon svg {
+	width: var(--kzc-icon-lg, 1.375rem);
+	height: var(--kzc-icon-lg, 1.375rem);
+	min-width: var(--kzc-icon-lg, 1.375rem);
+	min-height: var(--kzc-icon-lg, 1.375rem);
+	color: inherit;
+	stroke: currentColor;
+	fill: none;
+	opacity: 1;
+}
+
+/* Filled accent dots in IconCatalog (info / alert) */
+.kzc-notif-icon-well svg circle[fill='currentColor'],
+.kzc-notif-icon-well svg [fill='currentColor'],
+#app-content.kzc-app .kzc-callout__icon svg circle[fill='currentColor'],
+#app-content.kzc-app .kzc-callout__icon svg [fill='currentColor'],
+.toast-icon svg circle[fill='currentColor'],
+.toast-icon svg [fill='currentColor'] {
+	fill: currentColor;
+	stroke: none;
+}
+
+/* Variant wells — modifier class + legacy parent selectors */
+.kzc-notif-icon-well--info,
+.kzc-callout.kzc-callout--info > .kzc-callout__icon,
+.kzc-callout.kzc-callout--info > .kzc-notif-icon-well,
+#app-content.kzc-app .kzc-semantic-panel--info .kzc-callout__icon,
+.kzc-nc-admin-settings .kzc-callout--info .kzc-callout__icon,
+.modal-backdrop .kzc-callout--info .kzc-callout__icon,
+#app-content.kzc-app .alert--info .alert-icon,
+.modal-backdrop .alert--info .alert-icon,
+#app-content.kzc-app .inline-notice--info .inline-notice__icon,
+.modal-backdrop .inline-notice--info .inline-notice__icon,
+.toast--info .toast-icon {
+	background: var(--kzc-tint-info);
+	border-color: var(--kzc-notif-fg-info);
+	color: var(--kzc-accent-ink, var(--kzc-notif-fg-info));
+}
+
+.kzc-notif-icon-well--warning,
+.kzc-callout.kzc-callout--warning > .kzc-callout__icon,
+.kzc-callout.kzc-callout--warning > .kzc-notif-icon-well,
+#app-content.kzc-app .kzc-semantic-panel--warning .kzc-callout__icon,
+.kzc-nc-admin-settings .kzc-callout--warning .kzc-callout__icon,
+.modal-backdrop .kzc-callout--warning .kzc-callout__icon,
+#app-content.kzc-app .alert--warning .alert-icon,
+.modal-backdrop .alert--warning .alert-icon,
+#app-content.kzc-app .inline-notice--warning .inline-notice__icon,
+.modal-backdrop .inline-notice--warning .inline-notice__icon,
+.toast--warning .toast-icon {
+	background: var(--kzc-tint-warning);
+	border-color: var(--kzc-notif-fg-warning);
+	color: var(--kzc-notif-fg-warning);
+}
+
+.kzc-notif-icon-well--success,
+.kzc-callout.kzc-callout--success > .kzc-callout__icon,
+.kzc-callout.kzc-callout--success > .kzc-notif-icon-well,
+#app-content.kzc-app .kzc-semantic-panel--success .kzc-callout__icon,
+.modal-backdrop .kzc-callout--success .kzc-callout__icon,
+#app-content.kzc-app .alert--success .alert-icon,
+.modal-backdrop .alert--success .alert-icon,
+.toast--success .toast-icon {
+	background: var(--kzc-tint-success);
+	border-color: var(--kzc-notif-fg-success);
+	color: var(--kzc-notif-fg-success);
+}
+
+.kzc-notif-icon-well--danger,
+.kzc-notif-icon-well--error,
+.kzc-callout.kzc-callout--danger > .kzc-callout__icon,
+.kzc-callout.kzc-callout--danger > .kzc-notif-icon-well,
+.kzc-callout.kzc-callout--error > .kzc-callout__icon,
+.kzc-callout.kzc-callout--error > .kzc-notif-icon-well,
+.kzc-nc-admin-settings .kzc-callout--danger .kzc-callout__icon,
+.kzc-nc-admin-settings .kzc-callout--error .kzc-callout__icon,
+.modal-backdrop .kzc-callout--danger .kzc-callout__icon,
+.modal-backdrop .kzc-callout--error .kzc-callout__icon,
+#app-content.kzc-app .alert--error .alert-icon,
+.modal-backdrop .alert--error .alert-icon,
+.toast--error .toast-icon {
+	background: var(--kzc-tint-danger);
+	border-color: var(--kzc-notif-fg-danger);
+	color: var(--kzc-notif-fg-danger);
+}
+
+.kzc-notif-icon-well--neutral,
+.kzc-callout.kzc-callout--neutral > .kzc-callout__icon,
+.kzc-callout.kzc-callout--neutral > .kzc-notif-icon-well,
+.modal-backdrop .kzc-callout--neutral .kzc-callout__icon {
+	background: color-mix(in srgb, var(--color-main-text) 8%, var(--color-main-background));
+	border-color: var(--color-border-maxcontrast, var(--color-border));
+	color: var(--color-main-text);
+}
+
+#app-content.kzc-app .kzc-semantic-panel--success.kzc-callout.auto-break-panel--disabled .kzc-callout__icon {
+	background: color-mix(in srgb, var(--color-main-text) 10%, var(--color-main-background));
+	border-color: var(--color-border);
+	color: var(--color-main-text);
+}
+
+/* Body copy: main text only (AA); hints stay maxcontrast */
+#app-content.kzc-app .kzc-callout__title,
+.modal-backdrop .kzc-callout__title,
+#app-content.kzc-app .kzc-callout__text,
+.modal-backdrop .kzc-callout__text,
+#app-content.kzc-app .alert-message,
+.modal-backdrop .alert-message,
+.toast-title,
+.toast-message,
+#app-content.kzc-app .inline-notice__title,
+.modal-backdrop .inline-notice__title,
+#app-content.kzc-app .inline-notice__text,
+.modal-backdrop .inline-notice__text {
+	color: var(--color-main-text);
+}
+
+#app-content.kzc-app .kzc-callout__hint,
+.modal-backdrop .kzc-callout__hint {
+	color: var(--color-text-maxcontrast, var(--color-main-text));
+}
+
+/* Mobile-first: stack callout icon + body; ≥721px keeps horizontal row */
+#app-content.kzc-app .kzc-callout,
+.modal-backdrop .kzc-callout,
+#app-content.kzc-app .alert,
+.modal-backdrop .alert,
+#app-content.kzc-app .inline-notice,
+.modal-backdrop .inline-notice,
+.toast {
+	flex-wrap: wrap;
+}
+
+#app-content.kzc-app .kzc-callout__icon,
+.modal-backdrop .kzc-callout__icon,
+.toast-icon,
+#app-content.kzc-app .alert-icon,
+.modal-backdrop .alert-icon,
+#app-content.kzc-app .inline-notice__icon,
+.modal-backdrop .inline-notice__icon {
+	margin-bottom: var(--kzc-space-1, 0.25rem);
+}
+
+@media (min-width: 721px) {
+	#app-content.kzc-app .kzc-callout__icon,
+	.modal-backdrop .kzc-callout__icon,
+	.toast-icon,
+	#app-content.kzc-app .alert-icon,
+	.modal-backdrop .alert-icon,
+	#app-content.kzc-app .inline-notice__icon,
+	.modal-backdrop .inline-notice__icon {
+		margin-bottom: 0;
+	}
+}
+
+@media (prefers-contrast: more) {
+	#app-content.kzc-app .kzc-callout:not(.kzc-semantic-panel),
+	.modal-backdrop .kzc-callout:not(.kzc-semantic-panel),
+	.toast,
+	#app-content.kzc-app .alert,
+	.modal-backdrop .alert {
+		border-width: 3px;
+	}
+
+	#app-content.kzc-app .kzc-callout__icon,
+	.modal-backdrop .kzc-callout__icon,
+	.toast-icon,
+	#app-content.kzc-app .alert-icon,
+	.modal-backdrop .alert-icon {
+		border-width: 3px;
+	}
+
+	.kzc-notif-icon-well .kzc-icon,
+	.kzc-notif-icon-well svg,
+	#app-content.kzc-app .kzc-callout__icon .kzc-icon,
+	#app-content.kzc-app .kzc-callout__icon svg {
+		stroke-width: 3;
+	}
+}
+
+/* ── Legacy inline-notice (backward compat) ───────────────── */
+#app-content.kzc-app .inline-notice-section,
+.modal-backdrop .inline-notice-section {
+	padding: 0;
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	margin-bottom: var(--kzc-space-4, 1rem);
+}
+
+#app-content.kzc-app .inline-notice,
+.modal-backdrop .inline-notice {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: var(--kzc-space-3, 0.75rem) var(--kzc-space-4, 1rem);
+	padding: var(--kzc-space-4, 1rem) var(--kzc-space-5, 1.25rem);
+	border: 2px solid var(--kzc-border-strong, var(--color-border));
+	border-radius: var(--kzc-radius-md, 8px);
+	background: var(--color-main-background, var(--kzc-bg));
+	box-shadow: var(--kzc-shadow-sm);
+	color: var(--color-main-text, var(--kzc-text));
+}
+
+#app-content.kzc-app .inline-notice__content,
+.modal-backdrop .inline-notice__content {
+	flex: 1 1 12rem;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-2, 0.5rem);
+}
+
+#app-content.kzc-app .inline-notice__title,
+.modal-backdrop .inline-notice__title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg, 1.125rem);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight, 1.25);
+	color: var(--color-main-text, var(--kzc-text));
+}
+
+#app-content.kzc-app .inline-notice__text,
+.modal-backdrop .inline-notice__text {
+	margin: 0;
+	font-size: var(--kzc-fs-md, 1rem);
+	line-height: var(--kzc-line-base, 1.45);
+	max-width: 65ch;
+	color: var(--color-main-text, var(--kzc-text));
+}
+
+#app-content.kzc-app .inline-notice__actions,
+.modal-backdrop .inline-notice__actions {
+	flex-shrink: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2, 0.5rem);
+	margin: 0;
+}
+
+#app-content.kzc-app .inline-notice__actions .kzc-btn,
+#app-content.kzc-app .inline-notice__actions .btn,
+.modal-backdrop .inline-notice__actions .kzc-btn,
+.modal-backdrop .inline-notice__actions .btn {
+	min-height: 44px;
+	white-space: nowrap;
+}
+
+@media (max-width: 42rem) {
+	#app-content.kzc-app .inline-notice,
+	.modal-backdrop .inline-notice {
+		flex-direction: column;
+	}
+
+	#app-content.kzc-app .inline-notice__actions,
+	.modal-backdrop .inline-notice__actions {
+		width: 100%;
+	}
+
+	#app-content.kzc-app .inline-notice__actions .kzc-btn,
+	#app-content.kzc-app .inline-notice__actions .btn,
+	.modal-backdrop .inline-notice__actions .kzc-btn,
+	.modal-backdrop .inline-notice__actions .btn {
+		flex: 1 1 auto;
+		justify-content: center;
+	}
+}
+
+/* ── Toast container (MC parity: bottom-right) ───────────────── */
+.toast-container {
+	position: fixed;
+	bottom: calc(var(--kzc-space-5, 1.5rem) + env(safe-area-inset-bottom, 0px));
+	right: calc(var(--kzc-space-5, 1.5rem) + env(safe-area-inset-right, 0px));
+	top: auto;
+	z-index: var(--z-toast, 10000);
+	display: flex;
+	flex-direction: column-reverse;
+	gap: var(--kzc-space-2, 0.5rem);
+	max-width: min(24rem, calc(100vw - 2rem));
+}
+
+/* ── Toast card (left accent, MC weight) ───────────────────── */
+.toast {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	gap: var(--kzc-space-3, 0.75rem);
+	padding: var(--kzc-space-3, 0.75rem) var(--kzc-space-4, 1rem);
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-left-width: 4px;
+	border-radius: var(--kzc-radius-md, 12px);
+	background: var(--kzc-bg-card, var(--color-main-background));
+	box-shadow: var(--kzc-shadow-md, 0 8px 24px color-mix(in srgb, var(--color-main-text) 12%, transparent));
+	color: var(--color-main-text, var(--kzc-text));
+	font-weight: 600;
+	max-width: 100%;
+	opacity: 0;
+	transform: translateY(0.75rem);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast--show {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+@keyframes toast-slide-in {
+	from {
+		transform: translateY(0.75rem);
+		opacity: 0;
+	}
+
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.toast--removing {
+	animation: toast-slide-out 0.3s ease-in forwards;
+}
+
+@keyframes toast-slide-out {
+	from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	to {
+		transform: translateY(0.75rem);
+		opacity: 0;
+	}
+}
+
+.toast-content {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1, 0.25rem);
+}
+
+.toast-title {
+	margin: 0;
+	font-size: var(--kzc-fs-md, 1rem);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight, 1.25);
+	color: var(--color-main-text, var(--kzc-text));
+}
+
+.toast-message {
+	margin: 0;
+	font-size: var(--kzc-fs-md, 1rem);
+	line-height: var(--kzc-line-base, 1.45);
+	color: var(--color-main-text, var(--kzc-text));
+	max-width: 65ch;
+}
+
+.toast-close {
+	background: none;
+	border: none;
+	font-size: var(--kzc-fs-lg, 1.25rem);
+	line-height: 1;
+	color: var(--color-main-text, var(--kzc-text));
+	cursor: pointer;
+	padding: var(--kzc-space-1, 0.25rem);
+	border-radius: var(--kzc-radius-sm, 6px);
+	opacity: 0.85;
+	flex-shrink: 0;
+	min-width: 44px;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.toast-close:hover,
+.toast-close:focus-visible {
+	opacity: 1;
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+@media (max-width: 42rem) {
+	.toast-container {
+		left: calc(var(--kzc-space-4, 1rem) + env(safe-area-inset-left, 0px));
+		right: calc(var(--kzc-space-4, 1rem) + env(safe-area-inset-right, 0px));
+		bottom: calc(var(--kzc-space-4, 1rem) + env(safe-area-inset-bottom, 0px));
+		max-width: none;
+	}
+}
+
+@media (forced-colors: active) {
+	#app-content.kzc-app .kzc-callout,
+	.modal-backdrop .kzc-callout,
+	#app-content.kzc-app .alert,
+	.modal-backdrop .alert,
+	.toast,
+	#app-content.kzc-app .inline-notice,
+	.modal-backdrop .inline-notice {
+		border: 2px solid CanvasText;
+		background: Canvas;
+		color: CanvasText;
+	}
+
+	#app-content.kzc-app .kzc-callout__icon,
+	.modal-backdrop .kzc-callout__icon,
+	.toast-icon,
+	#app-content.kzc-app .alert-icon,
+	.modal-backdrop .alert-icon,
+	#app-content.kzc-app .inline-notice__icon,
+	.modal-backdrop .inline-notice__icon {
+		border: 2px solid CanvasText;
+		background: Canvas;
+		color: CanvasText;
+		box-shadow: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.toast,
+	.toast--removing {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+/* App-owned toast stack — pairs with js/common/toasts.js (kzcToast kernel).
+   Dedup by kind+text, timer reset, error toasts carry a report-mailto. */
+.kzc-toasts {
+	position: fixed;
+	bottom: calc(var(--kzc-space-4, 16px) + env(safe-area-inset-bottom, 0px));
+	inset-inline-start: calc(var(--kzc-space-4, 16px) + env(safe-area-inset-left, 0px));
+	inset-inline-end: calc(var(--kzc-space-4, 16px) + env(safe-area-inset-right, 0px));
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-2, 8px);
+	z-index: 1200;
+	max-width: min(400px, calc(100vw - 2 * var(--kzc-space-4, 16px)));
+}
+
+@media (min-width: 769px) {
+	.kzc-toasts {
+		inset-inline-start: auto;
+		inset-inline-end: calc(var(--kzc-space-4, 16px) + env(safe-area-inset-right, 0px));
+		max-width: min(400px, 90vw);
+	}
+}
+
+.kzc-toast {
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	border: 1px solid var(--kzc-border-strong, var(--color-border-maxcontrast));
+	border-left: 4px solid var(--color-primary-element);
+	padding: var(--kzc-space-3, 12px) var(--kzc-space-4, 16px);
+	border-radius: var(--kzc-radius-md, 12px);
+	box-shadow: var(--kzc-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2, 8px);
+	align-items: center;
+}
+
+.kzc-toast__text {
+	color: inherit;
+	/* basis:auto so an over-wide message wraps onto its own line at narrow
+	   viewports instead of crushing beside the nowrap feedback link +
+	   44px close button (lck-vis-toast-text-link-overlap-narrow). */
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.kzc-toast--success { border-left-color: var(--color-success-text, var(--color-success)); }
+.kzc-toast--error { border-left-color: var(--color-error-text, var(--color-error)); }
+
+.kzc-toast__feedback {
+	color: var(--kzc-accent-ink, var(--color-text-link, var(--color-primary-element)));
+	text-decoration: underline;
+	white-space: nowrap;
+}
+
+.kzc-toast__close {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	padding: var(--kzc-space-2, 8px);
+	min-height: 44px;
+	min-width: 44px;
+	box-sizing: border-box;
+	color: inherit;
+	border-radius: var(--kzc-radius-md, 12px);
+}
+
+.kzc-toast__close:hover {
+	background: var(--color-background-hover);
+}
+
+.kzc-toast__close:focus-visible {
+	outline: 2px solid var(--color-main-text);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kzc-toast {
+		animation: none !important;
+		transition: none !important;
+	}
+}

@@ -81,8 +81,13 @@ test.describe('craft web', () => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-			if (nav) await page.locator(`.kzc-navbtn[data-v="${nav}"]`).click();
+			await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+			if (nav === 'settings') {
+				// Settings are dedicated /settings/{section} routes — no ?view=
+				await page.locator('.kzc-nav__link[href*="/settings/"]').first().click();
+			} else if (nav) {
+				await page.locator(`.kzc-nav__link[href*="view=${nav}"]`).click();
+			}
 			if (name === 'overview') {
 				// fragment-crash regression: .kzc-row only exists if vOverview ran to completion
 				await page.locator('#kzc-body .kzc-list .kzc-row').first().waitFor({ state: 'attached', timeout: 15000 });
@@ -97,7 +102,7 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		await page.locator('#kzc-body .kzc-list .kzc-row').first().waitFor({ state: 'attached', timeout: 15000 });
 		await page.waitForTimeout(1200);
 		await shot(page, 'kzc-staff-overview-dark-1280');
@@ -107,7 +112,7 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 375, height: 812 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		await page.locator('#kzc-body .kzc-list .kzc-row').first().waitFor({ state: 'attached', timeout: 15000 });
 		await page.waitForTimeout(1200);
 		await shot(page, 'kzc-staff-overview-light-375');
@@ -119,8 +124,8 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn[data-v="requests"]').click();
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link[href*="view=requests"]').click();
 		await page.locator('#kzc-mine').waitFor({ state: 'visible', timeout: 20000 });
 		// fragment-crash regression: .kzc-list only exists if vRequests ran to completion
 		await page.locator('#kzc-body .kzc-list').waitFor({ state: 'attached', timeout: 15000 });
@@ -133,8 +138,8 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn[data-v="requests"]').click();
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link[href*="view=requests"]').click();
 		const mine = page.locator('#kzc-mine');
 		await mine.waitFor({ state: 'visible', timeout: 20000 });
 		await page.locator('#kzc-body .kzc-list').waitFor({ state: 'attached', timeout: 15000 });
@@ -149,8 +154,8 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn[data-v="inbox"]').click();
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link[href*="view=inbox"]').click();
 		// vInbox completes only when a list or a muted empty/error line lands
 		await page.locator('#kzc-body .kzc-list, #kzc-body .kzc-muted, #kzc-body p').first().waitFor({ state: 'attached', timeout: 15000 });
 		await page.waitForTimeout(600);
@@ -196,7 +201,7 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		const orgId = await page.evaluate(async () => {
 			const r = await fetch('api/portal/orgs', { headers: { Accept: 'application/json' } }).then((x) => x.json());
 			const orgs = (r && r.data && r.data.orgs) || [];
@@ -204,8 +209,8 @@ test.describe('craft web', () => {
 		});
 		test.skip(!orgId, 'no org fixture');
 		await page.goto(`${APP}/?view=inbox&org=${orgId}`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn--active[data-v="inbox"]').waitFor({ state: 'visible', timeout: 15000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link.is-active[href*="view=inbox"]').waitFor({ state: 'visible', timeout: 15000 });
 		await page.locator('#kzc-msgs').waitFor({ state: 'visible', timeout: 15000 });
 		await page.locator('#kzc-cf').waitFor({ state: 'visible', timeout: 15000 });
 		await shot(page, 'kzc-staff-deeplink-inbox-light-1280');
@@ -215,8 +220,8 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/?view=inbox&org=99999999`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn--active[data-v="inbox"]').waitFor({ state: 'visible', timeout: 15000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link.is-active[href*="view=inbox"]').waitFor({ state: 'visible', timeout: 15000 });
 		await page.waitForTimeout(1200);
 		const composer = await page.locator('#kzc-cf').count();
 		if (composer !== 0) throw new Error('bogus org opened a conversation composer');
@@ -226,8 +231,8 @@ test.describe('craft web', () => {
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await login(page, creds());
 		await page.goto(`${APP}/?view=inbox&org=abc`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn--active[data-v="inbox"]').waitFor({ state: 'visible', timeout: 15000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link.is-active[href*="view=inbox"]').waitFor({ state: 'visible', timeout: 15000 });
 	});
 	test('staff settings deny nonstaff 1280', async ({ page }) => {
 		const u = process.env.NC_NONSTAFF_USER, p = process.env.NC_NONSTAFF_PASS;

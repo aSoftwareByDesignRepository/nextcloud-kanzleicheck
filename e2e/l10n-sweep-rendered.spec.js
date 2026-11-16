@@ -28,7 +28,7 @@ function occ(args) {
 }
 
 async function openFirstClient(page) {
-	await page.locator('button.kzc-navbtn[data-v="orgs"]').click();
+	await page.locator('#app-navigation a.kzc-nav__link[href*="view=orgs"]').click();
 	const firstRow = page.locator('#kzc-orglist .kzc-row').first();
 	await expect(firstRow).toBeVisible();
 	await firstRow.click();
@@ -44,7 +44,7 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 			occ('user:setting kzc_atlas_e2e core lang nl');
 			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-			await expect(page.locator('#kzc-staff.kzc-app')).toBeVisible();
+			await expect(page.locator('#app-content.kzc-app')).toBeVisible();
 			await openFirstClient(page);
 
 			// "+ Upload link" button is the sibling after #kzc-ulinks (the
@@ -70,7 +70,7 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 			occ('user:setting kzc_atlas_e2e core lang pt_BR');
 			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-			await expect(page.locator('#kzc-staff.kzc-app')).toBeVisible();
+			await expect(page.locator('#app-content.kzc-app')).toBeVisible();
 			await openFirstClient(page);
 
 			// kv rows: Name/Reference/Type/Status/… — Status is index 3.
@@ -80,7 +80,7 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 
 			// Settings → license card: t('Status:') → "Estado:". #l-actions
 			// only exists inside the license card after the async fetch.
-			await page.locator('button.kzc-navbtn[data-v="settings"]').click();
+			await page.locator('#app-navigation a.kzc-nav__link[href*="settings/license"]').click();
 			await page.locator('#l-actions').waitFor({ state: 'attached' });
 			const text = await page.locator('#kzc-body').innerText();
 			expect(text).toContain('Estado:');

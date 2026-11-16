@@ -17,5 +17,20 @@ for drift checks. Adjustments beyond namespace/identity are listed.
 | lib/License/Kzc2Codec.php | ticketcheck@eb42a0f lib/License/Tkc2Codec.php | KZC2 payload (portalClients, bundle) |
 | lib/Support/NavGate.php | _shared/nav-gate (synced via sync_nav_gate.py) | none — generated |
 
+## Synced shared packs (check-shell family chrome)
+
+Generated files — edit the canonical source under `_shared/`, then re-run
+the syncer. `--check` reports drift. Never edit these in-app.
+
+| Pack | Syncer | Targets in this app |
+|------|--------|---------------------|
+| check-shell | `_shared/check-shell/sync_check_shell.py --app kanzleicheck --prefix kzc --global KZC --ns KanzleiCheck --title KanzleiCheck` | `css/common/*`, `js/app.js`, `js/common/{mobile-nav,toasts}.js`, `templates/common/*`, `lib/Service/IconCatalog.php`, `lib/Support/AssetRegistrar.php` |
+| field-errors | `_shared/field-errors/sync_field_errors.py` | `js/common/field-errors.js`, `css/common/field-errors.css` |
+| focus-preservation | `_shared/focus-preservation/sync_focus_preservation.py` | `js/common/focus-preservation.js` |
+| view-components | `_shared/view-components/sync_view_components.py` | `js/common/view-components.js`, `css/common/view-components.css` |
+| app-feedback | `_shared/app-feedback/sync_app_feedback.py` | `js/common/app-feedback.js`, `templates/parts/feedback-nav-footer.php`, `lib/Support/AppFeedbackLinks.php`, nav-footer block in `css/app.css` |
+| support-us | `_shared/support-us/sync_support_us.py` | `templates/parts/support-us-section.php`, `lib/Support/SupportUsLinks.php`, support-us block in `css/app.css`, l10n key merges |
+| config-transfer | `_shared/config-transfer/` (existing) | `templates/parts/settings/transfer.php`, `css/common/transfer.css`, `js/transfer*.js`, `lib/ConfigTransfer/*` |
+
 Do NOT edit copied files to match sibling drift — fixes go into the
 shared pack or upstream app first, then re-copy/re-sync.

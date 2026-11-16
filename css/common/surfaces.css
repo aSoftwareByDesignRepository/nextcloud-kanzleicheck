@@ -1,0 +1,979 @@
+/* KanzleiCheck app surfaces — tokens live in css/common/tokens.css
+ * (spacing/type scale, NC theme colors, tint + control vars).
+ * Mobile-first; ≥768px / ≥1024px widen. WCAG 2.1 AA: 44px touch targets,
+ * visible focus, forced-colors + reduced-motion variants at the bottom.
+ */
+
+/*
+ * The HTML `hidden` attribute alone loses to component display rules
+ * (DESIGN-SYSTEM §3: NC `section { display:block }` and flex utilities win).
+ * One scoped guard keeps every toggle honest.
+ */
+#app-content.kzc-app [hidden],
+.kzc-dialog [hidden] {
+	display: none !important;
+}
+
+/* ── Layout primitives ─────────────────────────────────────── */
+
+#app-content.kzc-app .kzc-card-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--kzc-space-4);
+	margin-block: var(--kzc-space-4);
+}
+
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-card-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+#app-content.kzc-app .kzc-panel {
+	background: var(--kzc-bg-card);
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-lg);
+	padding: var(--kzc-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3);
+	min-width: 0; /* grid overflow guard */
+}
+
+#app-content.kzc-app .kzc-panel--wide {
+	grid-column: 1 / -1;
+}
+
+#app-content.kzc-app .kzc-panel__title {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-2);
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	line-height: var(--kzc-line-tight);
+}
+
+#app-content.kzc-app .kzc-panel__title svg {
+	width: var(--kzc-icon-md);
+	height: var(--kzc-icon-md);
+	stroke-width: var(--kzc-icon-stroke);
+	color: var(--kzc-muted);
+	flex-shrink: 0;
+}
+
+/* ── Stat strip ────────────────────────────────────────────── */
+
+#app-content.kzc-app .kzc-stat-row {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--kzc-space-3);
+	margin-block: var(--kzc-space-4);
+}
+
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-stat-row {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+#app-content.kzc-app a.kzc-stat {
+	text-decoration: none;
+	color: inherit;
+}
+#app-content.kzc-app a.kzc-stat:hover,
+#app-content.kzc-app a.kzc-stat:focus-visible {
+	border-color: var(--color-primary, var(--color-primary-element));
+}
+
+#app-content.kzc-app .kzc-stat {
+	background: var(--kzc-bg-card);
+	border: 1px solid var(--kzc-border);
+	border-left: 4px solid var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-md);
+	padding: var(--kzc-space-3) var(--kzc-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1);
+}
+
+#app-content.kzc-app .kzc-stat--warn { border-left-color: var(--color-warning, #eca700); }
+#app-content.kzc-app .kzc-stat--danger { border-left-color: var(--color-error, #e9322d); }
+
+#app-content.kzc-app .kzc-stat__value {
+	font-size: var(--kzc-fs-2xl);
+	font-weight: 700;
+	line-height: var(--kzc-line-tight);
+	font-variant-numeric: var(--kzc-tab-num);
+}
+
+#app-content.kzc-app .kzc-stat__label {
+	font-size: var(--kzc-fs-sm);
+	color: var(--kzc-muted);
+}
+
+/* ── Badges (variants beyond the shared --neutral) ─────────── */
+
+#app-content.kzc-app .kzc-badge--success {
+	background: var(--kzc-tint-success);
+	color: var(--color-success-text, var(--color-success));
+}
+
+#app-content.kzc-app .kzc-badge--warn {
+	background: var(--kzc-tint-warning);
+	color: var(--color-warning-text, var(--color-warning, #8a6d00));
+}
+
+#app-content.kzc-app .kzc-badge--danger {
+	background: var(--kzc-tint-danger);
+	color: var(--color-error-text, var(--color-error));
+}
+
+/* ── Buttons (variants beyond shared primary/secondary/danger/ghost/sm) ── */
+
+#app-content.kzc-app .kzc-btn--warn {
+	background: var(--kzc-tint-warning);
+	color: var(--color-warning-text, var(--color-warning, #8a6d00));
+	border: 1px solid var(--kzc-border-strong);
+}
+
+#app-content.kzc-app .kzc-btn--small {
+	min-height: 36px;
+	padding: var(--kzc-space-1) var(--kzc-space-3);
+	font-size: var(--kzc-fs-sm);
+}
+
+#app-content.kzc-app .kzc-list-cards {
+	list-style: none;
+	margin: var(--kzc-space-3) 0 0;
+	padding: 0;
+	border-top: 1px solid var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-list-cards > li {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2) var(--kzc-space-4);
+	padding: var(--kzc-space-3) var(--kzc-space-1);
+	border-bottom: 1px solid var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-list-cards > li > :first-child {
+	flex: 1 1 16rem;
+	min-width: 0;
+}
+
+#app-content.kzc-app .kzc-btn-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-3);
+}
+
+/* ── Form primitives ───────────────────────────────────────── */
+
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-fieldset {
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-md);
+	padding: var(--kzc-space-4);
+	margin: 0 0 var(--kzc-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-4);
+}
+
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-fieldset legend {
+	font-weight: 600;
+	/* NC core centres legends on #body-public — pin ours to the start edge */
+	text-align: start;
+	padding: 0 var(--kzc-space-2);
+}
+
+/* Stacked forms: the form owns the field rhythm. Without this, sibling
+   .kzc-field blocks have 0px between them while label→input inside each
+   field is larger — labels visually attach to the previous control. */
+#app-content.kzc-app .kzc-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3);
+}
+/* Column stretch would balloon lone submit buttons to full width — keep
+   actions content-sized; .kzc-form-actions rows handle grouped buttons. */
+#app-content.kzc-app .kzc-form > .kzc-btn {
+	align-self: flex-start;
+}
+
+#app-content.kzc-app .kzc-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1);
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+#app-content.kzc-app .kzc-field-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-3);
+}
+
+#app-content.kzc-app .kzc-field-row > .kzc-field {
+	flex: 1 1 180px;
+	min-width: 0;
+}
+
+#app-content.kzc-app .kzc-label {
+	font-weight: 600;
+	font-size: var(--kzc-fs-sm);
+}
+
+#app-content.kzc-app .kzc-input,
+#app-content.kzc-app .kzc-select,
+#app-content.kzc-app .kzc-textarea {
+	width: 100%;
+	min-height: var(--kzc-touch);
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+	border: 1px solid var(--kzc-form-border);
+	border-radius: var(--kzc-radius-sm);
+	background-color: var(--kzc-bg-card);
+	color: var(--kzc-text);
+	font-size: var(--kzc-fs-md);
+	font-family: inherit;
+	box-sizing: border-box;
+}
+
+#app-content.kzc-app .kzc-textarea {
+	min-height: 5.5rem;
+	resize: vertical;
+}
+
+#app-content.kzc-app .kzc-input:focus-visible,
+#app-content.kzc-app .kzc-select:focus-visible,
+#app-content.kzc-app .kzc-textarea:focus-visible {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+	border-color: var(--kzc-primary);
+}
+
+#app-content.kzc-app .kzc-input[aria-invalid="true"],
+#app-content.kzc-app .kzc-select[aria-invalid="true"],
+#app-content.kzc-app .kzc-textarea[aria-invalid="true"] {
+	border-color: var(--color-error);
+}
+
+#app-content.kzc-app .kzc-input--amount { max-width: 11rem; font-variant-numeric: var(--kzc-tab-num); }
+#app-content.kzc-app .kzc-input--currency { max-width: 5.5rem; text-transform: uppercase; }
+
+#app-content.kzc-app .kzc-field__hint {
+	margin: 0;
+	font-size: var(--kzc-fs-sm);
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-3);
+	margin-block-start: var(--kzc-space-4);
+}
+
+/* Checkbox chips (lead-day pickers) — large touch targets, no color-only cue */
+
+#app-content.kzc-app .kzc-check-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-check {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--kzc-space-2);
+	min-height: var(--kzc-touch);
+	padding: var(--kzc-space-1) var(--kzc-space-3);
+	border: 1px solid var(--kzc-control-border);
+	border-radius: var(--kzc-radius-pill);
+	cursor: pointer;
+	background: var(--kzc-bg-card);
+	font-size: var(--kzc-fs-md);
+	user-select: none;
+}
+
+#app-content.kzc-app .kzc-check input {
+	width: 1.125rem;
+	height: 1.125rem;
+	accent-color: var(--kzc-primary);
+	margin: 0;
+}
+
+#app-content.kzc-app .kzc-check:has(input:checked) {
+	background: var(--kzc-tint-info);
+	border-color: var(--kzc-primary);
+	font-weight: 600;
+}
+
+#app-content.kzc-app .kzc-check:focus-within {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+}
+
+/* Inline add-forms (cost rows, pickers) */
+
+#app-content.kzc-app .kzc-inline-form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+	align-items: center;
+}
+
+#app-content.kzc-app .kzc-inline-form .kzc-input { flex: 1 1 140px; width: auto; }
+#app-content.kzc-app .kzc-inline-form .kzc-select { width: auto; }
+
+/* ── Toolbar (search + filters above lists) ────────────────── */
+
+#app-content.kzc-app .kzc-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: var(--kzc-space-3);
+	margin-block: var(--kzc-space-4);
+}
+
+#app-content.kzc-app .kzc-toolbar__search { flex: 1 1 220px; }
+#app-content.kzc-app .kzc-toolbar__actions {
+	display: flex;
+	gap: var(--kzc-space-2);
+	margin-inline-start: auto;
+}
+#app-content.kzc-app .kzc-toolbar__archived { align-self: center; }
+
+/* ── Tables ────────────────────────────────────────────────── */
+
+#app-content.kzc-app .kzc-table-wrap {
+	overflow-x: auto;
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-md);
+	background: var(--kzc-bg-card);
+}
+
+#app-content.kzc-app .kzc-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--kzc-fs-md);
+}
+
+#app-content.kzc-app .kzc-table th {
+	text-align: start;
+	font-weight: 600;
+	font-size: var(--kzc-fs-sm);
+	color: var(--kzc-muted);
+	padding: var(--kzc-space-3) var(--kzc-space-4);
+	border-bottom: 1px solid var(--kzc-border-strong);
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-table td {
+	padding: var(--kzc-space-3) var(--kzc-space-4);
+	border-bottom: 1px solid var(--kzc-border);
+	vertical-align: middle;
+}
+
+#app-content.kzc-app .kzc-table tbody tr:last-child td { border-bottom: none; }
+#app-content.kzc-app .kzc-table tbody tr:hover { background: var(--kzc-bg-soft); }
+#app-content.kzc-app .kzc-table--compact td,
+#app-content.kzc-app .kzc-table--compact th {
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+}
+
+#app-content.kzc-app .kzc-table__actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-table__actions .kzc-btn { margin-inline-start: var(--kzc-space-1); }
+#app-content.kzc-app .kzc-num { font-variant-numeric: var(--kzc-tab-num); text-align: end; }
+
+/* ── Deadline list (dashboard panels) ──────────────────────── */
+
+#app-content.kzc-app .kzc-deadline-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+#app-content.kzc-app .kzc-deadline-list__item + .kzc-deadline-list__item {
+	border-top: 1px solid var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-deadline-list__link,
+#app-content.kzc-app .kzc-deadline-list__item {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3);
+	padding: var(--kzc-space-3) var(--kzc-space-2);
+	min-height: var(--kzc-touch);
+	border-radius: var(--kzc-radius-sm);
+}
+
+#app-content.kzc-app .kzc-deadline-list__link {
+	text-decoration: none;
+	color: var(--kzc-text);
+}
+
+#app-content.kzc-app .kzc-deadline-list__link:hover {
+	background: var(--kzc-bg-soft);
+}
+
+#app-content.kzc-app .kzc-deadline-list__link:focus-visible {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+}
+
+#app-content.kzc-app .kzc-deadline-list__title {
+	font-weight: 600;
+	flex-shrink: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-deadline-list__meta {
+	font-size: var(--kzc-fs-sm);
+	color: var(--kzc-muted);
+	/* Long meta text must ellipsize — without min-width:0 the flex item
+	   can't shrink below content width and shoves the status badge
+	   (flex-shrink:0, margin-inline-start:auto) fully off the card. */
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-deadline-list__link .kzc-badge,
+#app-content.kzc-app .kzc-deadline-list__item > .kzc-badge {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+}
+
+/* ── Contract hero (detail header) ─────────────────────────── */
+
+#app-content.kzc-app .kzc-hero {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-4);
+	align-items: flex-start;
+	justify-content: space-between;
+	background: var(--kzc-bg-card);
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-lg);
+	padding: var(--kzc-space-5);
+}
+
+#app-content.kzc-app .kzc-hero__main { min-width: 0; flex: 1 1 240px; }
+
+#app-content.kzc-app .kzc-hero__title {
+	margin: 0 0 var(--kzc-space-1);
+	font-size: var(--kzc-fs-xl);
+	line-height: var(--kzc-line-tight);
+	/* Headings keep normal word breaks — anywhere tears mid-word on
+	   full lines (family defect nw-vis-mobile-h1-midword-break). */
+	overflow-wrap: break-word;
+	hyphens: auto;
+}
+
+#app-content.kzc-app .kzc-hero__meta {
+	margin: 0 0 var(--kzc-space-2);
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-hero__badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-hero__deadline {
+	flex: 0 1 auto;
+	min-width: 200px;
+	background: var(--kzc-bg-soft);
+	border: 1px solid var(--kzc-border);
+	border-radius: var(--kzc-radius-md);
+	padding: var(--kzc-space-3) var(--kzc-space-4);
+}
+
+#app-content.kzc-app .kzc-hero__cancel-by {
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-hero__deadline-note {
+	margin: var(--kzc-space-1) 0 0;
+	font-size: var(--kzc-fs-sm);
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-detail-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+	margin-block: var(--kzc-space-3);
+}
+
+/* ── Definition list (detail facts) ────────────────────────── */
+
+#app-content.kzc-app .kzc-dl {
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+#app-content.kzc-app .kzc-dl__row {
+	display: flex;
+	gap: var(--kzc-space-3);
+	padding: var(--kzc-space-2) 0;
+	border-bottom: 1px solid var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-dl__row:last-child { border-bottom: none; }
+
+#app-content.kzc-app .kzc-dl__row dt {
+	flex: 0 0 9rem;
+	font-weight: 600;
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-sm);
+	align-self: center;
+	/* NC core pins dl dt at 130px + nowrap + end-align (apps.css); the pin
+	   clips real labels. Logical-start text + wrap; flex-basis owns the box. */
+	width: auto;
+	max-width: 100%;
+	padding: 0;
+	text-align: start;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+#app-content.kzc-app .kzc-dl__row dd {
+	margin: 0;
+	flex: 1;
+	overflow-wrap: anywhere;
+}
+
+#app-content.kzc-app .kzc-cost-rollup {
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	font-weight: 700;
+	font-variant-numeric: var(--kzc-tab-num);
+}
+
+/* ── Document + event lists ────────────────────────────────── */
+
+#app-content.kzc-app .kzc-doc-list,
+#app-content.kzc-app .kzc-event-list {
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+#app-content.kzc-app .kzc-doc-list { list-style: none; }
+#app-content.kzc-app .kzc-event-list { padding-inline-start: var(--kzc-space-5); }
+
+#app-content.kzc-app .kzc-doc-list__item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--kzc-space-2);
+	padding: var(--kzc-space-2) 0;
+	border-bottom: 1px solid var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-doc-list__item:last-child { border-bottom: none; }
+#app-content.kzc-app .kzc-doc-list__name {
+	font-weight: 600;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1 1 160px;
+}
+
+#app-content.kzc-app .kzc-event-list__item {
+	padding: var(--kzc-space-1) 0;
+	display: flex;
+	gap: var(--kzc-space-3);
+	align-items: baseline;
+}
+
+#app-content.kzc-app .kzc-event-list__type { font-weight: 600; }
+
+/* ── Pickers (combobox + chips) ────────────────────────────── */
+
+#app-content.kzc-app .kzc-picker {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-picker__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-picker__chips:empty { display: none; }
+
+#app-content.kzc-app .kzc-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--kzc-space-1);
+	padding: var(--kzc-space-1) var(--kzc-space-2) var(--kzc-space-1) var(--kzc-space-3);
+	border: 1px solid var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-pill);
+	background: var(--kzc-bg-soft);
+	font-size: var(--kzc-fs-sm);
+	max-width: 100%;
+}
+
+#app-content.kzc-app .kzc-chip__label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-chip__remove {
+	min-width: var(--kzc-touch);
+	min-height: var(--kzc-touch);
+	margin: calc(-1 * var(--kzc-space-1)) calc(-1 * var(--kzc-space-1)) calc(-1 * var(--kzc-space-1)) 0;
+	border: none;
+	background: transparent;
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-lg);
+	line-height: 1;
+	cursor: pointer;
+	border-radius: var(--kzc-radius-pill);
+}
+
+#app-content.kzc-app .kzc-chip__remove:hover { color: var(--kzc-danger-ink); }
+#app-content.kzc-app .kzc-chip__remove:focus-visible {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+}
+
+#app-content.kzc-app .kzc-picker__results {
+	position: absolute;
+	inset-inline: 0;
+	top: 100%;
+	z-index: 20;
+	margin: var(--kzc-space-1) 0 0;
+	padding: var(--kzc-space-1);
+	list-style: none;
+	background: var(--kzc-bg-card);
+	border: 1px solid var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-md);
+	box-shadow: var(--kzc-shadow-md);
+	max-height: 16rem;
+	overflow-y: auto;
+}
+
+#app-content.kzc-app .kzc-picker__result {
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+	min-height: var(--kzc-touch);
+	display: flex;
+	align-items: center;
+	border-radius: var(--kzc-radius-sm);
+	cursor: pointer;
+}
+
+#app-content.kzc-app .kzc-picker__result:hover,
+#app-content.kzc-app .kzc-picker__result:focus {
+	background: var(--kzc-tint-info);
+	outline: none;
+}
+
+#app-content.kzc-app .kzc-picker__empty {
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+	min-height: var(--kzc-touch);
+	display: flex;
+	align-items: center;
+	border-radius: var(--kzc-radius-sm);
+	color: var(--kzc-muted);
+	font-style: italic;
+	cursor: default;
+}
+
+/* ── Callouts (reuses tint tokens; border + icon, not color-only) ── */
+
+#app-content.kzc-app .kzc-callout {
+	border: 1px solid var(--kzc-border);
+	border-inline-start: 4px solid var(--kzc-primary);
+	border-radius: var(--kzc-radius-md);
+	padding: var(--kzc-space-4);
+	margin-block: var(--kzc-space-4);
+	background: var(--kzc-tint-info);
+}
+
+#app-content.kzc-app .kzc-callout--warning {
+	border-inline-start-color: var(--color-warning, #eca700);
+	background: var(--kzc-tint-warning);
+}
+
+#app-content.kzc-app .kzc-callout__title {
+	margin: 0 0 var(--kzc-space-2);
+	font-size: var(--kzc-fs-lg);
+}
+
+/* ── Misc text / state helpers ─────────────────────────────── */
+
+#app-content.kzc-app .kzc-empty {
+	padding: var(--kzc-space-5);
+	text-align: center;
+	color: var(--kzc-muted);
+	background: var(--kzc-bg-soft);
+	border: 1px dashed var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-md);
+	margin: 0;
+}
+
+#app-content.kzc-app .kzc-loading {
+	padding: var(--kzc-space-5);
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-muted { color: var(--kzc-muted); }
+#app-content.kzc-app .kzc-text--danger { color: var(--kzc-danger-ink); }
+
+#app-content.kzc-app .kzc-link {
+	color: var(--kzc-primary);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+#app-content.kzc-app .kzc-link:hover { text-decoration: underline; }
+#app-content.kzc-app .kzc-link:focus-visible {
+	outline: var(--kzc-focus);
+	outline-offset: var(--kzc-focus-offset);
+	border-radius: var(--kzc-radius-sm);
+}
+
+#app-content.kzc-app .kzc-copy-row {
+	display: flex;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-copy-row .kzc-input { flex: 1; }
+
+#app-content.kzc-app .kzc-steps {
+	margin: 0;
+	padding-inline-start: var(--kzc-space-5);
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-2);
+}
+
+#app-content.kzc-app .kzc-import-result { margin-block-start: var(--kzc-space-4); }
+
+/* ── Native dialog (party modal) ───────────────────────────── */
+
+dialog.kzc-dialog {
+	border: 1px solid var(--kzc-border-strong);
+	border-radius: var(--kzc-radius-lg);
+	padding: var(--kzc-space-5);
+	width: min(34rem, calc(100vw - 2 * var(--kzc-space-4)));
+	max-height: 85dvh;
+	overflow-y: auto;
+	background: var(--kzc-bg-card);
+	color: var(--kzc-text);
+}
+
+dialog.kzc-dialog::backdrop {
+	background: var(--kzc-scrim);
+}
+
+dialog.kzc-dialog form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3);
+}
+
+.kzc-dialog__title {
+	margin: 0 0 var(--kzc-space-2);
+	font-size: var(--kzc-fs-xl);
+}
+
+/* ── Responsive: tables scroll; hero + toolbar stack on phones ── */
+
+@media (max-width: 768.98px) {
+	/* ≤768px (Nextcloud mobile boundary): row-action buttons get the same
+	   44px touch floor as primary controls — 36px is a desktop-pointer
+	   compromise, unusable on touchscreens. */
+	.kzc-btn--small { min-height: var(--kzc-touch, 44px); min-width: var(--kzc-touch, 44px); }
+	/* Filter chips are buttons too — same 44px floor on touch. */
+	.kzc-chip--filter { min-height: var(--kzc-touch, 44px); }
+
+	#app-content.kzc-app .kzc-hero { flex-direction: column; }
+	#app-content.kzc-app .kzc-hero__deadline { width: 100%; }
+	#app-content.kzc-app .kzc-dl__row { flex-direction: column; gap: 0; }
+	#app-content.kzc-app .kzc-dl__row dt { flex-basis: auto; }
+	#app-content.kzc-app .kzc-inline-form { flex-direction: column; align-items: stretch; }
+	#app-content.kzc-app .kzc-inline-form .kzc-input,
+	#app-content.kzc-app .kzc-inline-form .kzc-select { width: 100%; max-width: 100%; }
+}
+
+/* ── Forced colors + reduced motion ────────────────────────── */
+
+@media (forced-colors: active) {
+	#app-content.kzc-app .kzc-panel,
+	#app-content.kzc-app .kzc-stat,
+	#app-content.kzc-app .kzc-hero,
+	#app-content.kzc-app .kzc-check,
+	#app-content.kzc-app .kzc-chip,
+	#app-content.kzc-app .kzc-callout,
+	#app-content.kzc-app .kzc-picker__results {
+		border: 1px solid ButtonBorder;
+	}
+	#app-content.kzc-app .kzc-check:has(input:checked) {
+		outline: 2px solid Highlight;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#app-content.kzc-app .kzc-deadline-list__link,
+	#app-content.kzc-app .kzc-picker__result,
+	#app-content.kzc-app .kzc-chip__remove {
+		transition: none;
+	}
+}
+
+/* ── Shell additions: dialog internals + filter summary ────── */
+
+.kzc-dialog__form {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	min-width: 0;
+}
+
+.kzc-dialog__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--kzc-space-3);
+	padding-block-end: var(--kzc-space-3);
+	border-bottom: 1px solid var(--kzc-border);
+}
+
+.kzc-dialog__close {
+	/* 44px touch target, icon-only */
+	min-width: var(--kzc-touch, 44px);
+	min-height: var(--kzc-touch, 44px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--kzc-fs-xl);
+	line-height: 1;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--kzc-radius-sm);
+	color: var(--kzc-muted);
+	cursor: pointer;
+}
+
+.kzc-dialog__close:hover {
+	background: var(--kzc-bg-soft);
+	color: var(--kzc-text);
+}
+
+.kzc-dialog__close:focus-visible {
+	outline: 3px solid var(--color-primary-element);
+	outline-offset: -2px;
+}
+
+/* Overlay armor (overlay_toast_button_armor_gap): the close is a <button> on
+ * a body-mounted overlay — core repaints width/margin/padding/border on
+ * button:not(.button-vue,[class^=vs__]) (0,1,1) and margin on
+ * :not(.app-navigation-entry-button) (0,2,1). Pin the repainted properties
+ * !important on overlay-scoped selectors. */
+dialog.kzc-dialog button.kzc-dialog__close,
+.kzc-dialog button.kzc-dialog__close,
+[role="dialog"] button.kzc-dialog__close,
+[role="alertdialog"] button.kzc-dialog__close {
+	width: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: 1px solid transparent !important;
+	border-radius: var(--kzc-radius-sm);
+	min-width: var(--kzc-touch);
+	min-height: var(--kzc-touch);
+}
+
+.kzc-dialog__body {
+	padding-block: var(--kzc-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-4);
+	overflow-y: auto;
+	min-height: 0;
+}
+
+.kzc-dialog__text {
+	margin: 0;
+	color: var(--kzc-text);
+	line-height: var(--kzc-line-base, 1.45);
+}
+
+.kzc-dialog__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--kzc-space-3);
+	padding-block-start: var(--kzc-space-4);
+	border-top: 1px solid var(--kzc-border);
+}
+
+dialog.kzc-dialog--wide {
+	width: min(52rem, calc(100vw - 2 * var(--kzc-space-4)));
+}
+
+/* Active-filter summary under a kzc-filter-panel (§3.6b) */
+#app-content.kzc-app .kzc-filter-summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--kzc-space-2);
+	padding: var(--kzc-space-3) var(--kzc-space-5);
+	border-top: 1px dashed var(--kzc-border);
+}
+
+#app-content.kzc-app .kzc-filter-summary__label {
+	font-size: var(--kzc-fs-sm);
+	font-weight: 600;
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-chip--filter {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--kzc-space-1);
+	min-height: 32px;
+	padding: 0 var(--kzc-space-3);
+	border: 1px solid var(--kzc-form-border, var(--color-border-maxcontrast));
+	border-radius: 999px;
+	background: var(--kzc-bg-soft);
+	color: var(--kzc-text);
+	font-size: var(--kzc-fs-sm);
+	cursor: pointer;
+}
+
+#app-content.kzc-app .kzc-chip--filter:hover { background: var(--kzc-bg-hover, var(--color-background-hover)); }
+
+@media (max-width: 768.98px) {
+	.kzc-dialog__actions { flex-direction: column-reverse; align-items: stretch; }
+	.kzc-dialog__actions .kzc-btn { width: 100%; }
+}

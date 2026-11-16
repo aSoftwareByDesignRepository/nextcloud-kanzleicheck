@@ -4,7 +4,7 @@
  *
  * Sponsor acknowledgement (first customer who made this product possible)
  * and the open-source notice with repository links. Rendered inside the
- * staff shell via templates/about.php — all staff, not only app admins.
+ * staff shell via templates/staff/main.php — all staff, not only app admins.
  *
  * @var array $_
  * @var \OCP\IL10N $l
@@ -44,3 +44,10 @@ $licenseUrl = 'https://www.gnu.org/licenses/agpl-3.0.html';
 		<li><a href="<?php p($licenseUrl); ?>" target="_blank" rel="noopener noreferrer"><?php p($l->t('License text')); ?><span class="kzc-about__new-tab"> <?php p($newTab); ?></span></a></li>
 	</ul>
 </section>
+<?php
+// §13 commercial surface — synced pack (templates/parts/support-us-section.php).
+$supportUsLinks = $_['supportUsLinks'] ?? null;
+$supportUsCssPrefix = 'kzc';
+$supportUsShellPrefix = 'kzc';
+include __DIR__ . '/../support-us-section.php';
+

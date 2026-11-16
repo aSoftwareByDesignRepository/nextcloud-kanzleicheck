@@ -1,0 +1,52 @@
+/*
+ * KanzleiCheck badges — SnackCheck/AZC info pill + leading cue (WCAG 1.4.1).
+ */
+#content.app-kanzleicheck .kzc-badge,
+#app-content.kzc-app .kzc-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--kzc-space-1, 4px);
+	min-height: 0;
+	padding: var(--kzc-space-1, 4px) var(--kzc-space-2, 8px);
+	font-size: var(--kzc-fs-xs, 0.75rem);
+	font-weight: 700;
+	line-height: 1.35;
+	border-radius: var(--kzc-radius-pill, 999px);
+	border: none;
+	background: var(--kzc-tint-info);
+	color: var(--kzc-text, var(--color-main-text));
+	box-sizing: border-box;
+}
+
+/* Leading dot for brand / scope pills (status badges use .kzc-badge__dot) */
+#content.app-kanzleicheck .kzc-brand .kzc-badge::before,
+#content.app-kanzleicheck .kzc-scope-strip__badge::before,
+#app-content.kzc-app .kzc-scope-strip__badge::before {
+	content: '';
+	display: inline-block;
+	width: 0.45em;
+	height: 0.45em;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: var(--kzc-primary, var(--color-primary-element));
+}
+
+#content.app-kanzleicheck .kzc-badge--neutral,
+#app-content.kzc-app .kzc-badge--neutral {
+	background: var(--kzc-tint-info);
+	color: var(--kzc-text, var(--color-main-text));
+}
+
+#content.app-kanzleicheck .kzc-badge__dot,
+#app-content.kzc-app .kzc-badge__dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	flex: 0 0 auto;
+	background: var(--color-border-maxcontrast, var(--kzc-muted));
+}
+
+#content.app-kanzleicheck .kzc-scope-strip__badge,
+#app-content.kzc-app .kzc-scope-strip__badge {
+	font-size: var(--kzc-fs-xs, 0.75rem);
+}

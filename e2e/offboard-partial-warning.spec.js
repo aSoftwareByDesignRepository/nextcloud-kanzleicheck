@@ -42,8 +42,8 @@ test.describe('staff offboard partial-revoke warning (c3)', () => {
 			await page.setViewportSize({ width: 1280, height: 800 });
 			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-			await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-			await page.locator('.kzc-navbtn[data-v="orgs"]').click();
+			await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+			await page.locator('#app-navigation .kzc-nav__link[href*="view=orgs"]').click();
 			// filter the list to the unique fixture — deterministic wait for the
 			// filtered response AND the single-row paint before clicking (the
 			// mount fetch may still be in flight; never click mid-race).

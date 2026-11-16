@@ -26,11 +26,12 @@ test.describe('Rendered-surface contract', () => {
 		test.skip(!authed, 'no E2E creds');
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#app-navigation .kzc-nav__link').first().waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
 		await assertAtlasRenderedSurface(page, {
 			content: '#kzc-staff-view',
 			navExclude: '.kzc-nav, nav, #app-navigation',
-			listAllow: '.kzc-nav, .kzc-stats, .kzc-cardmeta, .kzc-board, .kzc-list, .kzc-kvrow, .kzc-dev, .kzc-actions',
+			listAllow: '.kzc-stat-strip, .kzc-cardmeta, .kzc-board, .kzc-list, .kzc-kvrow, .kzc-dev, .kzc-actions, .kzc-itemlist, .kzc-sync-list, .kzc-quick-filters, .kzc-filter-grid',
 		});
 	});
 
@@ -38,13 +39,14 @@ test.describe('Rendered-surface contract', () => {
 		test.skip(!authed, 'no E2E creds');
 		await login(page, creds());
 		await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
-		await page.locator('.kzc-navbtn[data-v="settings"]').click();
+		await page.locator('#app-navigation .kzc-nav__link').first().waitFor({ state: 'visible', timeout: 20000 });
+		await page.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
+		await page.goto(`${APP}/settings/general`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-body .kzc-card').first().waitFor({ state: 'visible', timeout: 15000 });
 		await assertAtlasRenderedSurface(page, {
 			content: '#kzc-staff-view',
 			navExclude: '.kzc-nav, nav, #app-navigation',
-			listAllow: '.kzc-nav, .kzc-stats, .kzc-cardmeta, .kzc-board, .kzc-list, .kzc-kvrow, .kzc-dev, .kzc-actions',
+			listAllow: '.kzc-stat-strip, .kzc-cardmeta, .kzc-board, .kzc-list, .kzc-kvrow, .kzc-dev, .kzc-actions, .kzc-itemlist, .kzc-sync-list, .kzc-quick-filters, .kzc-filter-grid',
 		});
 	});
 });

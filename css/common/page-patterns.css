@@ -1,0 +1,1056 @@
+/* Auto-adapted from arbeitszeitcheck/css/common/page-patterns.css for the Check-family shell. Do not invent divergent layout rules here. */
+/**
+ * Shared page layout patterns (stack, grid, filters, empty states).
+ * Shell width modifiers live here; #app-content-wrapper.kzc-shell in app.css sets base padding.
+ */
+
+/* ── Shell width ───────────────────────────────────────────── */
+#app-content.kzc-app #app-content-wrapper.kzc-shell--wide {
+	max-width: none;
+	margin-inline: 0;
+}
+
+#app-content.kzc-app #app-content-wrapper.kzc-shell--constrained {
+	max-width: 72rem;
+	margin-inline: auto;
+}
+
+#app-content.kzc-app #app-content-wrapper.kzc-shell--minimal {
+	max-width: 40rem;
+	margin-inline: auto;
+	padding: var(--kzc-space-6) var(--kzc-space-5);
+}
+
+/* ── Page stack (vertical rhythm inside main) ───────────────── */
+#app-content.kzc-app .kzc-page-stack {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: var(--kzc-space-5);
+	width: 100%;
+	min-width: 0;
+}
+
+/* Reset flow-children margins for the stack rhythm — but never while a
+   child renders :modal: a top-layer <dialog> relies on UA/pack
+   margin:auto centering and this reset at higher specificity would pin
+   it to the viewport top-left (native_dialog_margin_reset_uncentered).
+   :not(:modal) keeps the reset for flow children only — a closed dialog
+   is display:none anyway. */
+#app-content.kzc-app .kzc-page-stack > *:not(:modal) {
+	margin: 0;
+}
+
+/* ── Two-column page grid (admin stats, side-by-side cards) ─── */
+/* Mobile-first: single column; ≥769px restores 2-col desktop grid */
+#app-content.kzc-app .kzc-page-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--kzc-space-5);
+	width: 100%;
+	min-width: 0;
+}
+
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-page-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* ── Legacy .section reset inside app shell ─────────────────── */
+#app-content.kzc-app #kzc-main-content .section {
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background-color: transparent;
+	box-shadow: none;
+}
+
+#app-content.kzc-app #kzc-main-content .section::before {
+	display: none;
+}
+
+/* ── Filter panel (list pages — AZC parity, fluid ProjectCheck grid) ── */
+#app-content.kzc-app .kzc-filter-panel {
+	border-left: 4px solid var(--color-primary-element);
+}
+
+#app-content.kzc-app .kzc-filter-panel__head {
+	margin-bottom: 0;
+}
+
+#app-content.kzc-app .kzc-filter-panel__head h2 {
+	margin: 0 0 var(--kzc-space-2);
+	font-size: var(--kzc-fs-lg);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight);
+}
+
+#app-content.kzc-app .kzc-filter-panel__intro {
+	margin: 0;
+	max-width: 65ch;
+	font-size: var(--kzc-fs-sm);
+	line-height: var(--kzc-line-base);
+	color: var(--kzc-muted);
+}
+
+/*
+ * Filter body: padded stack for panel chrome. The form itself is a CSS
+ * grid (not flex column) so nested .kzc-form-grid / field grids keep their
+ * columns — ID-scoped flex on __form used to flatten every child to 1 col.
+ */
+#app-content.kzc-app .kzc-filter-panel__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-4);
+	min-width: 0;
+}
+
+#app-content.kzc-app .kzc-filter-panel__form {
+	display: grid;
+	gap: var(--kzc-space-4);
+	min-width: 0;
+	align-content: start;
+}
+
+/*
+ * Filter field grid — one even responsive grid for every Filters panel
+ * (Claim, Assets, Utilisation, On-site report). ProjectCheck pattern:
+ * auto-fit + minmax(…, 1fr) so columns share the full width with equal
+ * gaps — no capped tracks leaving a dead strip on the right, no empty
+ * auto-fill ghost columns. AZC subgrid keeps labels/controls on one baseline.
+ * Legacy modifiers (--fill/--record/--compact/--extended) resolve to the
+ * same grid so old markup cannot drift into a second layout.
+ * Fallback without subgrid: top-align cells (same as .kzc-fieldset__grid).
+ */
+#app-content.kzc-app .kzc-filter-grid,
+#app-content.kzc-app .kzc-filter-grid--compact,
+#app-content.kzc-app .kzc-filter-grid--extended,
+#app-content.kzc-app .kzc-filter-grid--fill,
+#app-content.kzc-app .kzc-filter-grid--record {
+	display: grid;
+	/* Mobile-first: one field per row (<768); auto-fit from tablet up */
+	grid-template-columns: 1fr;
+	grid-auto-rows: auto minmax(44px, auto);
+	column-gap: var(--kzc-space-3);
+	row-gap: var(--kzc-space-3);
+	justify-content: stretch;
+	align-items: stretch;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+/* ≥769px: even auto-fit columns (NC tablet+ / desktop filter panels) */
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-filter-grid,
+	#app-content.kzc-app .kzc-filter-grid--compact,
+	#app-content.kzc-app .kzc-filter-grid--extended,
+	#app-content.kzc-app .kzc-filter-grid--fill,
+	#app-content.kzc-app .kzc-filter-grid--record {
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		column-gap: var(--kzc-space-4);
+		row-gap: var(--kzc-space-4);
+	}
+}
+
+/*
+ * Exact two-field toolbars (Assets Site|Name). auto-fit can still wrap under
+ * ~24rem+gutter and look like a broken stacked form — pin two equal columns
+ * from tablet up; mobile stays 1fr from base rule.
+ */
+#app-content.kzc-app .kzc-filter-grid--pair {
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-filter-grid--pair {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+#app-content.kzc-app .kzc-filter-field {
+	display: grid;
+	grid-template-rows: subgrid;
+	grid-row: span 2;
+	gap: var(--kzc-space-2);
+	min-width: 0;
+	margin: 0;
+	align-self: stretch;
+}
+
+#app-content.kzc-app .kzc-filter-field__label {
+	display: block;
+	margin: 0;
+	padding: 0;
+	font-size: 0.8125rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--color-text-maxcontrast, var(--kzc-muted));
+	min-height: 1.3em;
+}
+
+#app-content.kzc-app .kzc-filter-field__control {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1);
+	min-width: 0;
+	min-height: 44px;
+	/* Top of the shared control track — never flex-end (hints would shove siblings down). */
+	justify-content: flex-start;
+}
+
+#app-content.kzc-app .kzc-filter-field__control > .kzc-input,
+#app-content.kzc-app .kzc-filter-field__control > input,
+#app-content.kzc-app .kzc-filter-field__control > select,
+#app-content.kzc-app .kzc-filter-field__control > textarea {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	min-height: 44px;
+}
+
+#app-content.kzc-app .kzc-filter-field__control > .kzc-form-row__hint {
+	margin: 0;
+	font-size: var(--kzc-fs-xs, 0.75rem);
+	line-height: 1.35;
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-filter-field.has-error .kzc-form-row__error {
+	display: block;
+}
+
+#app-content.kzc-app .kzc-filter-field.has-error input,
+#app-content.kzc-app .kzc-filter-field.has-error select,
+#app-content.kzc-app .kzc-filter-field.has-error textarea {
+	border-color: var(--color-error-text, var(--color-element-error));
+	box-shadow: 0 0 0 1px var(--color-error-text, var(--color-element-error));
+}
+
+/* Checkbox: spacer label keeps the control on the shared input row */
+#app-content.kzc-app .kzc-filter-field--checkbox .kzc-filter-field__control {
+	min-height: 44px;
+	justify-content: flex-start;
+}
+
+#app-content.kzc-app .kzc-filter-field--checkbox .kzc-checkbox-row {
+	min-height: 44px;
+	align-items: center;
+}
+
+/*
+ * Actions field (Apply + Clear) — §3.6b. The base .kzc-filter-field is a
+ * label/control subgrid pair; the actions field has no label, so it leaves
+ * the subgrid and becomes a bottom-aligned button row in the control
+ * track. Buttons keep touch height, shrink to content on desktop and
+ * stack full-width on narrow screens.
+ */
+#app-content.kzc-app .kzc-filter-field--actions {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2, 0.5rem);
+	align-items: flex-end;
+	grid-row: span 2;
+}
+
+#app-content.kzc-app .kzc-filter-field--actions > .kzc-btn,
+#app-content.kzc-app .kzc-filter-field--actions > .button {
+	flex: 0 0 auto;
+	min-height: 44px;
+}
+
+@media (max-width: 768.98px) {
+	#app-content.kzc-app .kzc-filter-field--actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	#app-content.kzc-app .kzc-filter-field--actions > * {
+		width: 100%;
+	}
+}
+
+#app-content.kzc-app .kzc-filter-field--wide,
+#app-content.kzc-app .kzc-filter-field--full,
+#app-content.kzc-app .kzc-filter-grid > .kzc-choice-group {
+	grid-column: 1 / -1;
+}
+
+/* Choice groups are not label/control pairs — still occupy one logical field row */
+#app-content.kzc-app .kzc-filter-grid > .kzc-choice-group {
+	grid-row: span 2;
+}
+
+#app-content.kzc-app .kzc-filter-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--kzc-space-3);
+	min-height: 44px;
+	min-width: 0;
+	/* Mobile: full-width action row */
+	width: 100%;
+}
+
+#app-content.kzc-app .kzc-filter-actions .kzc-btn,
+#app-content.kzc-app .kzc-filter-actions .button {
+	min-height: 44px;
+	min-width: 44px;
+	flex: 1 1 auto;
+}
+
+/* ≥769px: actions shrink to content beside filter fields */
+@media (min-width: 769px) {
+	#app-content.kzc-app .kzc-filter-actions {
+		width: auto;
+	}
+
+	#app-content.kzc-app .kzc-filter-actions .kzc-btn,
+	#app-content.kzc-app .kzc-filter-actions .button {
+		flex: 0 0 auto;
+	}
+}
+
+/* Action row under the field grid — even separator, never jammed against inputs */
+#app-content.kzc-app .kzc-filter-panel__form > .kzc-filter-actions {
+	margin-top: var(--kzc-space-2);
+	padding-top: var(--kzc-space-4);
+	border-top: 1px solid var(--kzc-border, var(--color-border));
+}
+
+#app-content.kzc-app .kzc-filter-grid > .kzc-filter-actions {
+	grid-row: span 2;
+	align-self: end;
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+
+@supports not (grid-template-rows: subgrid) {
+	#app-content.kzc-app .kzc-filter-grid {
+		grid-auto-rows: auto;
+		align-items: start;
+	}
+
+	#app-content.kzc-app .kzc-filter-field {
+		display: flex;
+		flex-direction: column;
+		grid-row: auto;
+		gap: var(--kzc-space-2);
+	}
+
+	#app-content.kzc-app .kzc-filter-grid > .kzc-choice-group,
+	#app-content.kzc-app .kzc-filter-grid > .kzc-filter-actions {
+		grid-row: auto;
+	}
+}
+
+#app-content.kzc-app .kzc-filter-field__control .form-input[aria-invalid='true'],
+#app-content.kzc-app .kzc-filter-field__control .form-select[aria-invalid='true'],
+#app-content.kzc-app .kzc-filter-field__control [aria-invalid='true'] {
+	border-color: var(--color-error-text, var(--color-element-error));
+	outline-color: var(--color-error-text, var(--color-element-error));
+}
+
+/* Claim / multi-section filters: calm fieldsets inside the panel body */
+#app-content.kzc-app .kzc-filter-panel__form .kzc-fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3);
+	background-color: transparent;
+}
+
+#app-content.kzc-app .kzc-filter-panel__form .kzc-fieldset > .kzc-fieldset__legend {
+	font-size: 0.9375rem;
+	font-weight: 700;
+	padding-bottom: var(--kzc-space-2);
+	margin: 0;
+	border-bottom: 1px solid var(--kzc-border);
+	color: var(--kzc-text);
+}
+
+#app-content.kzc-app .kzc-date-range {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: var(--kzc-space-2) var(--kzc-space-3);
+}
+
+#app-content.kzc-app .kzc-date-range__part {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1);
+	min-width: 0;
+	flex: 1 1 8rem;
+}
+
+#app-content.kzc-app .kzc-date-range__sublabel {
+	font-size: var(--kzc-fs-xs);
+	font-weight: 500;
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-date-range__sep {
+	align-self: flex-end;
+	padding-bottom: 0.65rem;
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-sm);
+}
+
+/* ── Empty / loading states ─────────────────────────────────── */
+#app-content.kzc-app .kzc-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--kzc-space-3);
+	padding: var(--kzc-space-7) var(--kzc-space-5);
+	text-align: center;
+	color: var(--kzc-muted);
+}
+
+#app-content.kzc-app .kzc-empty-state__title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg);
+	font-weight: 600;
+	color: var(--kzc-text);
+}
+
+#app-content.kzc-app .kzc-empty-state__text {
+	margin: 0;
+	max-width: 42ch;
+	font-size: var(--kzc-fs-sm);
+	line-height: var(--kzc-line-base);
+}
+
+/* Error variant: danger-tinted panel so a failed load never reads as empty data. */
+#app-content.kzc-app .kzc-empty-state--error {
+	color: var(--kzc-text);
+	border: 1px solid var(--kzc-border-strong, var(--color-border-maxcontrast));
+	border-left: 4px solid var(--kzc-danger-fill, var(--color-element-error, var(--color-error)));
+	border-radius: var(--kzc-radius-md, 12px);
+	background: var(--kzc-bg-soft, var(--color-background-dark));
+	align-items: flex-start;
+	text-align: left;
+}
+
+#app-content.kzc-app .kzc-empty-state--error .kzc-empty-state__text {
+	max-width: none;
+}
+
+#app-content.kzc-app .kzc-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--kzc-space-3);
+	padding: var(--kzc-space-6);
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-sm);
+}
+
+#app-content.kzc-app .kzc-loading[aria-busy="true"]::before {
+	content: '';
+	width: 1.25rem;
+	height: 1.25rem;
+	border: 2px solid var(--kzc-border);
+	border-top-color: var(--color-primary-element);
+	border-radius: 50%;
+	animation: dc-spin 0.8s linear infinite;
+}
+
+@keyframes dc-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#app-content.kzc-app .kzc-loading[aria-busy="true"]::before {
+		animation: none;
+		border-top-color: var(--kzc-border);
+	}
+}
+
+/* Nextcloud personal settings panel (outside app shell) */
+#kanzleicheck-personal-settings.kzc-nc-settings-panel {
+	max-width: 52rem;
+}
+
+#kanzleicheck-personal-settings .settings-hint {
+	max-width: 60ch;
+	line-height: var(--kzc-line-base, 1.5);
+	color: var(--color-text-maxcontrast, var(--kzc-muted));
+}
+
+#kanzleicheck-personal-settings .settings-subheading {
+	margin: var(--kzc-space-5, 1.25rem) 0 var(--kzc-space-2, 0.5rem);
+	font-size: var(--kzc-fs-md, 1rem);
+	font-weight: 600;
+}
+
+#kanzleicheck-personal-settings .kzc-btn + .kzc-btn {
+	margin-inline-start: var(--kzc-space-2, 0.5rem);
+}
+
+/* Filter panel cards use dc-card header/body padding (app.css); accent bar only on .kzc-filter-panel */
+
+/* ── Data tables (single convention app-wide) ─────────────────
+   Markup: .table-container > .table.table--hover
+   Legacy aliases: .table-responsive, .kzc-table-wrap, .grid-table, .kanzleicheck-table
+   Actions column: .kzc-table-actions-col + .kzc-table-actions
+   Matrix tables: .kzc-table--matrix (admin notification grids)
+   Card layout on narrow screens: .kzc-table--responsive + data-label on td
+   ───────────────────────────────────────────────────────────── */
+#app-content.kzc-app .table-container,
+#app-content.kzc-app .table-responsive,
+#app-content.kzc-app .kzc-table-wrap {
+	margin: 0;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow-x: auto;
+	overflow-y: visible;
+	-webkit-overflow-scrolling: touch;
+	scroll-padding-inline-end: var(--kzc-space-4, 1rem);
+}
+
+#app-content.kzc-app .kzc-card .table-container,
+#app-content.kzc-app .kzc-card .table-responsive,
+#app-content.kzc-app .kzc-card .kzc-table-wrap,
+#app-content.kzc-app .section .table-container,
+#app-content.kzc-app .section .table-responsive,
+#app-content.kzc-app .section .kzc-table-wrap,
+.kzc-dialog .table-container,
+.kzc-dialog .table-responsive,
+.kzc-dialog .kzc-table-wrap,
+#app-content.kzc-app .kzc-card__body > .table-container,
+#app-content.kzc-app .kzc-card__body > .table-responsive,
+#app-content.kzc-app .kzc-card__body > .kzc-table-wrap {
+	margin-block: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+/* Sole content of the card: sit flush under the header, no inner inset. */
+#app-content.kzc-app .kzc-card__body:has(> .table-container:only-child),
+#app-content.kzc-app .kzc-card__body:has(> .table-responsive:only-child),
+#app-content.kzc-app .kzc-card__body:has(> .kzc-table-wrap:only-child) {
+	padding: 0;
+	gap: 0;
+}
+
+#app-content.kzc-app .table-container .table,
+#app-content.kzc-app .table-container .grid-table,
+#app-content.kzc-app .table-container .kanzleicheck-table,
+#app-content.kzc-app .table-container .kzc-table,
+#app-content.kzc-app .table-container .report-table,
+#app-content.kzc-app .table-responsive .table,
+#app-content.kzc-app .table-responsive .grid-table,
+#app-content.kzc-app .kzc-table-wrap .table,
+#app-content.kzc-app .kzc-table-wrap .grid-table,
+#app-content.kzc-app .kzc-table-wrap .kzc-table {
+	margin-bottom: 0;
+	width: 100%;
+	table-layout: auto;
+}
+
+/* Desktop: fill available width; scroll horizontally only when columns need more space */
+@media (min-width: 769px) {
+	#app-content.kzc-app .table-container .table:not(.kzc-table--matrix),
+	#app-content.kzc-app .table-container .grid-table:not(.kzc-table--matrix),
+	#app-content.kzc-app .table-container .kanzleicheck-table:not(.kzc-table--matrix),
+	#app-content.kzc-app .table-container .kzc-table:not(.kzc-table--matrix),
+	#app-content.kzc-app .table-responsive .table:not(.kzc-table--matrix),
+	#app-content.kzc-app .table-responsive .grid-table:not(.kzc-table--matrix),
+	#app-content.kzc-app .kzc-table-wrap .table:not(.kzc-table--matrix),
+	#app-content.kzc-app .kzc-table-wrap .grid-table:not(.kzc-table--matrix),
+	#app-content.kzc-app .kzc-table-wrap .kzc-table:not(.kzc-table--matrix) {
+		width: 100%;
+		min-width: max-content;
+	}
+}
+
+/* Legacy alias tables keep NC core's td { white-space: nowrap } — give
+   their cells an explicit wrap path so long values never clip at the
+   screen edge (WCAG 1.4.10 reflow; the farm's table_actions_fit gate). */
+#app-content.kzc-app .grid-table td,
+#app-content.kzc-app .kzc-table td,
+.kzc-pub .kzc-table td {
+	white-space: normal;
+}
+
+#app-content.kzc-app .table:not(.kzc-table--matrix) thead,
+#app-content.kzc-app .grid-table:not(.kzc-table--matrix) thead,
+#app-content.kzc-app .kzc-table:not(.kzc-table--matrix) thead,
+.kzc-dialog .table thead {
+	background: transparent;
+}
+
+/* §3.7: header cells use the card surface — never a dark band. */
+#app-content.kzc-app .table:not(.kzc-table--matrix) thead th,
+#app-content.kzc-app .grid-table:not(.kzc-table--matrix) thead th,
+#app-content.kzc-app .kzc-table:not(.kzc-table--matrix) thead th,
+.kzc-dialog .table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background-color: var(--kzc-bg-card, var(--color-main-background));
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+	font-weight: 600;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	box-shadow: none;
+	border-bottom: 1px solid var(--kzc-border, var(--color-border));
+}
+
+#app-content.kzc-app .table tbody tr:focus-within,
+#app-content.kzc-app .grid-table tbody tr:focus-within,
+#app-content.kzc-app .kzc-table tbody tr:focus-within {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: -2px;
+}
+
+#app-content.kzc-app .table td.kzc-table-empty,
+#app-content.kzc-app .table td.kzc-table-loading,
+#app-content.kzc-app .grid-table td.kzc-table-empty,
+#app-content.kzc-app .grid-table td.kzc-table-loading,
+#app-content.kzc-app .kzc-table td.kzc-table-empty,
+#app-content.kzc-app .kzc-table td.kzc-table-loading,
+#app-content.kzc-app .table td.text-center:not(:only-child),
+#app-content.kzc-app .grid-table td.text-center:not(:only-child) {
+	text-align: center;
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	padding: var(--kzc-space-5, 1.25rem) var(--kzc-space-4, 1rem);
+}
+
+#app-content.kzc-app .table td .kzc-empty-state,
+#app-content.kzc-app .grid-table td .kzc-empty-state,
+#app-content.kzc-app .kzc-table td .kzc-empty-state {
+	padding: var(--kzc-space-5, 1.25rem) var(--kzc-space-3, 0.75rem);
+}
+
+#app-content.kzc-app .table .kzc-table-actions,
+#app-content.kzc-app .grid-table .kzc-table-actions,
+#app-content.kzc-app .kzc-table .kzc-table-actions,
+#app-content.kzc-app .table .admin-holidays__row-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kzc-space-2, 0.5rem);
+	align-items: center;
+	justify-content: flex-end;
+}
+
+/* Actions column alignment. Width lives in the two media blocks below:
+   below 769px the column sizes to the button labels; from 769px it
+   collapses and the buttons cover the inline end of the hovered or
+   focused row. That cover is the layout. Do not put min-width:max-content
+   back on these cells at desktop — it reserves a column and the release
+   check treats that as a regression. */
+#app-content.kzc-app .table th.kzc-table-actions-col,
+#app-content.kzc-app .table th.actions-col,
+#app-content.kzc-app .table td.actions-cell,
+#app-content.kzc-app .table td.kzc-table-actions-col,
+#app-content.kzc-app .table td.admin-ot-audit__actions,
+#app-content.kzc-app .table td.admin-tariff-rules__row-actions,
+#app-content.kzc-app .table td.layer-card__history-actions,
+#app-content.kzc-app .grid-table th.kzc-table-actions-col,
+#app-content.kzc-app .grid-table td.actions-cell,
+#app-content.kzc-app .grid-table td.kzc-table-actions-col,
+#app-content.kzc-app .kzc-table th.kzc-table-actions-col,
+#app-content.kzc-app .kzc-table td.actions-cell,
+#app-content.kzc-app .kzc-table td.kzc-table-actions-col {
+	text-align: right;
+	vertical-align: middle;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+/* Narrow tables: size the actions column to the button labels.
+   From 769px the column collapses — see the wide-table block below. */
+@media (max-width: 768.98px) {
+	#app-content.kzc-app .table th.kzc-table-actions-col,
+	#app-content.kzc-app .table th.actions-col,
+	#app-content.kzc-app .table td.actions-cell,
+	#app-content.kzc-app .table td.kzc-table-actions-col,
+	#app-content.kzc-app .table td.admin-ot-audit__actions,
+	#app-content.kzc-app .table td.admin-tariff-rules__row-actions,
+	#app-content.kzc-app .table td.layer-card__history-actions,
+	#app-content.kzc-app .grid-table th.kzc-table-actions-col,
+	#app-content.kzc-app .grid-table td.actions-cell,
+	#app-content.kzc-app .grid-table td.kzc-table-actions-col,
+	#app-content.kzc-app .kzc-table th.kzc-table-actions-col,
+	#app-content.kzc-app .kzc-table td.actions-cell,
+	#app-content.kzc-app .kzc-table td.kzc-table-actions-col {
+		width: auto;
+		min-width: max-content;
+		max-width: none;
+	}
+}
+
+#app-content.kzc-app .table td.actions-cell,
+#app-content.kzc-app .table td.kzc-table-actions-col,
+#app-content.kzc-app .table td.admin-ot-audit__actions,
+#app-content.kzc-app .table td.admin-tariff-rules__row-actions,
+#app-content.kzc-app .table td.layer-card__history-actions,
+#app-content.kzc-app .grid-table td.actions-cell,
+#app-content.kzc-app .grid-table td.kzc-table-actions-col,
+#app-content.kzc-app .kzc-table td.actions-cell,
+#app-content.kzc-app .kzc-table td.kzc-table-actions-col {
+	display: table-cell;
+}
+
+#app-content.kzc-app .table td.kzc-table-actions-col .btn,
+#app-content.kzc-app .table td.actions-cell .btn,
+#app-content.kzc-app .table .kzc-table-actions .btn,
+#app-content.kzc-app .table .kzc-table-actions .kzc-btn,
+#app-content.kzc-app .grid-table td.actions-cell .btn,
+#app-content.kzc-app .grid-table .kzc-table-actions .btn,
+#app-content.kzc-app .kzc-table .kzc-table-actions .btn,
+#app-content.kzc-app .kzc-table .kzc-table-actions .kzc-btn {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+/*
+ * Wide tables: the actions column must not widen the table or sit on top of
+ * the data while you scroll. On hover, focus, or a touch screen the buttons
+ * do cover the inline end of that row — that overlap is intentional.
+ * The header text stays in the accessibility tree
+ * and is clipped by the zero-width cell. Buttons stay in the tab order
+ * (never display:none). A pointer reveals them on the row; keyboard focus
+ * does too. Escape adds .kzc-row-actions-dismissed until the pointer
+ * re-enters or focus returns to an action. Touch (hover: none) keeps the
+ * cluster visible, pinned to the inline end, so it is tappable without a
+ * sideways scroll. Dialogs live on document.body, so .kzc-dialog is included.
+ */
+@media (min-width: 769px) {
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) th.kzc-table-actions-col,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) th.actions-col,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table th.kzc-table-actions-col {
+		width: 0;
+		min-width: 0;
+		max-width: 0;
+		padding: 0;
+		border: 0;
+		overflow: hidden;
+		position: static;
+		box-shadow: none;
+		background: transparent;
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.kzc-table-actions-col,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-ot-audit__actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-tariff-rules__row-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.layer-card__history-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.kzc-table-actions-col {
+		position: sticky;
+		inset-inline-end: 0;
+		width: 0;
+		min-width: 0;
+		max-width: none;
+		padding: 0;
+		overflow: visible;
+		background: transparent;
+		box-shadow: none;
+		z-index: 2;
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell > .kzc-row-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell > .kzc-row-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .kzc-table td.actions-cell > .kzc-row-actions {
+		width: 0;
+		min-width: 0;
+		overflow: visible;
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.kzc-table-actions-col .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-ot-audit__actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-tariff-rules__row-actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.layer-card__history-actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.kzc-table-actions-col .kzc-table-actions {
+		position: absolute;
+		inset-inline-end: 0;
+		top: 0;
+		bottom: 0;
+		transform: none;
+		z-index: 2;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--kzc-space-2, 0.5rem);
+		margin: 0;
+		max-width: none;
+		padding-block: 0;
+		padding-inline: 1.25rem var(--kzc-space-3, 0.75rem);
+		overflow: hidden;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		background-color: var(--kzc-bg-card, var(--color-main-background));
+		background-image: linear-gradient(
+			to inline-end,
+			transparent,
+			var(--kzc-bg-card, var(--color-main-background)) 1rem
+		);
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions > .btn,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions > .kzc-btn,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions > a,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions > .btn,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions > .kzc-btn,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions > a {
+		flex: 0 0 auto;
+		width: auto;
+		max-width: none;
+		white-space: nowrap;
+	}
+}
+
+@media (min-width: 769px) and (hover: hover) {
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.kzc-table-actions-col .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-ot-audit__actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.admin-tariff-rules__row-actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.layer-card__history-actions .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.kzc-table-actions-col .kzc-table-actions {
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.12s linear;
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) tbody tr:hover td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) tbody tr:focus-within td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table tbody tr:hover td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table tbody tr:focus-within td.actions-cell .kzc-table-actions {
+		opacity: 1;
+		pointer-events: auto;
+		background-color: var(--color-background-hover, var(--kzc-bg-card, var(--color-main-background)));
+		background-image: linear-gradient(
+			to inline-end,
+			transparent,
+			var(--color-background-hover, var(--kzc-bg-card, var(--color-main-background))) 1rem
+		);
+	}
+
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) tbody tr.kzc-row-actions-dismissed td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table tbody tr.kzc-row-actions-dismissed td.actions-cell .kzc-table-actions {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+@media (min-width: 769px) and (hover: hover) and (prefers-reduced-motion: reduce) {
+	:is(#app-content.kzc-app, .kzc-dialog) :is(.table, .kzc-table) td.actions-cell .kzc-table-actions,
+	:is(#app-content.kzc-app, .kzc-dialog) .grid-table td.actions-cell .kzc-table-actions {
+		transition: none;
+	}
+}
+
+/* Truncated text columns — do not steal space from actions */
+#app-content.kzc-app .table td.description-cell,
+#app-content.kzc-app .table td.reason-cell {
+	max-width: min(20rem, 30vw);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#app-content.kzc-app .kzc-table-meta {
+	margin: var(--kzc-space-3, 0.75rem) 0 0;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+}
+
+/* Report preview + dynamic HTML tables */
+#app-content.kzc-app .report-preview-content .table-container,
+#app-content.kzc-app .report-preview-content .report-table {
+	margin-top: var(--kzc-space-3, 0.75rem);
+}
+
+#app-content.kzc-app .report-preview-content .report-table {
+	border-collapse: collapse;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+}
+
+#app-content.kzc-app .report-preview-content .table-container .report-table {
+	margin-bottom: 0;
+}
+
+/* Notification matrices — not row lists; keep compact grid */
+#app-content.kzc-app .kzc-table--matrix {
+	font-size: var(--kzc-fs-sm, 0.875rem);
+}
+
+#app-content.kzc-app .kzc-table--matrix th,
+#app-content.kzc-app .kzc-table--matrix td {
+	text-align: center;
+	vertical-align: middle;
+	padding: var(--kzc-space-2, 0.5rem);
+}
+
+#app-content.kzc-app .kzc-table--matrix thead th {
+	position: static;
+	box-shadow: none;
+}
+
+@media (max-width: 768.98px) {
+	/* Dense list tables without card reflow: horizontal scroll */
+	#app-content.kzc-app .table-container .table:not(.kzc-table--matrix):not(.kzc-table--responsive),
+	#app-content.kzc-app .table-container .grid-table:not(.kzc-table--matrix):not(.kzc-table--responsive) {
+		min-width: 36rem;
+	}
+
+	#app-content.kzc-app .table .kzc-table-actions,
+	#app-content.kzc-app .kzc-table .kzc-table-actions {
+		justify-content: flex-start;
+	}
+
+	/* Card reflow: every field + action reachable without sideways scrolling */
+	#app-content.kzc-app .table-container:has(.kzc-table--responsive) {
+		overflow-x: visible;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive,
+	#app-content.kzc-app .table.kzc-table--responsive tbody,
+	#app-content.kzc-app .table.kzc-table--responsive tr,
+	#app-content.kzc-app .table.kzc-table--responsive td {
+		display: block;
+		width: 100%;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive {
+		min-width: 0;
+		border-collapse: collapse;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody tr {
+		margin-bottom: var(--kzc-space-4, 1rem);
+		padding: var(--kzc-space-3, 0.75rem) var(--kzc-space-4, 1rem);
+		border: 1px solid var(--kzc-border, var(--color-border));
+		border-radius: var(--kzc-radius-sm, 8px);
+		background: var(--kzc-bg-card, var(--color-main-background));
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody tr:last-child {
+		margin-bottom: 0;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: var(--kzc-space-4, 1rem);
+		padding: var(--kzc-space-2, 0.5rem) 0;
+		border-bottom: 1px solid var(--kzc-border, var(--color-border));
+		text-align: right;
+		max-width: none;
+		overflow: visible;
+		white-space: normal;
+		text-overflow: clip;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td::before {
+		content: attr(data-label);
+		flex: 0 0 auto;
+		text-align: left;
+		font-weight: 600;
+		color: var(--kzc-muted, var(--color-text-maxcontrast));
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.description-cell,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.reason-cell,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.actions-cell,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.admin-ot-audit__actions,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.admin-tariff-rules__row-actions,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.layer-card__history-actions {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: left;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.actions-cell .kzc-table-actions {
+		width: 100%;
+		justify-content: stretch;
+		flex-direction: column;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.actions-cell .kzc-table-actions .btn,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.actions-cell .btn,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.admin-ot-audit__actions .btn,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.admin-tariff-rules__row-actions .btn,
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.layer-card__history-actions .btn {
+		width: 100%;
+		justify-content: center;
+		min-height: 44px;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td.actions-cell .btn-icon {
+		width: 46px;
+		height: 46px;
+		min-width: 46px;
+		min-height: 46px;
+		align-self: flex-end;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td[colspan] {
+		display: block;
+		justify-content: center;
+		text-align: center;
+	}
+
+	#app-content.kzc-app .table.kzc-table--responsive tbody td[colspan]::before {
+		content: none;
+	}
+}
+
+@media (forced-colors: active) {
+	#app-content.kzc-app .table-container,
+	#app-content.kzc-app .table-responsive,
+	#app-content.kzc-app .kzc-table-wrap {
+		border-color: CanvasText;
+	}
+
+	#app-content.kzc-app .table--hover tbody tr:hover,
+	#app-content.kzc-app .grid-table.table--hover tbody tr:hover {
+		background: Highlight;
+		color: HighlightText;
+	}
+}

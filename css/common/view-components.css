@@ -1,0 +1,307 @@
+/*
+ * Check family — view components (canonical, kzc-templated).
+ * Implements DESIGN-SYSTEM §3.2 badges, §3.4 callouts, §3.5 stat tiles,
+ * §3.6b filter panels (recipe A), §3.6c quick-filter pills (recipe B),
+ * §3.7 table card-rows, §3.8 empty/loading, §3.11 pagination.
+ *
+ * Every var() carries a literal fallback so the pack still renders sanely
+ * in an app whose token layer is thinner than §1 requires.
+ */
+
+/* ---------- §3.5 Stat strip / tiles ---------- */
+.kzc-stat-strip {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+	gap: var(--kzc-space-3, 12px);
+	margin: 0 0 var(--kzc-space-5, 24px);
+}
+.kzc-stat-tile {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1, 4px);
+	padding: var(--kzc-space-3, 12px) var(--kzc-space-4, 16px);
+	background: var(--kzc-bg-card, var(--color-main-background));
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-inline-start: 3px solid var(--kzc-border-strong, var(--color-border-maxcontrast));
+	border-radius: var(--kzc-radius-md, 12px);
+	color: var(--kzc-text, var(--color-main-text));
+	text-decoration: none;
+}
+a.kzc-stat-tile:hover, a.kzc-stat-tile:focus-visible,
+button.kzc-stat-tile:hover, button.kzc-stat-tile:focus-visible {
+	background: var(--color-background-hover);
+}
+.kzc-stat-tile--primary { border-inline-start-color: var(--color-primary-element); }
+.kzc-stat-tile--success { border-inline-start-color: var(--color-success-text, var(--color-success)); }
+.kzc-stat-tile--warning { border-inline-start-color: var(--color-warning-text, var(--color-warning)); }
+.kzc-stat-tile--danger  { border-inline-start-color: var(--kzc-danger-fill, var(--color-error)); }
+.kzc-stat-tile__label {
+	font-size: var(--kzc-fs-xs, 0.75rem);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+}
+.kzc-stat-tile__value {
+	font-size: clamp(1.25rem, 2vw, 1.6rem);
+	font-weight: 700;
+	font-variant-numeric: var(--kzc-tab-num, tabular-nums);
+	line-height: var(--kzc-line-tight, 1.2);
+}
+.kzc-stat-tile__meta { font-size: var(--kzc-fs-xs, 0.75rem); color: var(--kzc-muted, var(--color-text-maxcontrast)); }
+
+/* ---------- Card grid ---------- */
+.kzc-card-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+	gap: var(--kzc-space-4, 16px);
+	margin: 0 0 var(--kzc-space-4, 16px);
+}
+
+/* ---------- §3.6b Filter panel — recipe A ---------- */
+.kzc-filter-panel {
+	background: var(--kzc-bg-card, var(--color-main-background));
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-inline-start: 4px solid var(--color-primary-element);
+	border-radius: var(--kzc-radius-md, 12px);
+	padding: 0;
+	margin: 0 0 var(--kzc-space-4, 16px);
+	overflow: hidden;
+}
+.kzc-filter-panel[hidden] { display: none !important; }
+.kzc-filter-panel__head {
+	background: var(--kzc-bg-soft, var(--color-background-dark));
+	border-bottom: 1px solid var(--kzc-border, var(--color-border));
+	padding: var(--kzc-space-3, 12px) var(--kzc-space-5, 24px);
+}
+.kzc-filter-panel__head > h2,
+.kzc-filter-panel__head > h3 {
+	margin: 0;
+	font-size: var(--kzc-fs-lg, 1.125rem);
+	font-weight: 600;
+}
+.kzc-filter-panel__intro {
+	margin: var(--kzc-space-1, 4px) 0 0;
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	max-width: 65ch;
+}
+.kzc-filter-panel__body { padding: var(--kzc-space-4, 16px) var(--kzc-space-5, 24px); }
+.kzc-filter-panel__form { margin: 0; }
+.kzc-filter-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+	gap: var(--kzc-space-3, 12px);
+	align-items: end;
+}
+/* Single-search variant: one wide field, actions beside it — never an
+   empty 4-column grid (DS §3.6b do/don't). */
+.kzc-filter-grid--search { grid-template-columns: minmax(min(16rem, 100%), 28rem) auto; }
+.kzc-filter-field { display: flex; flex-direction: column; gap: var(--kzc-space-1, 4px); min-width: 0; }
+.kzc-filter-field__label {
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	font-weight: 600;
+	color: var(--kzc-text, var(--color-main-text));
+}
+.kzc-filter-field__control { display: flex; min-width: 0; }
+.kzc-filter-field__control > :is(input, select) { flex: 1 1 auto; min-width: 0; width: 100%; }
+.kzc-filter-field--actions { flex-direction: row; gap: var(--kzc-space-2, 8px); align-items: flex-end; }
+/* Filter controls are interactive targets (DS §3.6.0): touch height +
+   real control border, regardless of whether the app's form scope hits. */
+#app-content .kzc-filter-panel :is(input, select, textarea):not([type='checkbox'], [type='radio'], [type='hidden'], [type='range'], [type='file']) {
+	min-height: var(--kzc-touch, 44px);
+	border-color: var(--kzc-form-border, var(--color-border-maxcontrast));
+}
+@media (max-width: 768.98px) {
+	.kzc-filter-grid--search { grid-template-columns: 1fr; }
+	.kzc-filter-field--actions { flex-direction: column; align-items: stretch; }
+	.kzc-filter-field--actions > * { width: 100%; }
+	.kzc-filter-panel__head, .kzc-filter-panel__body { padding-inline: var(--kzc-space-4, 16px); }
+}
+
+/* ---------- §3.6c recipe B — quick-filter pills ---------- */
+.kzc-quick-filters {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3, 12px);
+	flex-wrap: wrap;
+	margin: 0 0 var(--kzc-space-4, 16px);
+}
+.kzc-quick-filters__label {
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	font-weight: 600;
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+}
+.kzc-filter-bar { display: flex; gap: var(--kzc-space-1, 4px); flex-wrap: wrap; }
+#app-content .kzc-filter {
+	/* inline-flex is load-bearing: an <a>/<button> stays inline without it
+	   and the 44px min-height silently dies (WCAG 2.5.8 target size). */
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--kzc-touch, 44px);
+	padding: var(--kzc-space-1, 4px) var(--kzc-space-3, 12px);
+	border: 1px solid var(--kzc-form-border, var(--color-border-maxcontrast));
+	border-radius: var(--kzc-radius-pill, 999px);
+	background: var(--kzc-bg-card, var(--color-main-background));
+	color: var(--kzc-text, var(--color-main-text));
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	font-weight: 500;
+	cursor: pointer;
+}
+.kzc-filter:hover { background: var(--color-background-hover); }
+/* anchors must not carry aria-pressed (axe aria-allowed-attr) — link
+   pills mark the active item with aria-current instead */
+.kzc-filter[aria-pressed='true'],
+.kzc-filter[aria-current='true'] {
+	background: var(--kzc-tint-info, var(--color-primary-element-light));
+	border-color: var(--color-primary-element);
+	color: var(--kzc-text, var(--color-main-text));
+	font-weight: 600;
+}
+
+/* ---------- §3.2 Badges / status pills (leading dot + text, never colour alone) ---------- */
+.kzc-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px var(--kzc-space-2, 8px);
+	border-radius: var(--kzc-radius-pill, 999px);
+	font-size: var(--kzc-fs-xs, 0.75rem);
+	font-weight: 600;
+	white-space: nowrap;
+	background: var(--kzc-bg-soft, var(--color-background-dark));
+	color: var(--kzc-text, var(--color-main-text));
+}
+.kzc-badge__dot { width: 0.5em; height: 0.5em; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+.kzc-badge--success { background: var(--kzc-tint-success, var(--color-background-dark)); }
+.kzc-badge--success .kzc-badge__dot { color: var(--color-success-text, var(--color-success)); }
+.kzc-badge--warning { background: var(--kzc-tint-warning, var(--color-background-dark)); }
+.kzc-badge--warning .kzc-badge__dot { color: var(--color-warning-text, var(--color-warning)); }
+.kzc-badge--danger { background: var(--kzc-tint-danger, var(--color-background-dark)); }
+.kzc-badge--danger .kzc-badge__dot { color: var(--kzc-danger-ink, var(--color-error)); }
+.kzc-badge--info { background: var(--kzc-tint-info, var(--color-primary-element-light)); }
+.kzc-badge--info .kzc-badge__dot { color: var(--color-primary-element); }
+
+/* ---------- §3.4 Callouts ---------- */
+.kzc-callout {
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-inline-start: 4px solid var(--kzc-border-strong, var(--color-border-maxcontrast));
+	border-radius: var(--kzc-radius-md, 12px);
+	padding: var(--kzc-space-4, 16px);
+	margin: 0 0 var(--kzc-space-4, 16px);
+	background: var(--kzc-bg-card, var(--color-main-background));
+}
+.kzc-callout__title { margin: 0 0 var(--kzc-space-2, 8px); font-size: var(--kzc-fs-lg, 1.125rem); font-weight: 600; }
+.kzc-callout--info    { border-inline-start-color: var(--color-primary-element); background: var(--kzc-tint-info, var(--color-primary-element-light)); }
+.kzc-callout--success { border-inline-start-color: var(--color-success-text, var(--color-success)); background: var(--kzc-tint-success, var(--color-background-dark)); }
+.kzc-callout--warning { border-inline-start-color: var(--color-warning-text, var(--color-warning)); background: var(--kzc-tint-warning, var(--color-background-dark)); }
+.kzc-callout--danger  { border-inline-start-color: var(--kzc-danger-fill, var(--color-error)); background: var(--kzc-tint-danger, var(--color-background-dark)); }
+
+/* ---------- List head (title + count + primary action row) ---------- */
+.kzc-list-head {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3, 12px);
+	flex-wrap: wrap;
+	margin: 0 0 var(--kzc-space-3, 12px);
+}
+.kzc-list-head__title { margin: 0; font-size: var(--kzc-fs-lg, 1.125rem); font-weight: 600; }
+.kzc-list-head__count { color: var(--kzc-muted, var(--color-text-maxcontrast)); font-size: var(--kzc-fs-sm, 0.875rem); font-variant-numeric: var(--kzc-tab-num, tabular-nums); }
+.kzc-list-head__actions { margin-inline-start: auto; display: flex; gap: var(--kzc-space-2, 8px); flex-wrap: wrap; }
+
+/* ---------- §3.8 Empty & loading ---------- */
+.kzc-empty-state { text-align: center; padding: var(--kzc-space-7, 48px) var(--kzc-space-4, 16px); }
+.kzc-empty-state__title { margin: 0 0 var(--kzc-space-2, 8px); font-size: var(--kzc-fs-lg, 1.125rem); font-weight: 600; }
+.kzc-empty-state__text { margin: 0 auto var(--kzc-space-4, 16px); max-width: 42ch; color: var(--kzc-muted, var(--color-text-maxcontrast)); }
+.kzc-loading {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-2, 8px);
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+	padding: var(--kzc-space-4, 16px);
+}
+.kzc-loading::before {
+	content: '';
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	border: 2px solid var(--kzc-border-strong, var(--color-border-maxcontrast));
+	border-top-color: var(--color-primary-element);
+	animation: kzc-vc-spin 0.8s linear infinite;
+}
+@keyframes kzc-vc-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+	.kzc-loading::before { animation: none; }
+}
+
+/* ---------- §3.11 Pagination ---------- */
+.kzc-pagination {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3, 12px);
+	margin: var(--kzc-space-4, 16px) 0 0;
+}
+.kzc-pagination__info { font-variant-numeric: var(--kzc-tab-num, tabular-nums); color: var(--kzc-muted, var(--color-text-maxcontrast)); }
+@media (max-width: 480px) {
+	.kzc-pagination { flex-wrap: wrap; }
+	.kzc-pagination > * { flex: 1 1 auto; }
+	.kzc-pagination__info { text-align: center; order: -1; flex-basis: 100%; }
+}
+
+/* ---------- §3.7 Table → stacked card rows (mobile) ----------
+ * Add `.kzc-table--cards` to a table whose `td`s carry `data-cell="Label"`.
+ * Below 768 px the table becomes a card list; each cell gets its header
+ * label back via ::before — no horizontal scroll, no clipped columns.
+ * Cells without data-cell (action columns) render label-free.
+ * The table keeps its normal scroll wrap; on desktop the modifier
+ * changes nothing. */
+@media (max-width: 768.98px) {
+	.kzc-table--cards thead {
+		position: absolute;
+		width: 1px; height: 1px;
+		padding: 0; margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+	.kzc-table--cards,
+	.kzc-table--cards tbody { display: block; width: 100%; }
+	.kzc-table--cards tr {
+		display: block;
+		border: 1px solid var(--kzc-border, var(--color-border));
+		border-radius: var(--kzc-radius-md, 12px);
+		padding: var(--kzc-space-2, 8px) var(--kzc-space-3, 12px);
+		margin-bottom: var(--kzc-space-3, 12px);
+		background: var(--kzc-bg-card, var(--color-main-background));
+	}
+	.kzc-table--cards td {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--kzc-space-3, 12px);
+		/* Long unbreakable values (uids, refs) must not force the card row
+		   wider than the viewport — core `td` nowrap must also be undone. */
+		overflow-wrap: anywhere;
+		white-space: normal;
+		padding: var(--kzc-space-2, 8px) 0;
+		border: 0;
+		border-bottom: 1px solid var(--kzc-border, var(--color-border));
+		text-align: end;
+	}
+	.kzc-table--cards td:last-child { border-bottom: 0; }
+	.kzc-table--cards td[data-cell]::before {
+		content: attr(data-cell);
+		font-weight: 600;
+		font-size: var(--kzc-fs-sm, 0.875rem);
+		color: var(--kzc-muted, var(--color-text-maxcontrast));
+		text-align: start;
+		flex: 0 0 auto;
+	}
+	/* Action cells (no data-cell): keep buttons right-aligned, wrap if long */
+	.kzc-table--cards td:not([data-cell]) { justify-content: flex-end; flex-wrap: wrap; }
+	/* Empty-state / loading rows must not render as fake cards */
+	.kzc-table--cards td[colspan] { display: block; text-align: center; }
+	.kzc-table--cards td[colspan]::before { content: none; }
+}

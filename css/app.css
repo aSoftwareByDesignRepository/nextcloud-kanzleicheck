@@ -1,42 +1,13 @@
-/* KanzleiCheck shared tokens + control baseline + button-variant armor.
-   Loaded on every app surface (staff shell + guest portal pages). */
-
-:root {
-	/* Family canvas (DESIGN-SYSTEM §2.3): slate tint only on the app scope,
-	 * never body. Mirrors --mc-bg-soft / --bc-bg-soft in sibling apps. */
-	--kzc-bg: var(--color-main-background);
-	--kzc-bg-soft: color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%);
-	--kzc-bg-card: var(--color-main-background);
-	--kzc-text: var(--color-main-text);
-	--kzc-form-border: var(--color-border-maxcontrast, var(--color-border));
-	--kzc-border-strong: var(--color-border-maxcontrast, var(--color-border));
-	--kanzleicheck-color-form-border: var(--kzc-form-border);
-	--kanzleicheck-color-form-border-error: var(--color-element-error, var(--color-error));
-	--kanzleicheck-color-form-border-focus: var(--color-primary-element);
-	--kzc-danger-fill: var(--color-element-error, #c90000);
-	--kzc-danger-ink: var(--color-error-text, var(--color-element-error, #8a0000));
-	--kzc-danger-border: var(--color-border-error, var(--color-element-error, #c90000));
-}
-
-/* App shell canvas: paint the flat family slate + canvas-local ink so staff
- * surfaces never float on the NC theming wallpaper/photo gradient. */
-#content.app-kanzleicheck,
-#content.app-kanzleicheck #app-content,
-.kzc-app {
-	background: var(--kzc-bg-soft);
-	color: var(--kzc-text);
-}
-.kzc-app {
-	min-height: 100%;
-	min-width: 0;
-	width: 100%;
-	box-sizing: border-box;
-}
+/* KanzleiCheck app layer — button-variant armor + forced-colors affordance.
+ * Tokens, canvas and chrome live in css/common/* (synced check-shell pack —
+ * never duplicate them here). The shared-pack marker blocks below
+ * (app-feedback, support-us) are managed by their syncers. */
 
 /* #app-content control-border baseline (DESIGN-SYSTEM §3.6.0): NC core
  * paints every input/select/textarea with a faint border that fails
  * non-text contrast on theme-sensitive surfaces. Pin the strong family
- * token on every control the app ships inside the NC shell. */
+ * token on every control the app ships inside the NC shell — the ID-scoped
+ * baseline must live here even though the pack carries its own scoped pin. */
 #app-content .kzc-app input:not([type="checkbox"]):not([type="radio"]),
 #app-content .kzc-app select,
 #app-content .kzc-app textarea,
@@ -51,7 +22,7 @@
 #app-content .kzc-app select:focus-visible,
 #app-content .kzc-app textarea:focus-visible,
 #app-content .kzc-app .kzc-input:focus-visible {
-	border-color: var(--kanzleicheck-color-form-border-focus);
+	border-color: var(--kzc-form-border-focus);
 }
 
 /* ── Button-variant armor ────────────────────────────────────────────
@@ -181,4 +152,630 @@ dialog .kzc-btn--primary:active,
 		outline: 2px solid ButtonText;
 		outline-offset: 2px;
 	}
+}
+
+/* === app-feedback:kzc start === */
+#app-navigation .kzc-nav-footer,
+.kzc-nav .kzc-nav-footer,
+.kzc-app-nav .kzc-nav-footer {
+	margin-top: auto;
+	flex-shrink: 0;
+	min-width: 0;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--kzc-space-2, 0.5rem) var(--kzc-space-3, 0.75rem)
+		max(var(--kzc-space-3, 0.75rem), env(safe-area-inset-bottom, 0px));
+	border-top: 1px solid var(--kzc-border, color-mix(in srgb, var(--color-main-text) 12%, var(--color-main-background)));
+	background: transparent;
+	z-index: 1;
+}
+
+.kzc-nav-footer__popover {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--kzc-space-2, 0.5rem);
+}
+
+/* Scoped under #content: bare .{p}-nav-footer__trigger loses to NC core
+ * `#app-content button` / `#app-navigation button` min-height rules
+ * (var(--default-clickable-area) → 34px) — Atlas touch-target defect. */
+#content .kzc-nav-footer__trigger {
+	display: inline-flex;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-height: 44px;
+	min-width: 44px;
+	padding: var(--kzc-space-2, 0.5rem) var(--kzc-space-3, 0.75rem);
+	border-radius: var(--kzc-radius-sm, 6px);
+	box-sizing: border-box;
+	border: none;
+	background: none;
+	color: var(--color-main-text);
+	font: inherit;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+}
+
+.kzc-nav-footer__trigger:hover {
+	background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-main-background));
+}
+
+.kzc-nav-footer__trigger:focus-visible {
+	outline: 3px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+.kzc-nav-footer__trigger:focus:not(:focus-visible) {
+	outline: none;
+}
+
+.kzc-nav-footer__trigger-icon .kzc-icon {
+	width: 20px;
+	height: 20px;
+}
+
+.kzc-nav-footer__menu {
+	position: absolute;
+	bottom: calc(100% + var(--kzc-space-2, 0.5rem));
+	left: 50%;
+	transform: translateX(-50%);
+	min-width: max-content;
+	max-width: calc(100vw - 2rem);
+	list-style: none;
+	margin: 0;
+	padding: var(--kzc-space-2, 0.5rem);
+	background: var(--color-main-background);
+	border: 1px solid var(--kzc-border, var(--color-border));
+	border-radius: var(--kzc-radius-md, 12px);
+	box-shadow:
+		0 2px 6px color-mix(in srgb, var(--color-main-text) 6%, transparent),
+		0 8px 24px color-mix(in srgb, var(--color-main-text) 10%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	z-index: 100;
+}
+
+.kzc-nav-footer__menu[hidden] {
+	display: none;
+}
+
+#content .kzc-nav-footer__menu-item {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-height: 44px;
+	min-width: 44px;
+	padding: var(--kzc-space-2, 0.5rem) var(--kzc-space-3, 0.75rem);
+	border-radius: var(--kzc-radius-sm, 6px);
+	color: var(--color-main-text);
+	text-decoration: none;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: var(--kzc-line-base, 1.45);
+	white-space: normal;
+	/* Menu labels keep normal word breaks — anywhere tears mid-word. */
+	overflow-wrap: break-word;
+}
+
+.kzc-nav-footer__menu-item:hover {
+	background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-main-background));
+}
+
+.kzc-nav-footer__menu-item:focus-visible {
+	outline: 3px solid var(--color-primary-element);
+	outline-offset: -2px;
+}
+
+.kzc-nav-footer__menu-item:focus:not(:focus-visible) {
+	outline: none;
+}
+
+.kzc-nav-footer__menu-icon .kzc-icon {
+	width: 18px;
+	height: 18px;
+}
+
+.kzc-nav-footer__note {
+	margin: 0;
+	font-size: var(--kzc-fs-xs, 0.75rem);
+	line-height: 1.45;
+	color: var(--color-text-maxcontrast);
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+
+@media (width < 480px) {
+	.kzc-nav-footer__menu {
+		left: var(--kzc-space-2, 0.5rem);
+		right: var(--kzc-space-2, 0.5rem);
+		transform: none;
+		min-width: 0;
+	}
+}
+
+.kzc-nav-footer__new-tab {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+#content .kzc-nav-footer__toast-link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	min-width: 44px;
+	margin-top: var(--kzc-space-2, 0.5rem);
+	padding: 0;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: 1.45;
+	color: var(--color-error-text, var(--color-main-text));
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	overflow-wrap: anywhere;
+}
+
+.kzc-nav-footer__toast-link:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+.kzc-nav-footer__toast-link:focus:not(:focus-visible) {
+	outline: none;
+}
+
+@media (prefers-contrast: more) {
+	#app-navigation .kzc-nav-footer,
+	.kzc-nav .kzc-nav-footer,
+	.kzc-app-nav .kzc-nav-footer {
+		border-top-width: 2px;
+		border-top-color: var(--color-main-text);
+	}
+
+	.kzc-nav-footer__menu {
+		border-width: 2px;
+	}
+
+	.kzc-nav-footer__trigger:focus-visible,
+	.kzc-nav-footer__menu-item:focus-visible,
+	.kzc-nav-footer__toast-link:focus-visible {
+		outline-width: 3px;
+	}
+}
+
+@media (forced-colors: active) {
+	.kzc-nav-footer__menu-item,
+	.kzc-nav-footer__toast-link {
+		forced-color-adjust: none;
+		color: LinkText;
+	}
+
+	.kzc-nav-footer__trigger:focus-visible,
+	.kzc-nav-footer__menu-item:focus-visible,
+	.kzc-nav-footer__toast-link:focus-visible {
+		outline: 3px solid Highlight;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kzc-nav-footer__trigger,
+	.kzc-nav-footer__menu-item,
+	.kzc-nav-footer__toast-link {
+		transition: none;
+	}
+}
+/* === app-feedback:kzc end === */
+
+/* === support-us:kzc start === */
+/**
+ * Support & Us — shared family styles (WCAG 2.1 AA, responsive).
+ * Prefix: kzc
+ * Maps to Nextcloud --color-* so light / dark / high-contrast / custom accents adapt.
+ */
+
+.kzc-support-us {
+	margin-block-start: var(--kzc-space-5, 1.5rem);
+	min-width: 0;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.kzc-support-us--page {
+	margin-block-start: 0;
+	border: 0;
+	background: transparent;
+	max-width: none;
+}
+
+.kzc-support-us__header {
+	margin-block-end: var(--kzc-space-4, 1rem);
+}
+
+.kzc-support-us__title {
+	margin: 0 0 var(--kzc-space-2, 0.5rem);
+	font-size: var(--kzc-fs-xl, 1.5rem);
+	font-weight: 700;
+	line-height: var(--kzc-line-tight, 1.2);
+	color: var(--color-main-text);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__intro {
+	margin: 0;
+	max-width: 65ch;
+	font-size: var(--kzc-fs-md, 1rem);
+	line-height: var(--kzc-line-base, 1.45);
+	color: var(--color-text-maxcontrast);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-5, 1.5rem);
+	min-width: 0;
+	width: 100%;
+}
+
+.kzc-support-us__primary {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-width: 0;
+	width: 100%;
+	padding: var(--kzc-space-4, 1rem);
+	border: 1px solid var(--color-border-maxcontrast, var(--color-border));
+	border-inline-start: 4px solid var(--color-primary-element);
+	border-radius: var(--kzc-radius-md, var(--border-radius-large, 12px));
+	background: color-mix(in srgb, var(--color-primary-element) 10%, var(--color-main-background));
+	box-sizing: border-box;
+}
+
+.kzc-support-us__primary-copy,
+.kzc-support-us__primary-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-width: 0;
+	width: 100%;
+}
+
+.kzc-support-us__offer-title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg, 1.125rem);
+	font-weight: 700;
+	line-height: var(--kzc-line-tight, 1.25);
+	color: var(--color-main-text);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__benefit,
+.kzc-support-us__coverage,
+.kzc-support-us__hint {
+	margin: 0;
+	max-width: 65ch;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: var(--kzc-line-base, 1.45);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__benefit {
+	font-size: var(--kzc-fs-md, 1rem);
+	color: var(--color-main-text);
+}
+
+.kzc-support-us__coverage,
+.kzc-support-us__hint {
+	color: var(--color-text-maxcontrast);
+}
+
+.kzc-support-us__hint a {
+	color: var(--color-main-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.kzc-support-us__secondary {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-width: 0;
+	width: 100%;
+}
+
+.kzc-support-us__secondary-title {
+	margin: 0;
+	font-size: var(--kzc-fs-md, 1rem);
+	font-weight: 600;
+	line-height: var(--kzc-line-tight, 1.25);
+	color: var(--color-main-text);
+}
+
+.kzc-support-us__options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+	gap: var(--kzc-space-4, 1rem);
+	width: 100%;
+	min-width: 0;
+}
+
+.kzc-support-us__option {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: var(--kzc-space-3, 0.75rem);
+	min-width: 0;
+	padding: var(--kzc-space-4, 1rem);
+	border: 1px solid var(--color-border);
+	border-radius: var(--kzc-radius-md, var(--border-radius-large, 12px));
+	background: var(--color-main-background);
+	box-sizing: border-box;
+}
+
+.kzc-support-us__option-title {
+	margin: 0;
+	font-size: var(--kzc-fs-lg, 1.125rem);
+	font-weight: 700;
+	line-height: var(--kzc-line-tight, 1.25);
+	color: var(--color-main-text);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__option-hint {
+	margin: 0;
+	flex: 1 1 auto;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: var(--kzc-line-base, 1.45);
+	color: var(--color-text-maxcontrast);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__cta {
+	/* WCAG 2.5.5: px + !important — NC root is 15px and .azc-btn uses 2.75rem (41.25px). */
+	min-height: 44px !important;
+	min-width: 44px !important;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-inline: var(--kzc-space-4, 1rem);
+	text-align: center;
+	text-decoration: none;
+	box-sizing: border-box;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	max-width: 100%;
+}
+
+.kzc-support-us__cta--primary {
+	min-height: 48px !important;
+}
+
+.kzc-support-us__option .kzc-support-us__cta,
+.kzc-support-us--page .kzc-support-us__primary-actions .kzc-support-us__cta {
+	align-self: stretch;
+	width: 100%;
+}
+
+.kzc-support-us__cta:focus-visible,
+.kzc-support-us__hint a:focus-visible,
+.kzc-support-us__more a:focus-visible,
+.kzc-support-us__contact a:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+.kzc-support-us__cta:focus:not(:focus-visible),
+.kzc-support-us__hint a:focus:not(:focus-visible),
+.kzc-support-us__more a:focus:not(:focus-visible),
+.kzc-support-us__contact a:focus:not(:focus-visible) {
+	outline: none;
+}
+
+.kzc-support-us__tertiary {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-2, 0.5rem);
+	padding-block-start: var(--kzc-space-4, 1rem);
+	border-block-start: 1px solid var(--color-border);
+}
+
+.kzc-support-us__more,
+.kzc-support-us__contact {
+	margin: 0;
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	line-height: var(--kzc-line-base, 1.45);
+	color: var(--color-text-maxcontrast);
+	overflow-wrap: anywhere;
+}
+
+.kzc-support-us__more a,
+.kzc-support-us__contact a {
+	color: var(--color-main-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.kzc-support-us__new-tab {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (max-width: 768.98px) {
+	.kzc-support-us__options {
+		grid-template-columns: 1fr;
+	}
+
+	.kzc-support-us__cta,
+	.kzc-support-us__primary,
+	.kzc-support-us__option {
+		width: 100%;
+		max-width: none;
+	}
+}
+
+@media (prefers-contrast: more) {
+	.kzc-support-us__primary {
+		background: var(--color-main-background);
+		border-color: var(--color-main-text);
+		border-inline-start-width: 4px;
+	}
+
+	.kzc-support-us__option {
+		border-width: 2px;
+		border-color: var(--color-main-text);
+	}
+
+	.kzc-support-us__cta:focus-visible,
+	.kzc-support-us__hint a:focus-visible,
+	.kzc-support-us__more a:focus-visible,
+	.kzc-support-us__contact a:focus-visible {
+		outline-width: 3px;
+	}
+}
+
+@media (forced-colors: active) {
+	.kzc-support-us__primary,
+	.kzc-support-us__option {
+		border: 2px solid CanvasText;
+		background: Canvas;
+	}
+
+	.kzc-support-us__cta:focus-visible,
+	.kzc-support-us__hint a:focus-visible,
+	.kzc-support-us__more a:focus-visible,
+	.kzc-support-us__contact a:focus-visible {
+		outline: 3px solid Highlight;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kzc-support-us__cta,
+	.kzc-support-us__option {
+		transition: none;
+	}
+}
+/* === support-us:kzc end === */
+
+/* ── Staff view components ─────────────────────────────────────────
+ * App-specific components for the staff SPA views. The pack owns chrome,
+ * cards, tables, badges, dialogs, inputs, filter grids, empty states,
+ * icon wells and toasts — the rules below are only what no pack covers.
+ */
+/* SPA mount inside #kzc-main-content (check-shell page-start). */
+.kzc-view{max-width:1200px;margin:0 auto;}
+.kzc-actions{display:flex;gap:var(--kzc-space-2,8px);flex-wrap:wrap;margin-top:var(--kzc-space-3,12px);}
+.kzc-status{min-height:1.4em;font-size:var(--kzc-fs-sm,.875rem);color:var(--color-text-maxcontrast);}
+
+/* Kanban board (tasks). */
+.kzc-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--kzc-space-3,12px);margin-top:var(--kzc-space-4,16px);}
+.kzc-col{background:var(--kzc-bg-soft,color-mix(in srgb,var(--color-main-background) 96%,var(--color-main-text) 4%));border-radius:var(--kzc-radius-md,12px);padding:var(--kzc-space-3,12px);}
+.kzc-col__head{display:flex;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);margin:0 0 var(--kzc-space-2,8px);}
+.kzc-col__head h2{font-size:var(--kzc-fs-md,1rem);margin:0;}
+.kzc-col__empty{margin:var(--kzc-space-2,8px) 0 0;font-size:var(--kzc-fs-sm,.875rem);}
+.kzc-card2{background:var(--kzc-bg-card,var(--color-main-background));border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-sm,8px);padding:10px 12px;margin-bottom:var(--kzc-space-2,8px);}
+.kzc-card2__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-2,8px);}
+.kzc-card2__title{font-weight:600;}
+.kzc-cardmeta{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);align-items:center;}
+
+/* Conversation / record rows — icon well + main + trailing meta/chevron. */
+.kzc-list{display:flex;flex-direction:column;gap:var(--kzc-space-2,8px);}
+.kzc-row{display:flex;align-items:center;gap:var(--kzc-space-3,12px);width:100%;text-align:left;padding:10px 14px;border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-md,10px);background:var(--kzc-bg-card,var(--color-main-background));cursor:pointer;min-height:44px;}
+.kzc-row:hover{background:var(--kzc-bg-hover,var(--color-background-hover));}
+.kzc-row:focus-visible{outline:3px solid color-mix(in srgb,var(--color-primary-element,#0082c9) 60%,transparent);outline-offset:2px;}
+.kzc-row__icon{flex:0 0 auto;}
+.kzc-row__main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.kzc-row__title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kzc-row__sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--kzc-fs-sm,.875rem);}
+.kzc-row__meta{flex:0 0 auto;display:flex;align-items:center;gap:var(--kzc-space-2,8px);}
+.kzc-row__chevron{color:var(--kzc-muted,var(--color-text-maxcontrast));display:inline-flex;}
+/* Legacy flat rows (member/dev lists inside cards) — same surface, block div. */
+.kzc-dev{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:10px 14px;border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-md,10px);background:var(--kzc-bg-card,var(--color-main-background));}
+.kzc-dev__label{flex:1;min-width:0;overflow-wrap:anywhere;display:inline-flex;align-items:center;gap:var(--kzc-space-2,8px);}
+.kzc-dev .kzc-actions{margin-top:0;flex:0 0 auto;}
+
+/* Inline state pills (request/task states — text + colour, never colour-only). */
+.kzc-pill{font-size:var(--kzc-fs-xs,.75rem);padding:2px 8px;border-radius:var(--kzc-radius-pill,10px);background:color-mix(in srgb,var(--color-main-text) 8%,transparent);margin-right:4px;}
+.kzc-pill--overdue,.kzc-pill--urgent{background:var(--kzc-danger-fill,var(--color-element-error));color:var(--kzc-danger-on-fill,var(--color-primary-element-text,#fff));}
+.kzc-pill--high{background:color-mix(in srgb,var(--kzc-danger-fill,var(--color-element-error)) 22%,var(--color-main-background));color:var(--kzc-danger-ink,var(--color-main-text));}
+
+/* Request cards + expandable item rows. */
+.kzc-req__titleline{display:flex;align-items:center;gap:var(--kzc-space-2,8px);flex-wrap:wrap;}
+.kzc-items-detail{margin-top:var(--kzc-space-2,8px);}
+.kzc-itemlist{display:flex;flex-direction:column;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-3,12px);}
+.kzc-itemrow{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-3,12px);padding:10px 12px;border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 10%,transparent));border-radius:var(--kzc-radius-sm,8px);background:var(--kzc-bg-soft,color-mix(in srgb,var(--color-main-background) 96%,var(--color-main-text) 4%));}
+.kzc-itemrow__main{flex:1;min-width:0;}
+.kzc-itemfiles{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-1,4px);}
+.kzc-file{font-size:var(--kzc-fs-sm,.875rem);}
+.kzc-itemact{display:flex;gap:var(--kzc-space-2,8px);flex:0 0 auto;}
+
+/* Initial-setup coach card (details/summary — collapsed state persists). */
+.kzc-coach__summary{cursor:pointer;padding:var(--kzc-space-5,24px);list-style:none;display:flex;align-items:center;gap:var(--kzc-space-2,8px);}
+.kzc-coach__summary::-webkit-details-marker{display:none;}
+.kzc-coach__summary::after{content:'';margin-inline-start:auto;border:solid var(--kzc-muted,var(--color-text-maxcontrast));border-width:0 2px 2px 0;display:inline-block;padding:3px;transform:rotate(45deg);}
+.kzc-coach[open] .kzc-coach__summary::after{transform:rotate(-135deg);}
+.kzc-coach__list{margin:0;padding-inline-start:var(--kzc-space-5,20px);}
+
+/* Key/value detail rows (org detail, form answers). */
+.kzc-kvrow{display:flex;gap:var(--kzc-space-3,12px);padding:6px 0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 8%,transparent));}
+.kzc-kvrow span{min-width:140px;color:var(--color-text-maxcontrast);}
+
+/* Chat thread (US-P07). */
+.kzc-msgs{display:flex;flex-direction:column;gap:var(--kzc-space-2,8px);max-height:50vh;overflow-y:auto;padding:var(--kzc-space-2,8px) 0;}
+.kzc-msg{background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);padding:10px 14px;max-width:75%;align-self:flex-start;}
+.kzc-msg--mine{background:var(--color-primary);color:var(--color-primary-text);align-self:flex-end;}
+.kzc-msg__meta{font-size:var(--kzc-fs-xs,.75rem);opacity:.7;margin-top:4px;}
+.kzc-composer{display:flex;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);max-width:720px;}
+.kzc-composer .kzc-input{flex:1;margin-bottom:0;}
+
+/* Desktop-Sync binding rows (nc-user-binding). */
+.kzc-sync-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:var(--kzc-space-2,8px) 0;border-bottom:1px solid var(--kzc-border,var(--color-border));}
+.kzc-sync-row:last-child{border-bottom:0;}
+
+/* Offboard partial-revoke warning banner (kzc-c3): block-level warn surface
+ * prepended to #kzc-body after a sync_revoke_failed partial offboard. */
+.kzc-warnbar{display:flex;max-width:720px;margin:var(--kzc-space-3,12px) 0;padding:6px 12px;font-size:var(--kzc-fs-sm,.9rem);}
+
+/* Toast close armor — the toast stack mounts on document.body (outside
+ * #app-content.kzc-app), so the pack's .kzc-toast__close rule can lose to
+ * core's button:not(.button-vue) repaint (width / pale fill / border /
+ * padding / margin). Pin every repainted property !important
+ * (overlay_toast_button_armor_gap; donor shape: whistlecheck .wc-toasts). */
+.kzc-toasts button.kzc-toast__close,
+#kzc-toasts button.kzc-toast__close{width:auto !important;margin:0 !important;margin-inline-start:auto !important;padding:8px !important;background:transparent !important;border:0 !important;min-width:44px;min-height:44px;}
+
+@media (max-width:480px){
+	.kzc-kvrow{flex-direction:column;gap:2px;}
+}
+
+/* Settings chip bar (parts/settings-nav.php): sidebar already lists the
+ * sections on desktop — the bar only exists so phones/tablets (<1024px,
+ * collapsed #app-navigation) can still reach sibling settings pages. */
+.kzc-settings-nav{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin:0 0 var(--kzc-space-5,24px);padding:0 0 var(--kzc-space-3,12px);border-bottom:1px solid var(--kzc-border,var(--color-border));}
+@media (min-width:1025px){.kzc-settings-nav{display:none;}}
+.kzc-app .kzc-settings-nav__link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:var(--kzc-space-2,8px) var(--kzc-space-3,12px);border:1px solid var(--kzc-border,var(--color-border));border-radius:var(--kzc-radius-sm,8px);background:var(--color-main-background,#fff);color:var(--color-main-text,#222);text-decoration:none;font-weight:600;font-size:var(--kzc-fs-sm,.875rem);line-height:1.2;white-space:normal;overflow-wrap:anywhere;text-align:center;}
+.kzc-app .kzc-settings-nav__link:hover{border-color:var(--color-primary-element,#0082c9);background:var(--kzc-bg-stripe,var(--color-background-hover));}
+.kzc-app .kzc-settings-nav__link:focus-visible{outline:3px solid color-mix(in srgb,var(--color-primary-element,#0082c9) 60%,transparent);outline-offset:2px;}
+.kzc-app .kzc-settings-nav__link.is-active,
+.kzc-app .kzc-settings-nav__link[aria-current="page"]{border-color:var(--color-primary-element,#0082c9);background:var(--kzc-tint-info,color-mix(in srgb,var(--color-primary-element,#0082c9) 10%,var(--color-main-background,#fff)));font-weight:700;}
+@media (max-width:639.98px){
+	.kzc-settings-nav{flex-direction:column;}
+	.kzc-app .kzc-settings-nav__link{width:100%;justify-content:flex-start;}
 }

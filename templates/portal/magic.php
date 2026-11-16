@@ -1,6 +1,7 @@
 <?php
 /** Magic-link confirm page — GET renders, POST consumes (AF-01). */
 $appId = 'kanzleicheck';
+style($appId, 'common/tokens');
 style($appId, 'app');
 style($appId, 'portal');
 script($appId, 'portal-magic');

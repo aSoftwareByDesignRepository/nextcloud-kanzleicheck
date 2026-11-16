@@ -13,7 +13,7 @@
  *   current   — state-invariant chrome (login, 404, settings)
  *
  * Staff surfaces need an app-admin login (tests/e2e/.env). Staff views are
- * one SPA — `nav` selects .kzc-navbtn[data-v] after boot.
+ * one SPA — `nav` selects the sidebar .kzc-nav__link after boot.
  *
  * Run: npx playwright test e2e/capture-screenshot-matrix.spec.js
  */
@@ -38,11 +38,11 @@ async function visitStaff(page, surface) {
 	// deep-link boot param (same ?view= mechanism notification mails use) —
 	// nav buttons collapse into a menu at mobile widths and can't be clicked.
 	// Dedicated template routes (e.g. /settings/about) go straight to path;
-	// they carry no .kzc-nav, so the chrome wait keys off #kzc-staff-view.
+	// they render inside the shell chrome, so the wait keys off #kzc-main-content.
 	const dedicated = surface.path && surface.path !== '/';
 	const target = dedicated ? surface.path : (surface.nav ? `/?view=${surface.nav}` : '/');
 	await page.goto(`${APP}${target}`, { waitUntil: 'domcontentloaded' });
-	await page.locator(dedicated ? '#kzc-staff-view' : '#kzc-staff-view .kzc-nav')
+	await page.locator(dedicated ? '#kzc-main-content' : '#kzc-staff-view #kzc-body')
 		.waitFor({ state: 'visible', timeout: 20000 });
 	// render-completion proof per surface — a dead view must not be captured
 	// (sleep+shoot let the vOverview fragment crash ship as "populated" PNGs)

@@ -24,7 +24,7 @@ test.describe('settings about', () => {
 		await page.goto(`${APP}/settings/about`, { waitUntil: 'domcontentloaded' });
 
 		// dedicated staff shell — not the SPA, not raw JSON
-		await expect(page.locator('#kzc-staff.kzc-app')).toBeVisible();
+		await expect(page.locator('#app-content.kzc-app')).toBeVisible();
 		const sponsor = page.locator('#kzc-about-sponsor-card');
 		const oss = page.locator('#kzc-about-oss-card');
 		await expect(sponsor).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('settings about', () => {
 		}
 
 		// no raw l10n key leakage — section copy rendered, not msgids
-		const body = await page.locator('#kzc-staff-view').innerText();
+		const body = await page.locator('#kzc-main-content').innerText();
 		expect(body).not.toMatch(/opens in a new tab'\)/);
 		expect(body.length).toBeGreaterThan(200);
 	});

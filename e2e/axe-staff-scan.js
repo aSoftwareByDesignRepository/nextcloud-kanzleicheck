@@ -25,8 +25,8 @@ const VIEWS_VP = [
     if (scheme === 'hc') await p.emulateMedia({ forcedColors: 'active' });
     await login(p, creds());
     for (const v of scheme === 'light' ? VIEWS : scheme === 'hc' ? ['orgs','settings'] : [null]) {
-      await p.goto(`${APP}/${v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
-      await p.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+      await p.goto(`${APP}/${v === 'settings' ? 'settings/general' : v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
+      await p.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
       await p.waitForTimeout(900);
       const r = await new AxeBuilder({ page: p }).withTags(['wcag2a', 'wcag2aa']).analyze();
       console.log(`staff-${v || 'overview'}-${scheme} violations=${r.violations.length} ${JSON.stringify(r.violations.map(x => x.id))}`);
@@ -40,8 +40,8 @@ const VIEWS_VP = [
     const p = await ctx.newPage();
     await login(p, creds());
     for (const v of VIEWS) {
-      await p.goto(`${APP}/${v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
-      await p.locator('#kzc-staff-view .kzc-nav').waitFor({ state: 'visible', timeout: 20000 });
+      await p.goto(`${APP}/${v === 'settings' ? 'settings/general' : v ? `?view=${v}` : ''}`, { waitUntil: 'domcontentloaded' });
+      await p.locator('#kzc-staff-view #kzc-body').waitFor({ state: 'visible', timeout: 20000 });
       await p.waitForTimeout(700);
       const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       console.log(`scroll ${name} staff-${v || 'overview'} overflow=${overflow}px ${overflow > 0 ? 'FAIL' : 'ok'}`);

@@ -1,107 +1,106 @@
 {
- "prefix": "kzc",
- "outDir": "craft/web",
- "viewports": [
-  {
-   "name": "mobile",
-   "width": 320,
-   "height": 800
-  },
-  {
-   "name": "tablet",
-   "width": 768,
-   "height": 800
-  },
-  {
-   "name": "desktop",
-   "width": 1280,
-   "height": 800
-  }
- ],
- "surfaces": [
-  {
-   "id": "portal-login",
-   "path": "/portal/login",
-   "states": [
-    "current"
-   ],
-   "dark": true
-  },
-  {
-   "id": "portal-notfound",
-   "path": "/portal/u/does-not-exist",
-   "states": [
-    "current"
-   ]
-  },
-  {
-   "id": "staff-overview",
-   "path": "/",
-   "staff": true,
-   "states": [
-    "populated"
-   ],
-   "readySelector": "#kzc-body .kzc-list .kzc-row",
-   "dark": true
-  },
-  {
-   "id": "staff-board",
-   "path": "/",
-   "staff": true,
-   "nav": "board",
-   "states": [
-    "populated"
-   ],
-   "readySelector": "#kzc-body .kzc-board"
-  },
-  {
-   "id": "staff-requests",
-   "path": "/",
-   "staff": true,
-   "nav": "requests",
-   "states": [
-    "populated"
-   ],
-   "readySelector": "#kzc-body .kzc-list .kzc-card"
-  },
-  {
-   "id": "staff-orgs",
-   "path": "/",
-   "staff": true,
-   "nav": "orgs",
-   "states": [
-    "populated"
-   ],
-   "readySelector": "#kzc-body .kzc-list .kzc-row"
-  },
-  {
-   "id": "staff-uploads",
-   "path": "/",
-   "staff": true,
-   "nav": "uploads",
-   "states": [
-    "populated"
-   ],
-   "readySelector": "#kzc-body .kzc-list"
-  },
-  {
-   "id": "staff-settings",
-   "path": "/",
-   "staff": true,
-   "nav": "settings",
-   "states": [
-    "current"
-   ],
-   "readySelector": "#kzc-body .kzc-card"
-  },
-  {
-   "id": "staff-settings-about",
-   "path": "/settings/about",
-   "staff": true,
-   "states": [
-    "current"
-   ],
-   "readySelector": "#kzc-about-sponsor-card"
-  }
- ]
+  "prefix": "kzc",
+  "outDir": "craft/web",
+  "viewports": [
+    {
+      "name": "mobile",
+      "width": 320,
+      "height": 800
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 800
+    },
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "portal-login",
+      "path": "/portal/login",
+      "states": [
+        "current"
+      ],
+      "dark": true
+    },
+    {
+      "id": "portal-notfound",
+      "path": "/portal/u/does-not-exist",
+      "states": [
+        "current"
+      ]
+    },
+    {
+      "id": "staff-overview",
+      "path": "/",
+      "staff": true,
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-body .kzc-list .kzc-row",
+      "dark": true
+    },
+    {
+      "id": "staff-board",
+      "path": "/",
+      "staff": true,
+      "nav": "board",
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-body .kzc-board"
+    },
+    {
+      "id": "staff-requests",
+      "path": "/",
+      "staff": true,
+      "nav": "requests",
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-body .kzc-list .kzc-card"
+    },
+    {
+      "id": "staff-orgs",
+      "path": "/",
+      "staff": true,
+      "nav": "orgs",
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-orglist .kzc-row"
+    },
+    {
+      "id": "staff-uploads",
+      "path": "/",
+      "staff": true,
+      "nav": "uploads",
+      "states": [
+        "populated"
+      ],
+      "readySelector": "#kzc-body .kzc-table"
+    },
+    {
+      "id": "staff-settings",
+      "path": "/settings/general",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-settings-pages"
+    },
+    {
+      "id": "staff-settings-about",
+      "path": "/settings/about",
+      "staff": true,
+      "states": [
+        "current"
+      ],
+      "readySelector": "#kzc-about-sponsor-card"
+    }
+  ]
 }

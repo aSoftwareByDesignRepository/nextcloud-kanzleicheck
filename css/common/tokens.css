@@ -1,0 +1,263 @@
+/* Auto-adapted from arbeitszeitcheck/css/common/tokens.css for the Check-family shell. Do not invent divergent layout rules here. */
+/*
+ * KanzleiCheck design tokens (--kzc-*).
+ * Colors derive from Nextcloud theme variables; no raw hex in feature CSS.
+ * Spacing/typography on :root; theme colors on body + themed app surfaces
+ * (NC sets --color-* on body [data-theme-*]).
+ */
+:root {
+	--kzc-space-1: 4px;
+	--kzc-space-2: 8px;
+	--kzc-space-3: 12px;
+	--kzc-space-4: 16px;
+	--kzc-space-5: 24px;
+	--kzc-space-6: 32px;
+	--kzc-space-7: 48px;
+	--kzc-space-8: 64px;
+
+	/* Legacy --space-* aliases used by ported AZC layout/dialog sheets */
+	--space-1: var(--kzc-space-1);
+	--space-2: var(--kzc-space-2);
+	--space-3: var(--kzc-space-3);
+	--space-4: var(--kzc-space-4);
+	--space-5: var(--kzc-space-5);
+	--space-6: var(--kzc-space-6);
+	--space-7: var(--kzc-space-7);
+	--space-8: var(--kzc-space-8);
+	--space-10: 80px;
+	--space-12: 96px;
+
+	/* Radii — design-system scale, bound to NC --border-radius-* when present */
+	--kzc-radius-sm: var(--border-radius, 6px);
+	--kzc-radius-md: var(--border-radius-element, var(--border-radius-large, 12px));
+	--kzc-radius-lg: var(--border-radius-large, 16px);
+	--kzc-radius-pill: var(--border-radius-pill, 999px);
+
+	/* Legacy --radius-* used by ported app-layout / dialogs sheets */
+	--radius-base: var(--kzc-radius-sm);
+	--radius-lg: var(--kzc-radius-md);
+	--radius-xl: var(--kzc-radius-lg);
+	--radius-2xl: var(--kzc-radius-lg);
+	--radius-full: var(--kzc-radius-pill);
+
+	/* Floor 0.875rem (14px) — no type below 14px on mobile (responsive directive) */
+	--kzc-fs-xs: 0.875rem;
+	--kzc-fs-sm: 0.875rem;
+	--kzc-fs-md: 1rem;
+	--kzc-fs-lg: 1.125rem;
+	--kzc-fs-xl: 1.5rem;
+	--kzc-fs-2xl: 1.875rem;
+
+	--kzc-line-tight: 1.2;
+	--kzc-line-base: 1.45;
+
+	--kzc-breakpoint-sm: 480px;
+	--kzc-breakpoint-md: 768px;
+	--kzc-breakpoint-lg: 1024px;
+
+	/* Inline SVG catalogue (IconCatalog / AzcCatalog) */
+	--kzc-icon-sm: 1rem;
+	--kzc-icon-md: 1.125rem;
+	--kzc-icon-lg: 1.375rem;
+	--kzc-icon-well: 2.25rem;
+	--kzc-icon-stroke: 2;
+
+	--kzc-tab-num: tabular-nums;
+	/* Touch targets (WCAG 2.5.5 / design-system) */
+	--kzc-touch: 44px;
+	--kzc-touch-lg: 48px;
+
+	/*
+	 * QR / barcode canvas must stay light for scannability in every theme.
+	 * This is the only intentional non-theme surface in KanzleiCheck feature CSS.
+	 */
+	--kzc-qr-canvas: #ffffff;
+}
+
+/*
+ * Theme-dependent tokens MUST resolve where Nextcloud sets --color-* (body /
+ * [data-theme-*]) and on themed app surfaces. Resolving color-mix only on
+ * :root can fall back to light surfaces while text inherits dark-theme ink.
+ */
+body,
+#content.app-kanzleicheck,
+#app-content.kzc-app,
+.kzc-app,
+.kzc-dialog,
+.kzc-modal,
+.kzc-toast-region,
+.kzc-toasts,
+.kzc-license-modal {
+	/* Fixed overlays (panels, backdrops, mobile nav) sit below NC #header */
+	--kzc-overlay-top: var(--header-height, 50px);
+	--kzc-overlay-height: calc(100dvh - var(--header-height, 50px));
+
+	--kzc-bg-soft: color-mix(in srgb, var(--color-main-background) 96%, var(--color-main-text) 4%);
+	--kzc-bg-card: var(--color-main-background);
+	--kzc-bg-stripe: color-mix(in srgb, var(--color-main-background) 92%, var(--color-main-text) 8%);
+	--kzc-bg-hover: var(--color-background-hover);
+	--kzc-text: var(--color-main-text);
+	--kzc-muted: var(--color-text-maxcontrast);
+	--kzc-border: color-mix(in srgb, var(--color-main-text) 12%, transparent);
+	/* Boundaries of cards/controls/callouts/dialogs need >=3:1 vs the adjacent
+	   surface (WCAG 1.4.11): NC's --color-border-maxcontrast is theme-tuned for
+	   exactly that (dark + high-contrast themes included). The faint 24% mix
+	   measured ~1.3:1 — below the floor in every theme. */
+	--kzc-border-strong: var(--color-border-maxcontrast, color-mix(in srgb, var(--color-main-text) 24%, transparent));
+	/* Interactive controls need >=3:1 (WCAG 1.4.11): maxcontrast is NC's own
+	   input border; --color-border / --kzc-border stay surface-only. */
+	--kzc-form-border: var(--color-border-maxcontrast, var(--kzc-border-strong));
+	/* Filled controls (secondary/ghost/summary buttons): the border sits on a
+	   mid-gray fill, so it must read against BOTH fill and page — maxcontrast
+	   lands ~2.9:1 on the 18%-ink secondary fill. Ink-tuned maxcontrast text
+	   token clears 3:1 against both in every theme. */
+	--kzc-control-border: var(--color-text-maxcontrast, var(--color-border-maxcontrast, var(--kzc-border-strong)));
+
+	/* Primary / focus — track NC accent for custom branding */
+	--kzc-primary: var(--color-primary-element);
+	--kzc-primary-text: var(--color-primary-element-text);
+	/* Accent used as text/icon ink on surfaces: pure --color-primary-element
+	   drops below WCAG AA 4.5:1 on dark themes (~4.3:1); the dark override
+	   below blends it toward main-text. Fills keep --kzc-primary. */
+	--kzc-accent-ink: var(--color-primary-element);
+	--kzc-focus: 3px solid var(--color-primary-element);
+	--kzc-focus-offset: 2px;
+
+	/* Mix with main background — not transparent — so callouts stay visible on all NC themes */
+	--kzc-tint-success: color-mix(in srgb, var(--color-success-text, var(--color-success)) 18%, var(--color-main-background));
+	--kzc-tint-warning: color-mix(in srgb, var(--color-warning-text, var(--color-warning)) 22%, var(--color-main-background));
+	--kzc-tint-danger: color-mix(in srgb, var(--color-error-text, var(--color-error)) 18%, var(--color-main-background));
+	/* Alias used by badges/callouts/toasts — mix into main-bg (never transparent) so dark themes stay visible */
+	--kzc-tint-critical: var(--kzc-tint-danger);
+	--kzc-tint-info: color-mix(in srgb, var(--color-primary-element) 16%, var(--color-main-background));
+
+	/*
+	 * Solid danger CTA fill (design-system §3.3 / WCAG 1.4.3).
+	 * NC 30+ maps --color-error to a pale tint — never put on-fill text on that.
+	 */
+	--kzc-danger-fill: var(--color-element-error, var(--color-error));
+	--kzc-danger-on-fill: var(--color-primary-element-text, var(--color-primary-text));
+	--kzc-danger-ink: var(--color-error-text, var(--color-error));
+
+	/*
+	 * Notification icon wells — pale tint + semantic stroke (see .kzc-page-header__icon).
+	 * NC *-text tokens are tuned per theme for contrast on main-background.
+	 */
+	--kzc-notif-fg-info: var(--color-primary-element);
+	--kzc-notif-fg-warning: var(--color-warning-text, var(--color-warning));
+	--kzc-notif-fg-success: var(--color-success-text, var(--color-success));
+	--kzc-notif-fg-danger: var(--color-error-text, var(--color-error));
+
+	--kzc-shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-main-text) 8%, transparent);
+	--kzc-shadow-md: 0 8px 24px color-mix(in srgb, var(--color-main-text) 12%, transparent);
+	--kzc-shadow-lg: 0 1rem 3rem color-mix(in srgb, var(--color-main-text) 28%, transparent);
+
+	/* Overlay scrims — theme ink, never hardcoded #000 */
+	--kzc-scrim: color-mix(in srgb, var(--color-main-text) 45%, transparent);
+	--kzc-scrim-strong: color-mix(in srgb, var(--color-main-text) 55%, transparent);
+
+	/*
+	 * Legacy --kanzleicheck-* aliases (shell dialogs / app-layout ported from AZC).
+	 * Feature CSS should prefer --kzc-*; every alias maps to NC/--kzc-* so
+	 * undefined custom properties never blank out surfaces in any theme.
+	 */
+	--kanzleicheck-color-modal-background: var(--kzc-bg-card);
+	--kanzleicheck-color-modal-border: var(--kzc-border);
+	--kanzleicheck-color-modal-footer-background: var(--kzc-bg-soft);
+	--kanzleicheck-color-background: var(--color-main-background);
+	--kanzleicheck-color-background-elevated: var(--kzc-bg-card);
+	--kanzleicheck-color-background-secondary: var(--kzc-bg-soft);
+	--kanzleicheck-color-background-tertiary: var(--kzc-bg-soft);
+	--kanzleicheck-color-text: var(--kzc-text);
+	--kanzleicheck-color-text-muted: var(--kzc-muted);
+	--kanzleicheck-color-text-maxcontrast: var(--kzc-muted);
+	--kanzleicheck-color-text-secondary: var(--kzc-muted);
+	--kanzleicheck-color-text-tertiary: var(--kzc-muted);
+	--kanzleicheck-color-primary: var(--color-primary-element);
+	--kanzleicheck-color-primary-element: var(--color-primary-element);
+	--kanzleicheck-color-primary-light: color-mix(in srgb, var(--color-primary-element) 28%, transparent);
+	--kanzleicheck-color-border: var(--kzc-border);
+	--kanzleicheck-color-border-focus: var(--color-primary-element);
+	--kanzleicheck-color-border-warning: var(--color-warning-text, var(--color-warning));
+	--kanzleicheck-color-error: var(--kzc-danger-ink);
+	--kanzleicheck-color-error-light: color-mix(in srgb, var(--kzc-danger-ink) 28%, transparent);
+	--kanzleicheck-color-success-light: color-mix(in srgb, var(--color-success-text, var(--color-success)) 28%, transparent);
+	--kanzleicheck-color-warning-light: color-mix(in srgb, var(--color-warning-text, var(--color-warning)) 28%, transparent);
+	--kanzleicheck-color-form-required: var(--kzc-danger-ink);
+	--kanzleicheck-color-form-label: var(--kzc-text);
+	--kanzleicheck-color-form-background: var(--color-main-background);
+	--kanzleicheck-color-form-border: var(--color-border-maxcontrast, var(--kzc-border-strong));
+	--kanzleicheck-color-form-border-focus: var(--color-primary-element);
+	--kanzleicheck-color-form-border-error: var(--kzc-danger-ink);
+	--kanzleicheck-color-form-border-success: var(--color-success-text, var(--color-success));
+	--kanzleicheck-color-table-border: var(--kzc-border);
+	--kanzleicheck-color-table-header-background: var(--color-background-dark, var(--kzc-bg-stripe));
+	--kanzleicheck-font-family-sans: var(--font-face, inherit);
+	--kanzleicheck-font-size-sm: var(--kzc-fs-sm);
+	--kanzleicheck-font-size-base: var(--kzc-fs-md);
+	--kanzleicheck-font-size-lg: var(--kzc-fs-lg);
+	--kanzleicheck-font-size-xl: var(--kzc-fs-xl);
+	--kanzleicheck-font-size-3xl: var(--kzc-fs-2xl);
+	--kanzleicheck-font-weight-medium: 500;
+	--kanzleicheck-font-weight-semibold: 600;
+	--kanzleicheck-font-weight-bold: 700;
+	--kanzleicheck-letter-spacing-tight: -0.02em;
+	--kanzleicheck-line-height-tight: var(--kzc-line-tight);
+	--kanzleicheck-line-height-normal: var(--kzc-line-base);
+	--kanzleicheck-line-height-relaxed: 1.6;
+}
+
+/* Bright accent fills on dark themes fail AA with white ink — darken fill + use main-text. */
+body[data-theme-dark],
+body[data-theme-dark-highcontrast],
+body[data-theme-dark] #content.app-kanzleicheck,
+body[data-theme-dark-highcontrast] #content.app-kanzleicheck {
+	--kzc-danger-fill: color-mix(
+		in srgb,
+		var(--color-element-error, var(--color-error)) 40%,
+		var(--color-main-background)
+	);
+	--kzc-danger-on-fill: var(--color-main-text);
+	--kzc-accent-ink: color-mix(in srgb, var(--color-primary-element) 70%, var(--color-main-text));
+}
+
+/* NC high-contrast themes: stronger borders / shadows for 3:1 UI chrome */
+body[data-theme-light-highcontrast],
+body[data-theme-dark-highcontrast],
+body[data-theme-light-highcontrast] #content.app-kanzleicheck,
+body[data-theme-dark-highcontrast] #content.app-kanzleicheck {
+	--kzc-border: color-mix(in srgb, var(--color-main-text) 32%, transparent);
+	/* HC themes push --color-border-maxcontrast to near-ink — keep it first so
+	   boundary chrome stays >=3:1 against HC surfaces. */
+	--kzc-border-strong: var(--color-border-maxcontrast, color-mix(in srgb, var(--color-main-text) 48%, transparent));
+	--kzc-shadow-sm: 0 0 0 1px var(--kzc-border-strong);
+	--kzc-shadow-md: 0 0 0 2px var(--kzc-border-strong);
+	--kanzleicheck-color-border: var(--kzc-border);
+	--kanzleicheck-color-modal-border: var(--kzc-border);
+}
+
+@media (prefers-contrast: more) {
+	:root {
+		--kzc-icon-stroke: 2.25;
+	}
+
+	body,
+	#content.app-kanzleicheck,
+	#app-content.kzc-app,
+	.kzc-app,
+	.kzc-dialog,
+	.kzc-modal,
+	.kzc-toast-region,
+	.kzc-toasts,
+	.kzc-license-modal {
+		--kzc-border: color-mix(in srgb, var(--color-main-text) 28%, transparent);
+		--kzc-border-strong: var(--color-border-maxcontrast, color-mix(in srgb, var(--color-main-text) 40%, transparent));
+		--kzc-shadow-sm: 0 0 0 1px var(--kzc-border-strong);
+		--kzc-shadow-md: 0 0 0 1px var(--kzc-border-strong);
+	}
+}
+
+/* Alias for dead-name ref (literal fallback masked it). */
+body {
+	--kzc-bg: var(--kzc-bg-card);
+}

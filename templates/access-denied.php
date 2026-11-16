@@ -11,6 +11,7 @@ $title = (string)($_['title'] ?? $l->t('Access denied'));
 $message = (string)($_['message'] ?? $l->t('You do not have access to KanzleiCheck.'));
 $hint = (string)($_['hint'] ?? '');
 $homeUrl = (string)($_['homeUrl'] ?? '/');
+style($appId, 'common/tokens');
 style($appId, 'app');
 style($appId, 'portal');
 ?>

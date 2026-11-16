@@ -1,0 +1,156 @@
+/**
+ * Accessible switch (checkbox + visual track) — design-system / AZC parity.
+ * Selectors use #content.app-kanzleicheck #app-content so they beat form-controls
+ * checkbox sizing (2 IDs) and .kzc-form label display:block.
+ */
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field,
+.kzc-nc-admin-settings .kzc-switch-field {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--kzc-space-3, 0.75rem);
+	margin: var(--kzc-space-3) 0;
+	position: relative;
+	list-style: none;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input,
+.kzc-nc-admin-settings .kzc-switch-field__input {
+	/* The native input is visually replaced by the track, so its geometry
+	   must cover the whole control — not a 1px dot at the corner. AT and
+	   geometry checks (atlas-ui-invariants label-band rule) then see the
+	   real control bounds; clip/opacity keep it invisible, pointer-events
+	   stays off so the label owns all interaction. */
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	min-width: 0;
+	min-height: 0;
+	max-width: none;
+	max-height: none;
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+	opacity: 0;
+	appearance: none;
+	-webkit-appearance: none;
+	background: transparent;
+	pointer-events: none;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:focus-visible + .kzc-switch-field__label .kzc-switch-field__track,
+.kzc-nc-admin-settings .kzc-switch-field__input:focus-visible + .kzc-switch-field__label .kzc-switch-field__track {
+	outline: 3px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__label,
+.kzc-nc-admin-settings .kzc-switch-field__label {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3, 0.75rem);
+	cursor: pointer;
+	margin: 0;
+	margin-bottom: 0;
+	min-height: var(--kzc-touch, 44px);
+	flex: 1;
+	min-width: 0;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
+.kzc-nc-admin-settings .kzc-switch-field__track {
+	display: inline-block;
+	position: relative;
+	flex: 0 0 3rem;
+	flex-shrink: 0;
+	box-sizing: border-box;
+	width: 3rem;
+	height: 1.625rem;
+	border-radius: var(--kzc-radius-pill, 999px);
+	background: var(--color-background-darker, var(--color-background-dark));
+	border: 1px solid var(--kzc-border-strong, var(--color-border));
+	transition: background 0.15s ease, border-color 0.15s ease;
+	vertical-align: middle;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+.kzc-nc-admin-settings .kzc-switch-field__track::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	inset-inline-start: 2px;
+	width: 1.25rem;
+	height: 1.25rem;
+	border-radius: 50%;
+	background: var(--color-main-background);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--color-main-text) 25%, transparent);
+	transition: transform 0.15s ease;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
+.kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track {
+	background: var(--color-primary-element);
+	border-color: var(--color-primary-element);
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track::after,
+.kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track::after {
+	transform: translateX(1.375rem);
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:disabled + .kzc-switch-field__label,
+.kzc-nc-admin-settings .kzc-switch-field__input:disabled + .kzc-switch-field__label {
+	cursor: not-allowed;
+	opacity: 0.72;
+}
+
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__text,
+.kzc-nc-admin-settings .kzc-switch-field__text {
+	font-size: var(--kzc-fs-md, 1rem);
+	font-weight: 600;
+	color: var(--color-main-text, var(--kzc-text));
+	line-height: var(--kzc-line-base, 1.45);
+}
+
+/* Helper line under the switch label — DESIGN-SYSTEM §3.6.6 canonical
+   markup (`__text` wraps the title text + a `__hint` child). Block + own
+   top margin or the hint renders inline-jammed against the title. */
+#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__hint,
+.kzc-nc-admin-settings .kzc-switch-field__hint {
+	display: block;
+	margin-block-start: var(--kzc-space-1, 0.25rem);
+	font-size: var(--kzc-fs-sm, 0.875rem);
+	font-weight: 400;
+	color: var(--kzc-muted, var(--color-text-maxcontrast));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
+	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+	.kzc-nc-admin-settings .kzc-switch-field__track,
+	.kzc-nc-admin-settings .kzc-switch-field__track::after {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
+	.kzc-nc-admin-settings .kzc-switch-field__track {
+		border: 2px solid CanvasText;
+	}
+	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
+	.kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track {
+		background: Highlight;
+		border-color: Highlight;
+	}
+	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+	.kzc-nc-admin-settings .kzc-switch-field__track::after {
+		background: Canvas;
+	}
+}

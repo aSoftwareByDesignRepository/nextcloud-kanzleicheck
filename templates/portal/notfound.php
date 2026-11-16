@@ -1,5 +1,6 @@
 <?php
 $appId = 'kanzleicheck';
+style($appId, 'common/tokens');
 style($appId, 'app');
 style($appId, 'portal');
 ?>

@@ -1,0 +1,231 @@
+/**
+ * KanzleiCheck sidebar — SnackCheck/DeskCheck family chrome (brand + icon rows).
+ *
+ * Responsive: desktop (≥1024) sticky sidebar here. Phone/tablet drawer is
+ * owned by css/common/mobile-nav.css + js/common/mobile-nav.js (in-page Menu;
+ * #content overflow:hidden clips core #app-navigation-toggle — AZC#33).
+ */
+
+/* Base chrome (all viewports). Width/position for the in-flow desktop shell
+ * are applied at min-width: 1024px; mobile drawer rules live in mobile-nav.css. */
+#content.app-kanzleicheck > #app-navigation.kzc-nav,
+#app-navigation.kzc-nav {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	min-height: 0;
+	max-height: none;
+	background: var(--kzc-bg-card, var(--color-main-background));
+	border-inline-end: 1px solid var(--kzc-border);
+	overflow: hidden;
+	box-sizing: border-box;
+	z-index: 100;
+}
+
+/* ≥1024px: restore sticky sidebar in the grid track (NC desktop layout) */
+@media (min-width: 1024px) {
+	#content.app-kanzleicheck > #app-navigation.kzc-nav,
+	#app-navigation.kzc-nav {
+		position: relative !important;
+		transform: none !important;
+		flex: 0 0 var(--kzc-nav-width, 280px);
+		width: var(--kzc-nav-width, 280px);
+		min-width: var(--kzc-nav-width, 280px);
+		max-width: var(--kzc-nav-width, 280px);
+		height: 100%;
+		overflow: hidden;
+	}
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand {
+	display: flex;
+	align-items: center;
+	gap: var(--kzc-space-3);
+	padding: var(--kzc-space-4);
+	border-bottom: 1px solid var(--kzc-border);
+	flex-shrink: 0;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--kzc-touch, 44px);
+	height: var(--kzc-touch, 44px);
+	border-radius: var(--kzc-radius-md);
+	background: var(--kzc-tint-info);
+	color: var(--kzc-primary, var(--color-primary-element));
+	flex-shrink: 0;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__icon-svg,
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__icon .kzc-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+	display: block;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__text {
+	min-width: 0;
+	display: grid;
+	gap: var(--kzc-space-1);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__title {
+	margin: 0;
+	font-size: var(--kzc-fs-md);
+	font-weight: 700;
+	line-height: var(--kzc-line-tight);
+	color: var(--kzc-text, var(--color-main-text));
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand__subtitle {
+	margin: 0;
+	color: var(--kzc-muted);
+	font-size: var(--kzc-fs-xs);
+	line-height: var(--kzc-line-base);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-brand .kzc-badge {
+	justify-self: start;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__group {
+	padding: 0 var(--kzc-space-2);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__divider {
+	border: 0;
+	border-top: 1px solid var(--kzc-border);
+	margin: var(--kzc-space-2) var(--kzc-space-2);
+}
+
+/* group + divider adjacency already draws the separator — avoid double lines */
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__divider + .kzc-nav__group,
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__divider:first-child {
+	margin-top: 0;
+	border-top: 0;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__group + .kzc-nav__group {
+	margin-top: var(--kzc-space-2);
+	padding-top: var(--kzc-space-2);
+	border-top: 1px solid var(--kzc-border);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__group-label {
+	margin: var(--kzc-space-2) var(--kzc-space-2) var(--kzc-space-1);
+	font-size: var(--kzc-fs-xs);
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--kzc-muted);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kzc-space-1);
+	list-style: none;
+	margin: 0;
+	padding: var(--kzc-space-1) var(--kzc-space-2) var(--kzc-space-2);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__item {
+	min-width: 0;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link {
+	display: grid;
+	grid-template-columns: 1.5rem minmax(0, 1fr);
+	gap: var(--kzc-space-2);
+	align-items: center;
+	min-height: var(--kzc-touch-lg, 48px);
+	padding: var(--kzc-space-2) var(--kzc-space-3);
+	border-radius: var(--kzc-radius-sm);
+	text-decoration: none;
+	color: var(--kzc-text, var(--color-main-text));
+	box-sizing: border-box;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link:hover {
+	background: var(--kzc-bg-soft, var(--color-background-hover));
+	text-decoration: none;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link.is-active,
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__item.is-active .kzc-nav__link {
+	background: var(--kzc-tint-info);
+	color: var(--kzc-text, var(--color-main-text));
+	font-weight: 700;
+	box-shadow: inset 3px 0 0 var(--kzc-primary, var(--color-primary-element));
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link:focus-visible {
+	outline: var(--kzc-focus, 3px solid var(--color-primary-element));
+	outline-offset: var(--kzc-focus-offset, 2px);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	color: inherit;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__icon .kzc-icon {
+	width: 1.25rem;
+	height: 1.25rem;
+	display: block;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__label {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	min-width: 0;
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__name {
+	display: block;
+	font-size: var(--kzc-fs-md);
+	line-height: var(--kzc-line-tight);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__hint {
+	display: block;
+	font-size: var(--kzc-fs-xs);
+	color: var(--kzc-muted);
+	font-weight: 400;
+	line-height: var(--kzc-line-base);
+}
+
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__item.is-active .kzc-nav__hint,
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link.is-active .kzc-nav__hint {
+	color: var(--kzc-text, var(--color-main-text));
+	font-weight: 500;
+}
+
+/* Help footer sticks under scrollable body */
+#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav-footer {
+	flex-shrink: 0;
+	margin-top: auto;
+	border-top: 1px solid var(--kzc-border);
+}
+
+@media (forced-colors: active) {
+	#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__link.is-active,
+	#content.app-kanzleicheck #app-navigation.kzc-nav .kzc-nav__item.is-active .kzc-nav__link {
+		outline: 2px solid CanvasText;
+		box-shadow: none;
+	}
+}
