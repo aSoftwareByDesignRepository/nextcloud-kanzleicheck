@@ -191,7 +191,7 @@ OC.L10N.register(
 	"KanzleiCheck was developed in close cooperation with its first sponsor — Steuerberater Martin Eimer (Bad Soden am Taunus). His requirements and feedback from everyday tax-office practice shaped this product." : "KanzleiCheck is ontwikkeld in nauwe samenwerking met zijn eerste sponsor — belastingadviseur Martin Eimer (Bad Soden am Taunus). Zijn eisen en feedback uit de dagelijkse praktijk van het belastingadvieskantoor hebben dit product vormgegeven.",
 	"kept as-is" : "ongewijzigd behouden",
 	"KZC2 key" : "KZC2-sleutel",
-	"Label" : "Label",
+	"Label" : "Etiket",
 	"Last transfer" : "Laatste transfer",
 	"License" : "Licentie",
 	"License text" : "Licentietekst",
