@@ -99,23 +99,23 @@
 		toastEl.setAttribute('role', k === 'error' ? 'alert' : 'status');
 		toastEl.setAttribute('data-kzc-toast-key', dedupKey);
 		toastEl._ptlToastKey = dedupKey;
-		const content = document.createElement('span');
-		content.className = 'kzc-toast__content';
 		const msgText = document.createElement('span');
 		msgText.className = 'kzc-toast__text';
 		msgText.textContent = String(text);
-		content.appendChild(msgText);
+		toastEl.appendChild(msgText);
 		if (k === 'error') {
 			// §13 family contract: error toasts offer a "Report this
-			// problem" mailto when the shared feedback pack is loaded.
+			// problem" mailto when the shared feedback pack is loaded —
+			// canonical .kzc-toast__feedback styling, flex gap separates it
+			// from the message (same anatomy as js/common/toasts.js).
 			try {
 				const feedback = window.SbdAppFeedback;
 				if (feedback && typeof feedback.buildMailto === 'function') {
 					const link = document.createElement('a');
-					link.className = 'kzc-toast__link';
+					link.className = 'kzc-toast__feedback';
 					link.href = feedback.buildMailto('problem', {});
 					link.textContent = t('Report this problem');
-					content.appendChild(link);
+					toastEl.appendChild(link);
 				}
 			} catch (e) { /* never break the toast */ }
 		}
@@ -125,7 +125,6 @@
 		close.setAttribute('aria-label', t('Dismiss'));
 		close.textContent = '✕';
 		close.addEventListener('click', () => toastEl.remove());
-		toastEl.appendChild(content);
 		toastEl.appendChild(close);
 		container.appendChild(toastEl);
 		toastEl._ptlDismissTimer = window.setTimeout(() => {

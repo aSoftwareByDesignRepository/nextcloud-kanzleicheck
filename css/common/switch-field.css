@@ -3,7 +3,7 @@
  * Selectors use #content.app-kanzleicheck #app-content so they beat form-controls
  * checkbox sizing (2 IDs) and .kzc-form label display:block.
  */
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field,
 .kzc-nc-admin-settings .kzc-switch-field {
 	display: flex;
 	align-items: flex-start;
@@ -13,7 +13,7 @@
 	list-style: none;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input,
 .kzc-nc-admin-settings .kzc-switch-field__input {
 	/* The native input is visually replaced by the track, so its geometry
 	   must cover the whole control — not a 1px dot at the corner. AT and
@@ -42,13 +42,13 @@
 	pointer-events: none;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:focus-visible + .kzc-switch-field__label .kzc-switch-field__track,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input:focus-visible + .kzc-switch-field__label .kzc-switch-field__track,
 .kzc-nc-admin-settings .kzc-switch-field__input:focus-visible + .kzc-switch-field__label .kzc-switch-field__track {
 	outline: 3px solid var(--color-primary-element);
 	outline-offset: 2px;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__label,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__label,
 .kzc-nc-admin-settings .kzc-switch-field__label {
 	display: flex;
 	align-items: center;
@@ -63,7 +63,7 @@
 	font-weight: inherit;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track,
 .kzc-nc-admin-settings .kzc-switch-field__track {
 	display: inline-block;
 	position: relative;
@@ -79,7 +79,7 @@
 	vertical-align: middle;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track::after,
 .kzc-nc-admin-settings .kzc-switch-field__track::after {
 	content: '';
 	position: absolute;
@@ -93,24 +93,24 @@
 	transition: transform 0.15s ease;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
 .kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track {
 	background: var(--color-primary-element);
 	border-color: var(--color-primary-element);
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track::after,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track::after,
 .kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track::after {
 	transform: translateX(1.375rem);
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:disabled + .kzc-switch-field__label,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input:disabled + .kzc-switch-field__label,
 .kzc-nc-admin-settings .kzc-switch-field__input:disabled + .kzc-switch-field__label {
 	cursor: not-allowed;
 	opacity: 0.72;
 }
 
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__text,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__text,
 .kzc-nc-admin-settings .kzc-switch-field__text {
 	font-size: var(--kzc-fs-md, 1rem);
 	font-weight: 600;
@@ -121,7 +121,7 @@
 /* Helper line under the switch label — DESIGN-SYSTEM §3.6.6 canonical
    markup (`__text` wraps the title text + a `__hint` child). Block + own
    top margin or the hint renders inline-jammed against the title. */
-#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__hint,
+:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__hint,
 .kzc-nc-admin-settings .kzc-switch-field__hint {
 	display: block;
 	margin-block-start: var(--kzc-space-1, 0.25rem);
@@ -131,8 +131,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
-	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+	:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track,
+	:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track::after,
 	.kzc-nc-admin-settings .kzc-switch-field__track,
 	.kzc-nc-admin-settings .kzc-switch-field__track::after {
 		transition: none;
@@ -140,16 +140,16 @@
 }
 
 @media (forced-colors: active) {
-	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track,
+	:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track,
 	.kzc-nc-admin-settings .kzc-switch-field__track {
 		border: 2px solid CanvasText;
 	}
-	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
+	:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track,
 	.kzc-nc-admin-settings .kzc-switch-field__input:checked + .kzc-switch-field__label .kzc-switch-field__track {
 		background: Highlight;
 		border-color: Highlight;
 	}
-	#content.app-kanzleicheck #app-content.kzc-app .kzc-switch-field__track::after,
+	:is(#content.app-kanzleicheck #app-content.kzc-app, .kzc-dialog) .kzc-switch-field__track::after,
 	.kzc-nc-admin-settings .kzc-switch-field__track::after {
 		background: Canvas;
 	}

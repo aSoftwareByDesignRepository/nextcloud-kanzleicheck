@@ -2,7 +2,7 @@
  * KanzleiCheck badges — SnackCheck/AZC info pill + leading cue (WCAG 1.4.1).
  */
 #content.app-kanzleicheck .kzc-badge,
-#app-content.kzc-app .kzc-badge {
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-badge {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--kzc-space-1, 4px);
@@ -32,13 +32,13 @@
 }
 
 #content.app-kanzleicheck .kzc-badge--neutral,
-#app-content.kzc-app .kzc-badge--neutral {
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-badge--neutral {
 	background: var(--kzc-tint-info);
 	color: var(--kzc-text, var(--color-main-text));
 }
 
 #content.app-kanzleicheck .kzc-badge__dot,
-#app-content.kzc-app .kzc-badge__dot {
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-badge__dot {
 	width: 0.5rem;
 	height: 0.5rem;
 	border-radius: 50%;

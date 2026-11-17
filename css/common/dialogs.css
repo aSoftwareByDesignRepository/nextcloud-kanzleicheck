@@ -367,7 +367,7 @@ dialog.kzc-dialog[open] {
 }
 
 /* Legend for required markers — keep inside form header/meta rows */
-#app-content.kzc-app .form-required-note {
+:is(#app-content.kzc-app, .kzc-dialog) .form-required-note {
   margin: 0;
   font-size: var(--kzc-fs-sm, 0.875rem);
   line-height: var(--kzc-line-base, 1.45);

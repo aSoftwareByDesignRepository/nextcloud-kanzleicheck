@@ -2,14 +2,14 @@
    (CheckFieldErrors.markValidationFields) from the server's localized
    `fields` map (WCAG 3.3.1/3.3.3). Synced from
    apps/_shared/field-errors/field-errors.css — kzc = app prefix. */
-#app-content.kzc-app .kzc-input[aria-invalid="true"],
-#app-content.kzc-app input[aria-invalid="true"],
-#app-content.kzc-app select[aria-invalid="true"],
-#app-content.kzc-app textarea[aria-invalid="true"] {
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-input[aria-invalid="true"],
+:is(#app-content.kzc-app, .kzc-dialog) input[aria-invalid="true"],
+:is(#app-content.kzc-app, .kzc-dialog) select[aria-invalid="true"],
+:is(#app-content.kzc-app, .kzc-dialog) textarea[aria-invalid="true"] {
 	border-color: var(--color-error-text, var(--kzc-danger-ink, var(--color-error)));
 	box-shadow: 0 0 0 1px var(--color-error-text, var(--kzc-danger-ink, var(--color-error)));
 }
-#app-content.kzc-app .kzc-field-error {
+:is(#app-content.kzc-app, .kzc-dialog) .kzc-field-error {
 	margin: 0.25rem 0 0;
 	font-size: 0.875rem;
 	font-weight: 600;
