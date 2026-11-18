@@ -622,6 +622,14 @@ OC.L10N.register(
 	"Your answers save automatically." : "Ihre Antworten werden automatisch gespeichert.",
 	"Your contact person" : "Ihr Ansprechpartner",
 	"Your provider" : "Ihr Anbieter",
-	"Your sign-in is linked to more than one organisation." : "Ihre Anmeldung ist mit mehr als einer Organisation verknüpft."
+	"Your sign-in is linked to more than one organisation." : "Ihre Anmeldung ist mit mehr als einer Organisation verknüpft.",
+	"1 setting" : "1 Einstellung",
+	"%n settings" : "%n Einstellungen",
+	"1 row" : "1 Zeile",
+	"%n rows" : "%n Zeilen",
+	"_1 row_::_%n rows_" : ["1 Zeile","%n Zeilen"],
+	"_1 setting_::_%n settings_" : ["1 Einstellung","%n Einstellungen"],
+	"This will update %1$s and %2$s — nothing is deleted." : "Dies aktualisiert %1$s und %2$s — nichts wird gelöscht.",
+	"Import applied. %1$s and %2$s written." : "Import angewendet. %1$s und %2$s geschrieben."
 	}
 );
