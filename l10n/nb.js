@@ -256,7 +256,7 @@ OC.L10N.register(
 	"Industry (preset)" : "Bransje (forhåndsvalg)",
 	"Initial setup" : "Første oppsett",
 	"Instance-bound columns left empty" : "Instansbundne kolonner står tomme",
-	"Intake" : "Intake",
+	"Intake" : "Inntak",
 	"Intake address local part" : "Lokal del av inntaksadressen",
 	"Intake domain" : "Inntaksdomene",
 	"Invalid code" : "Ugyldig kode",

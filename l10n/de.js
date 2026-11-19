@@ -256,7 +256,7 @@ OC.L10N.register(
 	"Industry (preset)" : "Branche (Preset)",
 	"Initial setup" : "Ersteinrichtung",
 	"Instance-bound columns left empty" : "Instanzgebundene Spalten bleiben leer",
-	"Intake" : "Intake",
+	"Intake" : "Eingang",
 	"Intake address local part" : "Lokaler Teil der Eingangsadresse",
 	"Intake domain" : "Eingangs-Domain",
 	"Invalid code" : "Code ungültig",

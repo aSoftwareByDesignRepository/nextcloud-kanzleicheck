@@ -256,7 +256,7 @@ OC.L10N.register(
 	"Industry (preset)" : "Setor (predefinição)",
 	"Initial setup" : "Configuração inicial",
 	"Instance-bound columns left empty" : "Colunas ligadas à instância deixadas vazias",
-	"Intake" : "Intake",
+	"Intake" : "Entrada",
 	"Intake address local part" : "Parte local do endereço de entrada",
 	"Intake domain" : "Domínio de entrada",
 	"Invalid code" : "Código inválido",
