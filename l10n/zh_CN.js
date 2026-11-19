@@ -503,7 +503,7 @@ OC.L10N.register(
 	"Settings pages" : "设置页面",
 	"Setup & training" : "部署与培训",
 	"SHA-256" : "SHA-256",
-	"Shared with you" : "与你共享",
+	"Shared with you" : "与您共享",
 	"Show" : "显示",
 	"Sign in" : "登录",
 	"Sign out" : "退出登录",
