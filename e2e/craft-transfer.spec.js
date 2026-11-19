@@ -189,9 +189,17 @@ test.describe('craft transfer', () => {
 			}
 			expect(receipt.result).toBe('applied');
 
-			// page reloads itself on done — settle, then capture post-apply state
-			await page.waitForLoadState('domcontentloaded');
-			await expect(page.locator('#kzc-transfer-last')).toBeVisible({ timeout: 20000 });
+			// The page's own 1.5s status poll defers location.reload() 2.5s
+			// after done — waitForLoadState alone races it and shoots the
+			// pre-reload DOM (stale progress dialog + old receipt). Wait for
+			// the receipt row to carry THIS apply's `at` stamp instead; only
+			// the reloaded DOM renders it (byte-identical craft defect).
+			await expect(page.locator('#kzc-transfer-last'))
+				.toContainText(String(receipt.at), { timeout: 30000 });
+			// …and the receipt sits inside the import card below the 800px
+			// fold — scroll it in-frame or the shot repaints the pre-apply
+			// export card and fakes "after apply".
+			await page.locator('#kzc-transfer-last').scrollIntoViewIfNeeded();
 			await page.waitForTimeout(600);
 			await shot(page, 'kzc-staff-transfer-after-apply-light-1280');
 		} finally {
