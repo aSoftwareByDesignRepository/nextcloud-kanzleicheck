@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n rows",
+	"%n settings" : "%n settings",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:",
 	"(archived)" : "(archived)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Upload link",
 	"1 approval is waiting" : "1 approval is waiting",
 	"1 request is overdue" : "1 request is overdue",
+	"1 row" : "1 row",
+	"1 setting" : "1 setting",
 	"6-digit code" : "6-digit code",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 env-bound value emptied)","(%n env-bound values emptied)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtered)","(%n filtered)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 reference unresolved — see the groups below.","%n references unresolved — see the groups below."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 row needs a value on this instance","%n rows need a value on this instance"],
 	"_1 row skipped._::_%n rows skipped._" : ["1 row skipped.","%n rows skipped."],
+	"_1 row_::_%n rows_" : ["1 row","%n rows"],
+	"_1 setting_::_%n settings_" : ["1 setting","%n settings"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again.","Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Warning: 1 row will be permanently deleted, then the file data is loaded.","Warning: %n rows will be permanently deleted, then the file data is loaded."],
 	"A pre-flight check failed — see the report for details." : "A pre-flight check failed — see the report for details.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP host",
 	"IMAP password (leave empty to keep)" : "IMAP password (leave empty to keep)",
 	"IMAP user" : "IMAP user",
+	"Import applied. %1$s and %2$s written." : "Import applied. %1$s and %2$s written.",
 	"Import applied. %d settings and %d rows written." : "Import applied. %d settings and %d rows written.",
 	"Import clients" : "Import clients",
 	"Import configuration" : "Import configuration",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "This person is linked to Nextcloud account",
 	"This portal needs JavaScript." : "This portal needs JavaScript.",
 	"This view needs JavaScript." : "This view needs JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "This will update %1$s and %2$s — nothing is deleted.",
 	"This will update %d settings and %d rows — nothing is deleted." : "This will update %d settings and %d rows — nothing is deleted.",
 	"Timezone" : "Timezone",
 	"Title" : "Title",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Your answers save automatically.",
 	"Your contact person" : "Your contact person",
 	"Your provider" : "Your provider",
-	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation.",
-	"1 setting" : "1 setting",
-	"%n settings" : "%n settings",
-	"1 row" : "1 row",
-	"%n rows" : "%n rows",
-	"_1 row_::_%n rows_" : ["1 row","%n rows"],
-	"_1 setting_::_%n settings_" : ["1 setting","%n settings"],
-	"This will update %1$s and %2$s — nothing is deleted." : "This will update %1$s and %2$s — nothing is deleted.",
-	"Import applied. %1$s and %2$s written." : "Import applied. %1$s and %2$s written."
+	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation."
 	}
 );
