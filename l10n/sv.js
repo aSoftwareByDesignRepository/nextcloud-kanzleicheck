@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n rader",
+	"%n settings" : "%n inställningar",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s förblir gratis (AGPL) på Nextcloud. Felrapporter och idéer på GitHub är välkomna — det är gratis open source-stöd. Om organisationen behöver fakturerbar hjälp — eller officiella mobila licenser — välj ett alternativ nedan:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s förblir gratis (AGPL) på Nextcloud. Felrapporter och idéer på GitHub är välkomna — det är gratis open source-stöd. Om organisationen behöver fakturerbar hjälp, välj ett alternativ nedan:",
 	"(archived)" : "(arkiverad)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Uppladdningslänk",
 	"1 approval is waiting" : "1 godkännande väntar",
 	"1 request is overdue" : "1 begäran är försenad",
+	"1 row" : "1 rad",
+	"1 setting" : "1 inställning",
 	"6-digit code" : "6-siffrig kod",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 instansbundet värde tömt)","(%n instansbundna värden tömda)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrerad)","(%n filtrerade)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referens är olöst — se grupperna nedan.","%n referenser är olösta — se grupperna nedan."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 rad behöver ett värde på den här instansen","%n rader behöver ett värde på den här instansen"],
 	"_1 row skipped._::_%n rows skipped._" : ["1 rad hoppades över.","%n rader hoppades över."],
+	"_1 row_::_%n rows_" : ["1 rad","%n rader"],
+	"_1 setting_::_%n settings_" : ["1 inställning","%n inställningar"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Inaktiverad — men 1 synkroniserad delning kunde inte återkallas. Öppna Skrivbordssynkronisering nedan och återkalla den igen.","Inaktiverad — men %n synkroniserade delningar kunde inte återkallas. Öppna Skrivbordssynkronisering nedan och återkalla dem igen."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Varning: 1 rad raderas permanent, sedan läses filens data in.","Varning: %n rader raderas permanent, sedan läses filens data in."],
 	"A pre-flight check failed — see the report for details." : "En förhandskontroll misslyckades — se rapporten för detaljer.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP-värd",
 	"IMAP password (leave empty to keep)" : "IMAP-lösenord (lämna tomt för att behålla)",
 	"IMAP user" : "IMAP-användare",
+	"Import applied. %1$s and %2$s written." : "Importen har tillämpats. %1$s och %2$s skrivna.",
 	"Import applied. %d settings and %d rows written." : "Import tillämpad. %d inställningar och %d rader skrivna.",
 	"Import clients" : "Importera klienter",
 	"Import configuration" : "Importera konfiguration",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Den här personen är kopplad till Nextcloud-kontot",
 	"This portal needs JavaScript." : "Den här portalen kräver JavaScript.",
 	"This view needs JavaScript." : "Den här vyn kräver JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Detta uppdaterar %1$s och %2$s — inget raderas.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Detta uppdaterar %d inställningar och %d rader — inget raderas.",
 	"Timezone" : "Tidszon",
 	"Title" : "Titel",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Dina svar sparas automatiskt.",
 	"Your contact person" : "Din kontaktperson",
 	"Your provider" : "Din leverantör",
-	"Your sign-in is linked to more than one organisation." : "Din inloggning är kopplad till fler än en organisation.",
-	"1 setting" : "1 inställning",
-	"%n settings" : "%n inställningar",
-	"1 row" : "1 rad",
-	"%n rows" : "%n rader",
-	"_1 row_::_%n rows_" : ["1 rad","%n rader"],
-	"_1 setting_::_%n settings_" : ["1 inställning","%n inställningar"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Detta uppdaterar %1$s och %2$s — inget raderas.",
-	"Import applied. %1$s and %2$s written." : "Importen har tillämpats. %1$s och %2$s skrivna."
+	"Your sign-in is linked to more than one organisation." : "Din inloggning är kopplad till fler än en organisation."
 	}
 );

@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n satır",
+	"%n settings" : "%n ayar",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s Nextcloud sunucunuzda ücretsiz olmaya devam eder (AGPL). GitHub üzerinden gelen hata bildirimleri ve öneriler her zaman memnuniyetle karşılanır — bunlar ücretsiz açık kaynak bakımına dâhildir. Kuruluşunuzun fatura karşılığında planlanabilir yardıma — ya da resmî mobil lisanslara — ihtiyacı varsa aşağıdaki seçeneklerden birini seçin:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s Nextcloud sunucunuzda ücretsiz olmaya devam eder (AGPL). GitHub üzerinden gelen hata bildirimleri ve öneriler her zaman memnuniyetle karşılanır — bunlar ücretsiz açık kaynak bakımına dâhildir. Kuruluşunuzun fatura karşılığında planlanabilir yardıma ihtiyacı varsa aşağıdaki seçeneklerden birini seçin:",
 	"(archived)" : "(arşivlendi)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Yükleme bağlantısı",
 	"1 approval is waiting" : "1 onay bekliyor",
 	"1 request is overdue" : "1 isteğin süresi geçti",
+	"1 row" : "1 satır",
+	"1 setting" : "1 ayar",
 	"6-digit code" : "6 haneli kod",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(%n örneğe bağlı değer boşaltıldı)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(%n filtrelendi)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["%n başvuru çözümlenemedi — aşağıdaki gruplara bakın."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["%n satırın bu örnekte bir değere ihtiyacı var"],
 	"_1 row skipped._::_%n rows skipped._" : ["%n satır atlandı."],
+	"_1 row_::_%n rows_" : ["%n satır"],
+	"_1 setting_::_%n settings_" : ["%n ayar"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Çıkarıldı — ancak %n eşitlenen paylaşım geri alınamadı. Aşağıdan Masaüstü eşitleme'yi açın ve yeniden geri alın."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Uyarı: %n satır kalıcı olarak silinecek, ardından dosya verileri yüklenecek."],
 	"A pre-flight check failed — see the report for details." : "Bir ön kontrol başarısız oldu — ayrıntılar için rapora bakın.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP sunucusu",
 	"IMAP password (leave empty to keep)" : "IMAP parolası (korumak için boş bırakın)",
 	"IMAP user" : "IMAP kullanıcısı",
+	"Import applied. %1$s and %2$s written." : "İçe aktarma uygulandı. %1$s ve %2$s yazıldı.",
 	"Import applied. %d settings and %d rows written." : "İçe aktarma uygulandı. %d ayar ve %d satır yazıldı.",
 	"Import clients" : "Müvekkilleri içe aktar",
 	"Import configuration" : "Yapılandırmayı içe aktar",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Bu kişi şu Nextcloud hesabına bağlı:",
 	"This portal needs JavaScript." : "Bu portal JavaScript gerektirir.",
 	"This view needs JavaScript." : "Bu görünüm JavaScript gerektirir.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Bu işlem %1$s ve %2$s güncelleyecek — hiçbir şey silinmeyecek.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Bu, %d ayarı ve %d satırı günceller — hiçbir şey silinmez.",
 	"Timezone" : "Saat dilimi",
 	"Title" : "Başlık",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Yanıtlarınız otomatik olarak kaydedilir.",
 	"Your contact person" : "İrtibat kişiniz",
 	"Your provider" : "Sağlayıcınız",
-	"Your sign-in is linked to more than one organisation." : "Oturum açma bilgileriniz birden fazla kuruma bağlı.",
-	"1 setting" : "1 ayar",
-	"%n settings" : "%n ayar",
-	"1 row" : "1 satır",
-	"%n rows" : "%n satır",
-	"_1 row_::_%n rows_" : ["%n satır"],
-	"_1 setting_::_%n settings_" : ["%n ayar"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Bu işlem %1$s ve %2$s güncelleyecek — hiçbir şey silinmeyecek.",
-	"Import applied. %1$s and %2$s written." : "İçe aktarma uygulandı. %1$s ve %2$s yazıldı."
+	"Your sign-in is linked to more than one organisation." : "Oturum açma bilgileriniz birden fazla kuruma bağlı."
 	}
 );

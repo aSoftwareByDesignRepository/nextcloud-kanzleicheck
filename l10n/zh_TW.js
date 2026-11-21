@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n 行",
+	"%n settings" : "%n 項設定",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s 在您的 Nextcloud 上保持免費（AGPL）。歡迎在 GitHub 提交缺陷報告和建議——這是自由開源的關懷。如果您的組織需要可開票的幫助或官方行動端授權，請選擇下方選項：",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s 在您的 Nextcloud 上保持免費（AGPL）。歡迎在 GitHub 提交缺陷報告和建議——這是自由開源的關懷。如果您的組織需要可開票的幫助，請選擇下方選項：",
 	"(archived)" : "（已歸檔）",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ 上傳連結",
 	"1 approval is waiting" : "1 項核准待處理",
 	"1 request is overdue" : "1 項請求已逾期",
+	"1 row" : "1 行",
+	"1 setting" : "1 項設定",
 	"6-digit code" : "6 位驗證碼",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["（已清空 %n 個執行個體繫結值）"],
 	"_(1 filtered)_::_(%n filtered)_" : ["（已過濾 %n 項）"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["%n 個引用未能解析——請檢視下方分組。"],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["%n 行需要在此執行個體上填寫值"],
 	"_1 row skipped._::_%n rows skipped._" : ["已跳過 %n 行。"],
+	"_1 row_::_%n rows_" : ["%n 行"],
+	"_1 setting_::_%n settings_" : ["%n 項設定"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["已辦理退出——但 %n 個已同步的共享無法撤銷。請在下方開啟“桌面同步”並再次撤銷。"],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["警告：%n 行將被永久刪除，然後載入檔案資料。"],
 	"A pre-flight check failed — see the report for details." : "預檢失敗——詳見報告。",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP 主機",
 	"IMAP password (leave empty to keep)" : "IMAP 密碼（留空則保持不變）",
 	"IMAP user" : "IMAP 使用者",
+	"Import applied. %1$s and %2$s written." : "匯入已應用。已寫入 %1$s 和 %2$s。",
 	"Import applied. %d settings and %d rows written." : "匯入已應用。已寫入 %d 個設定和 %d 行資料。",
 	"Import clients" : "匯入客戶",
 	"Import configuration" : "匯入配置",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "此人已關聯到 Nextcloud 帳號",
 	"This portal needs JavaScript." : "此門戶需要 JavaScript。",
 	"This view needs JavaScript." : "此檢視需要 JavaScript。",
+	"This will update %1$s and %2$s — nothing is deleted." : "這將更新 %1$s 和 %2$s——不會刪除任何內容。",
 	"This will update %d settings and %d rows — nothing is deleted." : "這將更新 %d 個設定和 %d 行——不刪除任何內容。",
 	"Timezone" : "時區",
 	"Title" : "標題",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "您的回答將自動儲存。",
 	"Your contact person" : "您的聯絡人",
 	"Your provider" : "您的提供商",
-	"Your sign-in is linked to more than one organisation." : "您的登入帳號關聯了多個組織。",
-	"1 setting" : "1 項設定",
-	"%n settings" : "%n 項設定",
-	"1 row" : "1 行",
-	"%n rows" : "%n 行",
-	"_1 row_::_%n rows_" : ["%n 行"],
-	"_1 setting_::_%n settings_" : ["%n 項設定"],
-	"This will update %1$s and %2$s — nothing is deleted." : "這將更新 %1$s 和 %2$s——不會刪除任何內容。",
-	"Import applied. %1$s and %2$s written." : "匯入已應用。已寫入 %1$s 和 %2$s。"
+	"Your sign-in is linked to more than one organisation." : "您的登入帳號關聯了多個組織。"
 	}
 );

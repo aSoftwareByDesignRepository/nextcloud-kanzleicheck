@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "строк: %n",
+	"%n settings" : "настроек: %n",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s остаётся бесплатным (AGPL) в вашем Nextcloud. Сообщения об ошибках и идеи на GitHub по-прежнему приветствуются — это бесплатная забота открытого кода. Если вашей организации нужна помощь по счёту — или официальные мобильные лицензии — выберите вариант ниже:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s остаётся бесплатным (AGPL) в вашем Nextcloud. Сообщения об ошибках и идеи на GitHub по-прежнему приветствуются — это бесплатная забота открытого кода. Если вашей организации нужна помощь по счёту, выберите вариант ниже:",
 	"(archived)" : "(в архиве)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Ссылка для загрузки",
 	"1 approval is waiting" : "Ожидает 1 согласование",
 	"1 request is overdue" : "Просрочен 1 запрос",
+	"1 row" : "1 строка",
+	"1 setting" : "1 настройка",
 	"6-digit code" : "6-значный код",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 привязанное к инстансу значение очищено)","(%n привязанных к инстансу значения очищены)","(%n привязанных к инстансу значений очищено)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(отфильтрована 1 строка)","(отфильтрованы %n строки)","(отфильтровано %n строк)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 ссылка не разрешена — см. группы ниже.","%n ссылки не разрешены — см. группы ниже.","%n ссылок не разрешены — см. группы ниже."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["Для 1 строки требуется значение на этом инстансе","Для %n строки требуется значение на этом инстансе","Для %n строк требуется значение на этом инстансе"],
 	"_1 row skipped._::_%n rows skipped._" : ["Пропущена 1 строка.","Пропущены %n строки.","Пропущено %n строк."],
+	"_1 row_::_%n rows_" : ["1 строка","%n строки","%n строк"],
+	"_1 setting_::_%n settings_" : ["1 настройка","%n настройки","%n настроек"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Клиент отключён — но доступ к 1 синхронизированной папке отозвать не удалось. Откройте «Синхронизацию с рабочим столом» ниже и отзовите его снова.","Клиент отключён — но доступ к %n синхронизированным папкам отозвать не удалось. Откройте «Синхронизацию с рабочим столом» ниже и отзовите его снова.","Клиент отключён — но доступ к %n синхронизированным папкам отозвать не удалось. Откройте «Синхронизацию с рабочим столом» ниже и отзовите его снова."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Внимание: будет безвозвратно удалена 1 строка, затем данные файла будут загружены.","Внимание: будут безвозвратно удалены %n строки, затем данные файла будут загружены.","Внимание: будет безвозвратно удалено %n строк, затем данные файла будут загружены."],
 	"A pre-flight check failed — see the report for details." : "Не удалась предварительная проверка — подробности в отчёте.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP-сервер",
 	"IMAP password (leave empty to keep)" : "Пароль IMAP (оставьте пустым, чтобы не менять)",
 	"IMAP user" : "Пользователь IMAP",
+	"Import applied. %1$s and %2$s written." : "Импорт применён. Записаны %1$s и %2$s.",
 	"Import applied. %d settings and %d rows written." : "Импорт применён. Записано настроек: %d, строк: %d.",
 	"Import clients" : "Импорт клиентов",
 	"Import configuration" : "Импорт конфигурации",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Этот человек привязан к учётной записи Nextcloud",
 	"This portal needs JavaScript." : "Этому порталу нужен JavaScript.",
 	"This view needs JavaScript." : "Этому представлению нужен JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Будут обновлены %1$s и %2$s — ничего не удаляется.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Будут обновлены настройки (%d) и строки (%d) — ничего не удаляется.",
 	"Timezone" : "Часовой пояс",
 	"Title" : "Название",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Ваши ответы сохраняются автоматически.",
 	"Your contact person" : "Ваш контакт",
 	"Your provider" : "Ваш провайдер",
-	"Your sign-in is linked to more than one organisation." : "Ваш вход привязан к нескольким организациям.",
-	"1 setting" : "1 настройка",
-	"%n settings" : "настроек: %n",
-	"1 row" : "1 строка",
-	"%n rows" : "строк: %n",
-	"_1 row_::_%n rows_" : ["1 строка","%n строки","%n строк"],
-	"_1 setting_::_%n settings_" : ["1 настройка","%n настройки","%n настроек"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Будут обновлены %1$s и %2$s — ничего не удаляется.",
-	"Import applied. %1$s and %2$s written." : "Импорт применён. Записаны %1$s и %2$s."
+	"Your sign-in is linked to more than one organisation." : "Ваш вход привязан к нескольким организациям."
 	}
 );

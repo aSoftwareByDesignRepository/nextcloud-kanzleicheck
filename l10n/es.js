@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n filas",
+	"%n settings" : "%n ajustes",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s sigue siendo gratuito (AGPL) en su Nextcloud. Los informes de errores y las ideas en GitHub siguen siendo bienvenidos: eso forma parte del mantenimiento open source gratuito. Si su organización necesita ayuda reservable con factura — o licencias móviles oficiales — elija una opción abajo:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s sigue siendo gratuito (AGPL) en su Nextcloud. Los informes de errores y las ideas en GitHub siguen siendo bienvenidos: eso forma parte del mantenimiento open source gratuito. Si su organización necesita ayuda reservable con factura, elija una opción abajo:",
 	"(archived)" : "(archivado)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Enlace de subida",
 	"1 approval is waiting" : "1 aprobación en espera",
 	"1 request is overdue" : "1 solicitud vencida",
+	"1 row" : "1 fila",
+	"1 setting" : "1 ajuste",
 	"6-digit code" : "Código de 6 dígitos",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 valor ligado a la instancia vaciado)","(%n valores ligados a la instancia vaciados)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrada)","(%n filtradas)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referencia sin resolver — consulta los grupos siguientes.","%n referencias sin resolver — consulta los grupos siguientes."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 fila necesita un valor en esta instancia","%n filas necesitan un valor en esta instancia"],
 	"_1 row skipped._::_%n rows skipped._" : ["1 fila omitida.","%n filas omitidas."],
+	"_1 row_::_%n rows_" : ["1 fila","%n filas"],
+	"_1 setting_::_%n settings_" : ["1 ajuste","%n ajustes"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Dado de baja — pero 1 recurso compartido sincronizado no se pudo revocar. Abra Sincronización de escritorio abajo y revóquelo de nuevo.","Dado de baja — pero %n recursos compartidos sincronizados no se pudieron revocar. Abra Sincronización de escritorio abajo y revóquelos de nuevo."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Advertencia: 1 fila se eliminará permanentemente y después se cargarán los datos del archivo.","Advertencia: %n filas se eliminarán permanentemente y después se cargarán los datos del archivo."],
 	"A pre-flight check failed — see the report for details." : "Falló una comprobación previa — consulte el informe para más detalles.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "Servidor IMAP",
 	"IMAP password (leave empty to keep)" : "Contraseña IMAP (dejar vacía para conservar)",
 	"IMAP user" : "Usuario IMAP",
+	"Import applied. %1$s and %2$s written." : "Importación aplicada. %1$s y %2$s escritos.",
 	"Import applied. %d settings and %d rows written." : "Importación aplicada. %d ajustes y %d filas escritas.",
 	"Import clients" : "Importar clientes",
 	"Import configuration" : "Importar configuración",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Esta persona está vinculada a la cuenta de Nextcloud",
 	"This portal needs JavaScript." : "Este portal necesita JavaScript.",
 	"This view needs JavaScript." : "Esta vista necesita JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Esto actualizará %1$s y %2$s — no se eliminará nada.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Esto actualizará %d ajustes y %d filas — no se elimina nada.",
 	"Timezone" : "Zona horaria",
 	"Title" : "Título",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Sus respuestas se guardan automáticamente.",
 	"Your contact person" : "Su persona de contacto",
 	"Your provider" : "Su proveedor",
-	"Your sign-in is linked to more than one organisation." : "Su inicio de sesión está vinculado a más de una organización.",
-	"1 setting" : "1 ajuste",
-	"%n settings" : "%n ajustes",
-	"1 row" : "1 fila",
-	"%n rows" : "%n filas",
-	"_1 row_::_%n rows_" : ["1 fila","%n filas"],
-	"_1 setting_::_%n settings_" : ["1 ajuste","%n ajustes"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Esto actualizará %1$s y %2$s — no se eliminará nada.",
-	"Import applied. %1$s and %2$s written." : "Importación aplicada. %1$s y %2$s escritos."
+	"Your sign-in is linked to more than one organisation." : "Su inicio de sesión está vinculado a más de una organización."
 	}
 );

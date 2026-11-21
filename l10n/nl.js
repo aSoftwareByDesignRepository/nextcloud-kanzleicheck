@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n rijen",
+	"%n settings" : "%n instellingen",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s blijft gratis (AGPL) op uw Nextcloud. Foutrapporten en ideeën op GitHub blijven welkom — dat hoort bij het gratis open-source-onderhoud. Als uw organisatie planbare hulp met factuur nodig heeft — of officiële mobiele licenties — kies dan hieronder een optie:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s blijft gratis (AGPL) op uw Nextcloud. Foutrapporten en ideeën op GitHub blijven welkom — dat hoort bij het gratis open-source-onderhoud. Als uw organisatie planbare hulp met factuur nodig heeft, kies dan hieronder een optie:",
 	"(archived)" : "(gearchiveerd)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Uploadlink",
 	"1 approval is waiting" : "1 goedkeuring wacht",
 	"1 request is overdue" : "1 verzoek is te laat",
+	"1 row" : "1 rij",
+	"1 setting" : "1 instelling",
 	"6-digit code" : "Code van 6 cijfers",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 installatiegebonden waarde geleegd)","(%n installatiegebonden waarden geleegd)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(1 gefilterd)","(%n gefilterd)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 verwijzing onopgelost — zie de groepen hieronder.","%n verwijzingen onopgelost — zie de groepen hieronder."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 rij heeft een waarde nodig op deze installatie","%n rijen hebben een waarde nodig op deze installatie"],
 	"_1 row skipped._::_%n rows skipped._" : ["1 rij overgeslagen.","%n rijen overgeslagen."],
+	"_1 row_::_%n rows_" : ["1 rij","%n rijen"],
+	"_1 setting_::_%n settings_" : ["1 instelling","%n instellingen"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Gedeactiveerd — maar 1 gesynchroniseerde share kon niet worden ingetrokken. Ga hieronder naar Desktopsynchronisatie en trek hem opnieuw in.","Gedeactiveerd — maar %n gesynchroniseerde shares konden niet worden ingetrokken. Ga hieronder naar Desktopsynchronisatie en trek ze opnieuw in."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Waarschuwing: 1 rij wordt definitief verwijderd, daarna worden de bestandsgegevens geladen.","Waarschuwing: %n rijen worden definitief verwijderd, daarna worden de bestandsgegevens geladen."],
 	"A pre-flight check failed — see the report for details." : "Een controle vooraf is mislukt — zie het rapport voor details.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP-host",
 	"IMAP password (leave empty to keep)" : "IMAP-wachtwoord (leeg laten om te behouden)",
 	"IMAP user" : "IMAP-gebruiker",
+	"Import applied. %1$s and %2$s written." : "Import toegepast. %1$s en %2$s geschreven.",
 	"Import applied. %d settings and %d rows written." : "Import toegepast. %d instellingen en %d regels geschreven.",
 	"Import clients" : "Cliënten importeren",
 	"Import configuration" : "Configuratie importeren",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Deze persoon is gekoppeld aan het Nextcloud-account",
 	"This portal needs JavaScript." : "Dit portaal vereist JavaScript.",
 	"This view needs JavaScript." : "Deze weergave vereist JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Dit werkt %1$s en %2$s bij — er wordt niets verwijderd.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Dit werkt %d instellingen en %d rijen bij — er wordt niets verwijderd.",
 	"Timezone" : "Tijdzone",
 	"Title" : "Titel",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Uw antwoorden worden automatisch opgeslagen.",
 	"Your contact person" : "Uw contactpersoon",
 	"Your provider" : "Uw aanbieder",
-	"Your sign-in is linked to more than one organisation." : "Je aanmelding is gekoppeld aan meer dan één organisatie.",
-	"1 setting" : "1 instelling",
-	"%n settings" : "%n instellingen",
-	"1 row" : "1 rij",
-	"%n rows" : "%n rijen",
-	"_1 row_::_%n rows_" : ["1 rij","%n rijen"],
-	"_1 setting_::_%n settings_" : ["1 instelling","%n instellingen"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Dit werkt %1$s en %2$s bij — er wordt niets verwijderd.",
-	"Import applied. %1$s and %2$s written." : "Import toegepast. %1$s en %2$s geschreven."
+	"Your sign-in is linked to more than one organisation." : "Je aanmelding is gekoppeld aan meer dan één organisatie."
 	}
 );

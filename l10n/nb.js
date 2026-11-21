@@ -1,6 +1,8 @@
 OC.L10N.register(
 	"kanzleicheck",
 	{
+	"%n rows" : "%n rader",
+	"%n settings" : "%n innstillinger",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:" : "%s forblir gratis (AGPL) på Nextcloud. Feilrapporter og ideer på GitHub er velkomne — det er gratis open source-støtte. Hvis organisasjonen trenger fakturerbar hjelp — eller offisielle mobile lisenser — velg et alternativ nedenfor:",
 	"%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:" : "%s forblir gratis (AGPL) på Nextcloud. Feilrapporter og ideer på GitHub er velkomne — det er gratis open source-støtte. Hvis organisasjonen trenger fakturerbar hjelp, velg et alternativ nedenfor:",
 	"(archived)" : "(arkivert)",
@@ -18,6 +20,8 @@ OC.L10N.register(
 	"+ Upload link" : "+ Opplastingslenke",
 	"1 approval is waiting" : "1 godkjenning venter",
 	"1 request is overdue" : "1 forespørsel er forfalt",
+	"1 row" : "1 rad",
+	"1 setting" : "1 innstilling",
 	"6-digit code" : "6-sifret kode",
 	"_(1 env-bound value emptied)_::_(%n env-bound values emptied)_" : ["(1 instansbunden verdi tømt)","(%n instansbundne verdier tømt)"],
 	"_(1 filtered)_::_(%n filtered)_" : ["(1 filtrert)","(%n filtrert)"],
@@ -26,6 +30,8 @@ OC.L10N.register(
 	"_1 reference unresolved — see the groups below._::_%n references unresolved — see the groups below._" : ["1 referanse uløst — se gruppene nedenfor.","%n referanser uløst — se gruppene nedenfor."],
 	"_1 row needs a value on this instance_::_%n rows need a value on this instance_" : ["1 rad trenger en verdi på denne instansen","%n rader trenger en verdi på denne instansen"],
 	"_1 row skipped._::_%n rows skipped._" : ["1 rad hoppet over.","%n rader hoppet over."],
+	"_1 row_::_%n rows_" : ["1 rad","%n rader"],
+	"_1 setting_::_%n settings_" : ["1 innstilling","%n innstillinger"],
 	"_Offboarded — but 1 synced share could not be revoked. Open Desktop sync below and revoke it again._::_Offboarded — but %n synced shares could not be revoked. Open Desktop sync below and revoke them again._" : ["Deaktivert — men 1 synkronisert deling kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall den igjen.","Deaktivert — men %n synkroniserte delinger kunne ikke tilbakekalles. Åpne Skrivebordssynkronisering nedenfor og tilbakekall dem igjen."],
 	"_Warning: 1 row will be permanently deleted, then the file data is loaded._::_Warning: %n rows will be permanently deleted, then the file data is loaded._" : ["Advarsel: 1 rad slettes permanent, deretter lastes fildataene inn.","Advarsel: %n rader slettes permanent, deretter lastes fildataene inn."],
 	"A pre-flight check failed — see the report for details." : "En forhåndssjekk mislyktes — se rapporten for detaljer.",
@@ -239,6 +245,7 @@ OC.L10N.register(
 	"IMAP host" : "IMAP- vert",
 	"IMAP password (leave empty to keep)" : "IMAP-passord (la stå tomt for å beholde)",
 	"IMAP user" : "IMAP-bruker",
+	"Import applied. %1$s and %2$s written." : "Importert. %1$s og %2$s skrevet.",
 	"Import applied. %d settings and %d rows written." : "Import brukt. %d innstillinger og %d rader skrevet.",
 	"Import clients" : "Importer klienter",
 	"Import configuration" : "Importer konfigurasjon",
@@ -557,6 +564,7 @@ OC.L10N.register(
 	"This person is linked to Nextcloud account" : "Denne personen er knyttet til Nextcloud-kontoen",
 	"This portal needs JavaScript." : "Denne portalen krever JavaScript.",
 	"This view needs JavaScript." : "Denne visningen krever JavaScript.",
+	"This will update %1$s and %2$s — nothing is deleted." : "Dette oppdaterer %1$s og %2$s — ingenting slettes.",
 	"This will update %d settings and %d rows — nothing is deleted." : "Dette oppdaterer %d innstillinger og %d rader — ingenting slettes.",
 	"Timezone" : "Tidssone",
 	"Title" : "Tittel",
@@ -622,14 +630,6 @@ OC.L10N.register(
 	"Your answers save automatically." : "Svarene dine lagres automatisk.",
 	"Your contact person" : "Din kontaktperson",
 	"Your provider" : "Din leverandør",
-	"Your sign-in is linked to more than one organisation." : "Påloggingen din er knyttet til mer enn én organisasjon.",
-	"1 setting" : "1 innstilling",
-	"%n settings" : "%n innstillinger",
-	"1 row" : "1 rad",
-	"%n rows" : "%n rader",
-	"_1 row_::_%n rows_" : ["1 rad","%n rader"],
-	"_1 setting_::_%n settings_" : ["1 innstilling","%n innstillinger"],
-	"This will update %1$s and %2$s — nothing is deleted." : "Dette oppdaterer %1$s og %2$s — ingenting slettes.",
-	"Import applied. %1$s and %2$s written." : "Importert. %1$s og %2$s skrevet."
+	"Your sign-in is linked to more than one organisation." : "Påloggingen din er knyttet til mer enn én organisasjon."
 	}
 );
