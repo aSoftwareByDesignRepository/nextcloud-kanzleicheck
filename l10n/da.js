@@ -489,7 +489,7 @@ OC.L10N.register(
 	"Send a template to a client from their detail page." : "Send en skabelon til en klient fra deres detaljeside.",
 	"Send code" : "Send kode",
 	"Send documents by e-mail" : "Send dokumenter pr. e-mail",
-	"Send invitations? (yes\/no)" : "Send invitationer? (ja\/nej)",
+	"Send invitations? (yes\/no)" : "Send invitationer? (ja eller ikke)",
 	"Send questionnaire" : "Send spørgeskema",
 	"Sent" : "Sendt",
 	"Sent." : "Sendt.",

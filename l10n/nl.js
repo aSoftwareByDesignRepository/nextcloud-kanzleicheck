@@ -489,7 +489,7 @@ OC.L10N.register(
 	"Send a template to a client from their detail page." : "Stuur een sjabloon naar een cliënt vanaf de detailpagina.",
 	"Send code" : "Code versturen",
 	"Send documents by e-mail" : "Documenten per e-mail versturen",
-	"Send invitations? (yes\/no)" : "Uitnodigingen versturen? (ja\/nee)",
+	"Send invitations? (yes\/no)" : "Uitnodigingen versturen? (ja of niet)",
 	"Send questionnaire" : "Vragenlijst versturen",
 	"Sent" : "Verzonden",
 	"Sent." : "Verstuurd.",

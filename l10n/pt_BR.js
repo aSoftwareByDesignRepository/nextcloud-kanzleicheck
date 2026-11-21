@@ -587,7 +587,7 @@ OC.L10N.register(
 	"Upload limits, the portal file root and audit retention." : "Limites de upload, raiz de arquivos do portal e retenção de auditoria.",
 	"Upload links" : "Links de upload",
 	"Upload queue" : "Fila de upload",
-	"Uploaded. Thank you!" : "Enviado. Obrigado!",
+	"Uploaded. Thank you!" : "Carregado. Obrigado!",
 	"Uploading…" : "Enviando…",
 	"Uploads" : "Envios",
 	"Urgent" : "Urgente",

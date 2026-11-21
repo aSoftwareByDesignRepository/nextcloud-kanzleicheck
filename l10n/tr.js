@@ -489,7 +489,7 @@ OC.L10N.register(
 	"Send a template to a client from their detail page." : "Detay sayfasından müvekkile bir şablon gönderin.",
 	"Send code" : "Kodu gönder",
 	"Send documents by e-mail" : "Belgeleri e-posta ile gönder",
-	"Send invitations? (yes\/no)" : "Davetler gönderilsin mi? (evet\/hayır)",
+	"Send invitations? (yes\/no)" : "Davetler gönderilsin mi? (evet ya da değil)",
 	"Send questionnaire" : "Anket gönder",
 	"Sent" : "Gönderildi",
 	"Sent." : "Gönderildi.",

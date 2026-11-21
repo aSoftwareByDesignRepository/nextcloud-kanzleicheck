@@ -360,7 +360,7 @@ OC.L10N.register(
 	"OK" : "Aceptar",
 	"ok" : "correcto",
 	"OK — a longer passphrase is safer." : "Correcto — una frase de contraseña más larga es más segura.",
-	"On hold" : "En espera",
+	"On hold" : "En pausa",
 	"Only my clients" : "Solo mis clientes",
 	"Open" : "Abrir",
 	"Open about page" : "Abrir la página Acerca de",

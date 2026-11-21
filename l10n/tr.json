@@ -1,5 +1,5 @@
 {
-  "pluralForm": "nplurals=2; plural=(n != 1);",
+  "pluralForm": "nplurals=1; plural=0;",
   "translations": {
     "%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice — or official mobile licenses — choose an option below:": "%s Nextcloud sunucunuzda ücretsiz olmaya devam eder (AGPL). GitHub üzerinden gelen hata bildirimleri ve öneriler her zaman memnuniyetle karşılanır — bunlar ücretsiz açık kaynak bakımına dâhildir. Kuruluşunuzun fatura karşılığında planlanabilir yardıma — ya da resmî mobil lisanslara — ihtiyacı varsa aşağıdaki seçeneklerden birini seçin:",
     "%s stays free (AGPL) on your Nextcloud. Bug reports and ideas on GitHub stay welcome — that is free open-source care. If your organisation needs bookable help on an invoice, choose an option below:": "%s Nextcloud sunucunuzda ücretsiz olmaya devam eder (AGPL). GitHub üzerinden gelen hata bildirimleri ve öneriler her zaman memnuniyetle karşılanır — bunlar ücretsiz açık kaynak bakımına dâhildir. Kuruluşunuzun fatura karşılığında planlanabilir yardıma ihtiyacı varsa aşağıdaki seçeneklerden birini seçin:",
@@ -507,7 +507,7 @@
     "Send a template to a client from their detail page.": "Detay sayfasından müvekkile bir şablon gönderin.",
     "Send code": "Kodu gönder",
     "Send documents by e-mail": "Belgeleri e-posta ile gönder",
-    "Send invitations? (yes/no)": "Davetler gönderilsin mi? (evet/hayır)",
+    "Send invitations? (yes/no)": "Davetler gönderilsin mi? (evet ya da değil)",
     "Send questionnaire": "Anket gönder",
     "Sent": "Gönderildi",
     "Sent.": "Gönderildi.",

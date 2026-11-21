@@ -496,7 +496,7 @@ OC.L10N.register(
 	"Send a template to a client from their detail page." : "Vorlage von der Detailseite an einen Mandanten senden.",
 	"Send code" : "Code senden",
 	"Send documents by e-mail" : "Dokumente per E-Mail senden",
-	"Send invitations? (yes\/no)" : "Einladungen versenden? (ja\/nein)",
+	"Send invitations? (yes\/no)" : "Einladungen versenden? (ja oder nicht)",
 	"Send questionnaire" : "Fragebogen senden",
 	"Sent" : "Gesendet",
 	"Sent." : "Gesendet.",

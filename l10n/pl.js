@@ -480,7 +480,7 @@ OC.L10N.register(
 	"Search users…" : "Szukaj użytkowników…",
 	"Search…" : "Szukaj…",
 	"Secrets are never included." : "Sekrety nigdy nie są dołączane.",
-	"Secrets not transferred" : "Sekrety nienaniesione",
+	"Secrets not transferred" : "Sekrety nie zostały przeniesione",
 	"Sections" : "Sekcje",
 	"Security-relevant changes" : "Zmiany istotne dla bezpieczeństwa",
 	"Seen" : "Widziano",

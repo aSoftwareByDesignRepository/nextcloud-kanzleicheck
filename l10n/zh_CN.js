@@ -114,7 +114,7 @@ OC.L10N.register(
 	"Choose an industry preset in Settings." : "请在“设置”中选择行业预设。",
 	"Choose file" : "选择文件",
 	"Choose organisation" : "选择组织",
-	"Choose up to five colleagues." : "。",
+	"Choose up to five colleagues." : "最多可选择五位同事。",
 	"Clear all" : "全部清除",
 	"Click \"Sign in\" to continue." : "点击“登录”继续。",
 	"Client" : "客户",
