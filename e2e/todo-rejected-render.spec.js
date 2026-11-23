@@ -6,9 +6,12 @@
  * ref node is NOT a direct child of the fragment → NotFoundError, so the
  * entire list died with a page error and nothing rendered.
  *
- * Self-provisioning: staff rejects the currently-delivered item 46 of
- * request 23 (org 104) via the staff API, then the client portal renders
- * the To-do stack. Teardown re-delivers nothing — fixture stays 'rejected'.
+ * Self-provisioning: staff rejects a delivered request item via the staff
+ * API, then the client portal renders the To-do stack. The fixture row is
+ * resolved dynamically (rerun prefers the row this spec already rejected —
+ * ids/names/emails are never hardcoded to a machine's seed). If no item is
+ * delivered, an open one is promoted — reviewItem() gates on state only.
+ * Teardown re-delivers nothing — fixture stays 'rejected'.
  */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
@@ -47,19 +50,46 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		test.skip(!authed, 'no creds');
 		const { username, password } = creds();
 
-		// Provision: item 46 must be 'delivered' to review; ensure via staff reject.
+		// Provision: resolve a deliverable item bound to an active member of an
+		// app-enabled org — prefer the row a previous run already rejected so a
+		// rerun is idempotent. Promote an open row to 'delivered' when needed.
+		const REASON = 'intake-probe: scan illegible';
+		const FX_SQL =
+			'SELECT ri.id, ri.req_id, o.name, i.email, ri.state FROM oc_kzc_req_item ri ' +
+			'JOIN oc_kzc_req r ON r.id=ri.req_id ' +
+			'JOIN oc_kzc_org o ON o.id=r.org_id ' +
+			"JOIN oc_kzc_member m ON m.org_id=r.org_id AND m.role='member' " +
+			"JOIN oc_kzc_identity i ON i.id=m.identity_id AND i.status='active' " +
+			`WHERE o.state='active' AND o.app_on=1 ` +
+			`AND (ri.reject_reason='${REASON}' OR ri.state='delivered') ` +
+			`ORDER BY (ri.reject_reason='${REASON}') DESC, ri.id LIMIT 1;`;
+		let fx = db(FX_SQL);
+		if (!fx) {
+			db("UPDATE oc_kzc_req_item SET state='delivered' WHERE id = (" +
+				'SELECT id FROM (SELECT ri.id FROM oc_kzc_req_item ri ' +
+				'JOIN oc_kzc_req r ON r.id=ri.req_id ' +
+				'JOIN oc_kzc_org o ON o.id=r.org_id ' +
+				"JOIN oc_kzc_member m ON m.org_id=r.org_id AND m.role='member' " +
+				"JOIN oc_kzc_identity i ON i.id=m.identity_id AND i.status='active' " +
+				"WHERE ri.state='open' AND o.state='active' AND o.app_on=1 " +
+				'ORDER BY ri.id LIMIT 1) pick);');
+			fx = db(FX_SQL);
+		}
+		const [itemId, reqId, orgName, clientEmail] = fx.split('\t').map((s) => s.trim());
+		expect(itemId, 'no deliverable fixture item resolved').toMatch(/^\d+$/);
+
 		const review = await request.put(
-			`${APP}/api/portal/requests/23/items/46/review`,
+			`${APP}/api/portal/requests/${reqId}/items/${itemId}/review`,
 			{
-				data: { accept: false, reason: 'intake-probe: scan illegible' },
+				data: { accept: false, reason: REASON },
 				headers: { Authorization: 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64') },
 			});
 		expect([200, 409].includes(review.status()), `review rc=${review.status()}`).toBeTruthy();
 		// 409 = item already rejected (rerun) — reason is already set from the first run;
 		// assert the fixture state directly instead of trusting the envelope.
-		const st = db('SELECT state, reject_reason FROM oc_kzc_req_item WHERE id=46;');
-		expect(st.startsWith('rejected'), `item46 state=${st}`).toBeTruthy();
-		expect(st).toContain('intake-probe: scan illegible');
+		const st = db(`SELECT state, reject_reason FROM oc_kzc_req_item WHERE id=${itemId};`);
+		expect(st.startsWith('rejected'), `item${itemId} state=${st}`).toBeTruthy();
+		expect(st).toContain(REASON);
 
 		const errors = [];
 		page.on('pageerror', (e) => errors.push(String(e)));
@@ -67,14 +97,14 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		// OTP cap hygiene: fixed-identity fixture logs in via OTP — clear its
 		// trailing-hour sends (per-email cap 5/h) so a suite re-run within the
 		// hour cannot hit the discard path or replay a consumed code.
-		db("DELETE FROM oc_kzc_otp WHERE email='lena.brandt@mueller-soehne.example';");
+		db(`DELETE FROM oc_kzc_otp WHERE email='${clientEmail.replace(/'/g, "''")}';`);
 
 		await page.goto(`${APP}/portal/login`, { waitUntil: 'domcontentloaded' });
 		await page.locator('#kzc-send-form').waitFor({ state: 'visible', timeout: 15000 });
-		await page.locator('#kzc-email').fill('lena.brandt@mueller-soehne.example');
+		await page.locator('#kzc-email').fill(clientEmail);
 		await page.locator('#kzc-send-btn').click();
 		await page.locator('#kzc-verify-form').waitFor({ state: 'visible', timeout: 15000 });
-		await page.locator('#kzc-code').fill(await readOtp('lena.brandt@mueller-soehne.example'));
+		await page.locator('#kzc-code').fill(await readOtp(clientEmail));
 		// 6-digit input auto-submits — no click: a second POST burns the shared
 		// /portal/api/auth/verify AnonRateLimit budget (20/300s per IP, non-JSON
 		// 429 → generic status line) twice per login and saturates the suite.
@@ -84,7 +114,7 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		// org. Button text is seeded fixture data (proper noun, locale-safe).
 		// The picker mounts async after the orgs API returns — wait for either
 		// branch (picker or direct To-do) before deciding.
-		const pick = page.locator('.kzc-orgpick__btn', { hasText: 'Müller & Söhne' });
+		const pick = page.locator('.kzc-orgpick__btn', { hasText: orgName });
 		await page.locator('.kzc-orgpick, .kzc-stack').first().waitFor({ state: 'visible', timeout: 15000 });
 		if (await pick.count()) {
 			await pick.first().click();
@@ -97,7 +127,7 @@ test.describe('client To-do with rejected item (intake fix)', () => {
 		await expect(card.first()).toBeVisible({ timeout: 15000 });
 		expect(await card.count()).toBeGreaterThanOrEqual(1);
 
-		const err = page.locator('.kzc-card .kzc-field-error', { hasText: 'intake-probe: scan illegible' });
+		const err = page.locator('.kzc-card .kzc-field-error', { hasText: REASON });
 		await expect(err.first()).toBeVisible();
 
 		await page.screenshot({ path: path.join(OUT, 'todo-rejected-render.png'), fullPage: false });

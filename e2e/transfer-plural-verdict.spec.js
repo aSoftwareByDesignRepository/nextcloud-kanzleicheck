@@ -13,6 +13,8 @@
  * Structural selectors only (locale-safe).
  */
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+const COMPOSE_FILE = path.join(__dirname, '..', '..', '..', 'docker-compose.yml');
 const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 
@@ -23,7 +25,7 @@ const FIXTURE_USER = process.env.NC_ADMIN_USER || '';
 
 function occ(args) {
 	return execSync(
-		`docker compose -f /home/alex/Development/nextcloud-dev/nextcloud/docker-compose.yml exec -T -u www-data nextcloud php occ ${args}`,
+		`docker compose -f ${COMPOSE_FILE} exec -T -u www-data nextcloud php occ ${args}`,
 		{ encoding: 'utf8', timeout: 60000 }).trim();
 }
 

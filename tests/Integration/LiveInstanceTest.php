@@ -49,7 +49,6 @@ class LiveInstanceTest extends TestCase
 		}
 		$raw = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
 		$json = json_decode((string)$raw, true);
 		return ['status' => $status, 'json' => is_array($json) ? $json : null, 'raw' => (string)$raw];
 	}
@@ -60,11 +59,35 @@ class LiveInstanceTest extends TestCase
 		return $r['status'];
 	}
 
+	/**
+	 * PDO against the dev DB; override with KZC_DB_DSN / KZC_DB_HOST /
+	 * KZC_DB_NAME / KZC_DB_USER / KZC_DB_PASSWORD for host-side runs.
+	 * Writes to oc_appconfig must outlive the AppConfig APCu blob
+	 * (LOCAL_CACHE_TTL = 3 s in OC\AppConfig) before the next HTTP call,
+	 * or the web workers keep serving the stale snapshot.
+	 */
 	private static function db(string $sql): string
 	{
-		$out = [];
-		exec('cd /home/alex/Development/nextcloud-dev/nextcloud && docker compose exec -T mariadb mariadb -unextcloud -pnextcloud_password nextcloud -N -e ' . escapeshellarg($sql) . ' 2>/dev/null', $out);
-		return trim(implode("\n", $out));
+		static $pdo = null;
+		$pdo ??= new \PDO(
+			getenv('KZC_DB_DSN') ?: 'mysql:host=' . (getenv('KZC_DB_HOST') ?: 'mariadb')
+				. ';dbname=' . (getenv('KZC_DB_NAME') ?: 'nextcloud'),
+			getenv('KZC_DB_USER') ?: 'nextcloud',
+			getenv('KZC_DB_PASSWORD') ?: 'nextcloud_password',
+			[\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
+		);
+		if (str_starts_with(strtoupper(ltrim($sql)), 'SELECT')) {
+			$row = $pdo->query($sql)->fetch(\PDO::FETCH_NUM);
+			if ($row === false) {
+				return '';
+			}
+			return implode("\t", array_map(fn($v) => $v === null ? 'NULL' : (string)$v, $row));
+		}
+		$pdo->exec($sql);
+		if (str_contains($sql, 'oc_appconfig')) {
+			usleep(3_500_000);
+		}
+		return '';
 	}
 
 	private function need(): void
@@ -83,7 +106,7 @@ DELETE FROM oc_kzc_org WHERE ref='INT-1';
 INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Int Mandat','INT-1','company','active',0,'system:test',NOW(),NOW());
 INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('int@test.invalid','Int Client','active',NOW());
 INSERT INTO oc_kzc_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_kzc_identity i, oc_kzc_org o WHERE i.email='int@test.invalid' AND o.ref='INT-1';");
-		self::db("UPDATE oc_appconfig SET configvalue='1' WHERE appid='kanzleicheck' AND configkey='allow_http_login'");
+		self::db("INSERT INTO oc_appconfig (appid,configkey,configvalue) VALUES ('kanzleicheck','allow_http_login','1') ON DUPLICATE KEY UPDATE configvalue='1'");
 	}
 
 	private static function latestOtp(): string

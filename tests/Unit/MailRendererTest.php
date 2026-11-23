@@ -193,6 +193,59 @@ class MailRendererTest extends TestCase
 		}
 	}
 
+	// ── exact-body contract (kills concat/array-item mutants) ──
+
+	/** @return array<string,array{0:string,1:array,2:string,3:string,4:string}> */
+	public static function exactBodies(): array
+	{
+		return [
+			'otp en +portalUrl' => ['otp', ['code' => '123456', 'provider' => 'P', 'portalUrl' => 'https://p'], 'en',
+				'P: your sign-in code',
+				"Your sign-in code: 123456\n\nThe code is valid for 10 minutes and can only be used once.\nYou can also use the link in this e-mail to sign in.\n\nPlease do not forward this e-mail — the code grants access to your portal.\nPortal: https://p\n\nIf you did not request this code, you can ignore this e-mail.\n"],
+			'otp de -portalUrl' => ['otp', ['code' => '654321'], 'de',
+				'Ihr Anbieter: Ihr Anmeldecode',
+				"Ihr Anmeldecode: 654321\n\nDer Code ist 10 Minuten gültig und kann nur einmal verwendet werden.\nAlternativ können Sie den Link in dieser E-Mail zum Anmelden nutzen.\n\nBitte leiten Sie diese E-Mail nicht weiter — der Code gewährt Zugang zu Ihrem Portal.\n\n\nFalls Sie diesen Code nicht angefordert haben, können Sie diese E-Mail ignorieren.\n"],
+			'approve en' => ['approve', ['code' => '777', 'provider' => 'P'], 'en',
+				'P: confirmation code for an approval',
+				"You have been asked to approve a document.\nYour confirmation code: 777\n\nThe code is valid for 10 minutes and can only be used once.\nPlease do not forward this e-mail.\n"],
+			'approve de' => ['approve', ['code' => '777', 'provider' => 'P'], 'de',
+				'P: Bestätigungscode für eine Freigabe',
+				"Sie wurden gebeten, ein Dokument freizugeben.\nIhr Bestätigungscode: 777\n\nDer Code ist 10 Minuten gültig und kann nur einmal verwendet werden.\nBitte leiten Sie diese E-Mail nicht weiter.\n"],
+			'invite de +portalUrl' => ['invite', ['provider' => 'P', 'portalUrl' => 'https://p'], 'de',
+				'P: Zugang zu Ihrem Portal',
+				"Sie haben Zugang zu einem Kundenportal erhalten.\nMelden Sie sich mit Ihrer E-Mail-Adresse an — Sie erhalten dann einen Code per E-Mail.\nPortal: https://p\n"],
+			'remind de +deadline -url' => ['remind', ['provider' => 'P', 'deadline' => '2026-12-01'], 'de',
+				'P: Es fehlen noch Unterlagen',
+				"Bei P fehlen noch Unterlagen (Frist: 2026-12-01).\nBitte öffnen Sie Ihr Portal für Details.\n\n"],
+			'remind en -deadline +url' => ['remind', ['provider' => 'P', 'portalUrl' => 'https://p'], 'en',
+				'P: documents still missing',
+				"Documents are still missing at P.\nPlease open your portal for details.\nPortal: https://p\n"],
+			'device en +time' => ['device', ['deviceName' => 'Pixel 8', 'platform' => 'Android', 'time' => '2026-11-05 08:00', 'provider' => 'P'], 'en',
+				'P: new device paired',
+				"A new device was paired with your account:\nDevice: Pixel 8 (Android) — 2026-11-05 08:00\n\nIf this was not you, open your portal and remove the device under \"Devices\".\n\n"],
+			'device de -time' => ['device', ['deviceName' => 'iPhone', 'platform' => 'iOS', 'provider' => 'P'], 'de',
+				'P: Neues Gerät angemeldet',
+				"Ein neues Gerät wurde mit Ihrem Konto verbunden:\nGerät: iPhone (iOS)\n\nFalls Sie das nicht waren, öffnen Sie Ihr Portal und entfernen Sie das Gerät unter \"Geräte\".\n\n"],
+			'notice en message' => ['notice', ['what' => 'message', 'provider' => 'P'], 'en',
+				'P: a new message',
+				"You have a new message at P.\nOpen your portal for details.\n\n\nDo not want these e-mails? You can switch them off in the portal.\n"],
+			'notice de document +url' => ['notice', ['what' => 'document', 'provider' => 'P', 'portalUrl' => 'https://p'], 'de',
+				'P: ein neues Dokument',
+				"Sie haben ein neues Dokument bei P.\nÖffnen Sie Ihr Portal für Details.\nPortal: https://p\n\nMöchten Sie diese E-Mails nicht mehr erhalten? Sie können sie im Portal abstellen.\n"],
+			'notice en fallback what' => ['notice', ['what' => 'bogus', 'provider' => 'P'], 'en',
+				'P: an update',
+				"You have an update at P.\nOpen your portal for details.\n\n\nDo not want these e-mails? You can switch them off in the portal.\n"],
+		];
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider('exactBodies')]
+	public function testExactBody(string $kind, array $params, string $locale, string $subject, string $text): void
+	{
+		$r = MailRenderer::render($kind, $params, $locale);
+		$this->assertSame($subject, $r['subject']);
+		$this->assertSame($text, $r['text']);
+	}
+
 	// ── content-free guarantee (NN-P04) ──
 
 	public function testNoClientContentInSubjects(): void
