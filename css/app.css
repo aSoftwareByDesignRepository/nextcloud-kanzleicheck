@@ -712,6 +712,16 @@ dialog .kzc-btn--primary:active,
    --kzc-space-3 (12px) app-side (app.css loads after the common packs). */
 #app-content.kzc-app .kzc-page-header{margin-bottom:var(--kzc-space-3,12px);}
 
+/* Card-header action rows: the synced pack pins flex:0 0 auto, so a header
+ * with ≥2 buttons overflows its card at ≤768px (card overflow:hidden clips
+ * the tail buttons). Shrink below max-content so the inner flex-wrap can
+ * engage — same heal azc carries app-side in css/app.css. */
+#app-content.kzc-app .kzc-card__header-actions{flex:0 1 auto;min-width:0;}
+@media (max-width: 768.98px) {
+	#app-content.kzc-app .kzc-card__header-actions{width:100%;justify-content:flex-start;}
+	#app-content.kzc-app .kzc-card__header-actions .kzc-btn{flex:1 1 auto;min-width:min(100%,10rem);}
+}
+
 /* Conversation / record rows — icon well + main + trailing meta/chevron.
    Divider list: flat rows on the canvas, separated by thin border lines —
    no per-entry fill (design-system divider recipe like .kzc-list-cards). */
