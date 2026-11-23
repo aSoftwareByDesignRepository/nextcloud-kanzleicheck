@@ -139,7 +139,7 @@ final class TransferService
 				$out = [];
 				foreach ($row as $col => $value) {
 					$col = (string)$col;
-					if (isset($spec['secret_columns']) && in_array($col, $spec['secret_columns'], true)) {
+					if (in_array($col, $spec['secret_columns'], true)) {
 						if ($value !== null && $value !== '') {
 							$out[$col] = TransferFormat::REDACTED_MARKER;
 							$secretCols[$col]++;
