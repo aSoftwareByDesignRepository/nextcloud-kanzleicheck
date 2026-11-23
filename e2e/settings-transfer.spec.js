@@ -8,6 +8,8 @@
  * Structural selectors only (locale-safe).
  */
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+const COMPOSE_FILE = path.join(__dirname, '..', '..', '..', 'docker-compose.yml');
 const { execSync } = require('child_process');
 const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
 const { acquireTransferApplyLock } = require('../tests/e2e/helpers/transfer-apply-lock.js');
@@ -18,12 +20,12 @@ const authed = hasCreds();
 
 function occ(args) {
 	return execSync(
-		`docker compose -f /home/alex/Development/nextcloud-dev/nextcloud/docker-compose.yml exec -T -u www-data nextcloud php occ ${args}`,
+		`docker compose -f ${COMPOSE_FILE} exec -T -u www-data nextcloud php occ ${args}`,
 		{ encoding: 'utf8', timeout: 60000 }).trim();
 }
 function db(sql) {
 	return execSync(
-		`docker compose -f /home/alex/Development/nextcloud-dev/nextcloud/docker-compose.yml exec -T mariadb mariadb -unextcloud -pnextcloud_password nextcloud -N -e "${sql.replace(/"/g, '\\"')}"`,
+		`docker compose -f ${COMPOSE_FILE} exec -T mariadb mariadb -unextcloud -pnextcloud_password nextcloud -N -e "${sql.replace(/"/g, '\\"')}"`,
 		{ encoding: 'utf8', timeout: 30000 }).trim();
 }
 
@@ -128,7 +130,13 @@ test.describe('settings transfer surface', () => {
 			// otherwise it latches onto the stale 'applied' receipt immediately.
 			const before = await request.get(`${BASE}${APP}/api/admin/transfer/status`, { headers: { Authorization: auth, 'OCS-APIRequest': 'true' } });
 			const priorReceiptId = (((await before.json()).data || {}).lastReceipt || {}).id || '';
-			occ(`background-job:execute ${jobId}`);
+			try {
+				occ(`background-job:execute ${jobId}`);
+			} catch {
+				// nextcloud-cron drains oc_jobs concurrently — the queued
+				// TransferApplyJob may already be gone by the time occ runs.
+				// The receipt poll below still proves the apply ran.
+			}
 
 			// poll status until THIS apply's receipt lands
 			let receipt = {};

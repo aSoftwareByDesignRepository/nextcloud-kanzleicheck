@@ -192,6 +192,11 @@ class PageController extends Controller implements \OCA\KanzleiCheck\Contracts\S
 	private function page(string $pageId, string $title, string $icon, array $opt = []): TemplateResponse
 	{
 		AssetRegistrar::register($opt['pageScript'] ?? 'staff-app');
+		Util::addHeader('link', [
+			'rel' => 'icon',
+			'type' => 'image/svg+xml',
+			'href' => $this->urlGenerator->imagePath(Application::APP_ID, 'app-dark.svg'),
+		]);
 		foreach ($opt['styles'] ?? [] as $s) {
 			Util::addStyle(Application::APP_ID, $s);
 		}
@@ -249,6 +254,7 @@ class PageController extends Controller implements \OCA\KanzleiCheck\Contracts\S
 		return new TemplateResponse(Application::APP_ID, 'staff/main', array_merge([
 			'appId' => Application::APP_ID,
 			'pageId' => (string)($opt['spaView'] ?? $pageId),
+			'hideScopeStrip' => (string)($opt['spaView'] ?? $pageId) !== 'overview',
 			'pageTitle' => $title,
 			'pageHelp' => '',
 			'pageIcon' => $icon,

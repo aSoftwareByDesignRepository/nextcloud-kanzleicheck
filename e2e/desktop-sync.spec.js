@@ -47,6 +47,17 @@ test.describe('staff Desktop-Sync (nc-user-binding)', () => {
 		const admins = [...new Set([...(JSON.parse(origAdmins || '[]')), username])];
 		db(`UPDATE oc_appconfig SET configvalue='${JSON.stringify(admins)}' WHERE appid='kanzleicheck' AND configkey='app_admins'`);
 
+		// docs-root precondition: the sync health check resolves the configured
+		// docs_root_id inside the ACTOR's mounts, so the dev fixture must expose
+		// it via an ACCEPTED share (pending shares never mount). Ownership stays
+		// with root — same shape a real Kanzlei would run.
+		const rootId = db("SELECT f.fileid FROM oc_filecache f JOIN oc_storages s ON f.storage=s.numeric_id WHERE f.path='files/KanzleiCheck' AND s.id='home::root'");
+		if (/^\d+$/.test(rootId) && !/^\d+$/.test(db(`SELECT id FROM oc_share WHERE share_with='${username}' AND item_source=${rootId} AND accepted=1 LIMIT 1`))) {
+			db(`DELETE FROM oc_share WHERE share_with='${username}' AND item_source=${rootId};` +
+				`INSERT INTO oc_share (share_type,share_with,uid_owner,uid_initiator,item_type,item_source,item_target,file_source,file_target,permissions,stime,accepted) ` +
+				`VALUES (0,'${username}','root','root','folder',${rootId},'/KanzleiCheck',${rootId},'/KanzleiCheck',31,UNIX_TIMESTAMP(),1);`);
+		}
+
 		let orgId = 0;
 		let identityId = 0;
 		try {

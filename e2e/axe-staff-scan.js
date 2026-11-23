@@ -2,7 +2,7 @@
 // Lens C proof: axe on auth'd staff SPA surfaces + horizontal-scroll check
 // at every target viewport. Run: node e2e/axe-staff-scan.js
 const { chromium } = require('@playwright/test');
-const { AxeBuilder } = require('/home/alex/Development/nextcloud-dev/nextcloud/apps/bookingcheck/node_modules/@axe-core/playwright');
+const { AxeBuilder } = require('@axe-core/playwright');
 const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 
 const APP = 'http://127.0.0.1:8081/index.php/apps/kanzleicheck';

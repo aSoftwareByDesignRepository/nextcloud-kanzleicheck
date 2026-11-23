@@ -56,7 +56,6 @@ function card(title,lead,opts){
 function empty(ic,title,text){return h('<div class="kzc-empty-state">'+well('neutral',ic)+'<h3 class="kzc-empty-state__title">'+esc(title)+'</h3><p class="kzc-empty-state__text">'+esc(text)+'</p></div>');}
 function emptyErr(title,text){return h('<div class="kzc-empty-state kzc-empty-state--error"><h3 class="kzc-empty-state__title">'+esc(title)+'</h3><p class="kzc-empty-state__text">'+esc(text)+'</p></div>');}
 function listHead(title,count){const x=h('<div class="kzc-list-head"><h2 class="kzc-list-head__title"></h2><span class="kzc-list-head__count"></span><span class="kzc-list-head__actions"></span></div>').firstElementChild;x.querySelector('.kzc-list-head__title').textContent=title;x.querySelector('.kzc-list-head__count').textContent=count==null?'':('('+count+')');return x;}
-function callout(v,title,text){const c=h('<div class="kzc-callout kzc-callout--'+v+'" role="note"><p class="kzc-callout__title"></p><p class="kzc-muted"></p></div>').firstElementChild;c.querySelector('.kzc-callout__title').textContent=title;c.querySelector('.kzc-muted').textContent=text;return c;}
 /* Page-header actions via the kernel slot (cleared on every chrome()). */
 function pa(defs){if(window.KZC&&KZC.pageActions)KZC.pageActions(defs.map(d=>Object.assign({},d,{iconHtml:d.icon?icon(d.icon):undefined})));}
 function btn(label,fn,opts){
@@ -205,8 +204,6 @@ async function vOverview(){
     body.appendChild(coach);
   }
   const s=r.data.stats;
-  if(s.overdueRequests>0)body.appendChild(callout('warning',n('1 request is overdue','%n requests are overdue',s.overdueRequests),t('Chase the client or extend the deadline under Requests.')));
-  if(s.openApprovals>0)body.appendChild(callout('info',n('1 approval is waiting','%n approvals are waiting',s.openApprovals),t('Pending approvals appear under the client — remind or withdraw them there.')));
   body.appendChild(h('<div class="kzc-stat-strip">'+[
     [s.unread,t('Unread messages'),'inbox','kzc-stat-tile--primary',t('open inbox')],
     [s.newUploads,t('New uploads'),'uploads','kzc-stat-tile--success',t('review queue')],
@@ -311,7 +308,7 @@ async function vBoard(){
   const r=await get('/api/portal/board');
   if(seq!==VIEW_SEQ)return; // superseded — never chrome() over a newer view
   const body=chrome('board',t('Tasks'));
-  pa([{label:t('+ New task'),icon:'plus',primary:true,onClick:async()=>{
+  pa([{label:t('New task'),icon:'plus',primary:true,onClick:async()=>{
     const orgs=(await get('/api/portal/orgs')).data.orgs;
     const f=await ask(t('New task'),null,t('Create'),[
       {name:'orgId',label:t('Client'),type:'select',options:orgs.map(o=>[o.id,o.name])},
@@ -362,7 +359,7 @@ function taskCard(it){
 async function vRequests(mine){
   VIEW_SEQ++;
   const body=chrome('requests',t('Document requests'));
-  pa([{label:t('+ New request'),icon:'plus',primary:true,onClick:async()=>{
+  pa([{label:t('New request'),icon:'plus',primary:true,onClick:async()=>{
     const orgs=(await get('/api/portal/orgs')).data.orgs;
     const f=await ask(t('New request'),null,t('Create'),[
       {name:'orgId',label:t('Client'),type:'select',options:orgs.map(o=>[o.id,o.name])},
@@ -445,7 +442,7 @@ async function vOrgs(){
   VIEW_SEQ++;
   const body=chrome('orgs',t('Clients'));
   pa([
-    {label:t('+ New client'),icon:'plus',primary:true,onClick:async()=>{
+    {label:t('New client'),icon:'plus',primary:true,onClick:async()=>{
       const f=await ask(t('New client'),null,t('Create'),[
         {name:'name',label:t('Name'),required:true},
         {name:'ref',label:t('Reference (optional)')},
@@ -561,7 +558,7 @@ async function openOrg(id){
   if(!(r.data.contacts||[]).length)resp.appendChild(h('<p class="kzc-muted">'+esc(t('Nobody assigned yet.'))+'</p>'));
   const mc=card(t('Contacts'),t('Portal users of this client — they sign in by e-mail code.'));
   mc.body.appendChild(h('<div id="kzc-members" class="kzc-list"></div>'));
-  mc.actions.appendChild(btn(t('+ Add contact'),async()=>{
+  mc.actions.appendChild(btn(t('Add contact'),async()=>{
     const f=await ask(t('Add contact'),null,t('Add'),[{name:'email',label:t('E-mail'),type:'email',required:true},{name:'displayName',label:t('Name')}]);
     if(!f)return;
     const rr=await post('/api/portal/orgs/'+id+'/members',{email:f.email,displayName:f.displayName});
@@ -592,7 +589,7 @@ async function openOrg(id){
   });
   if(!(r.data.ulinks||[]).length)ul.appendChild(h('<p class="kzc-muted">'+esc(t('No links yet.'))+'</p>'));
   // #kzc-ulinks + button adjacency is an e2e hook (l10n sweep) — keep it.
-  const ub=btn(t('+ Upload link'),async()=>{
+  const ub=btn(t('Upload link'),async()=>{
     const f=await ask(t('Create upload link'),null,t('Create'),[
       {name:'label',label:t('Label'),required:true},
       {name:'expiryDays',label:t('Valid (days)'),type:'number'},
@@ -621,7 +618,7 @@ async function openOrg(id){
   // approvals on documents (US-P23)
   const ac=card(t('Approvals'),t('Documents the client must formally approve or reject.'));
   ac.body.appendChild(h('<div id="kzc-appr" class="kzc-list"></div>'));
-  ac.actions.appendChild(btn(t('+ Request approval'),async()=>{
+  ac.actions.appendChild(btn(t('Request approval'),async()=>{
     const docs=await get('/api/portal/orgs/'+id+'/documents');
     const files=(docs.data&&docs.data.files)||[];
     if(!files.length){warnT(t('No documents in this client\'s Dokumente folder yet.'));return;}
@@ -649,7 +646,7 @@ async function openOrg(id){
   }
   // send questionnaire — secondary action under approvals/forms workflows
   const qc=card(t('Questionnaires'),t('Send a form for the client to fill in.'));
-  qc.actions.appendChild(btn(t('+ Send questionnaire'),async()=>{
+  qc.actions.appendChild(btn(t('Send questionnaire'),async()=>{
     const tpls=await get('/api/portal/form-templates');
     const tt=(tpls.data&&tpls.data.templates)||[];
     if(!tt.length){warnT(t('No form templates yet — create one under Questionnaires.'));return;}
@@ -961,7 +958,7 @@ async function vHolds(){
 async function vForms(){
   VIEW_SEQ++;
   const body=chrome('forms',t('Questionnaires'));
-  if(ME_ADMIN)pa([{label:t('+ New template'),icon:'plus',primary:true,onClick:async()=>{
+  if(ME_ADMIN)pa([{label:t('New template'),icon:'plus',primary:true,onClick:async()=>{
     const f=await ask(t('New form template'),null,t('Create'),[
       {name:'name',label:t('Name'),required:true},
       {name:'fields',label:t('Fields (one per line: key|label|type|required)',),type:'textarea',required:true},
@@ -1083,8 +1080,15 @@ const VIEWS={overview:vOverview,inbox:vInbox,board:vBoard,requests:vRequests,org
   const v=p.get('view'),orgId=parseInt(p.get('org')||'',10);
   if(v==='inbox'&&orgId>0){
     const oRes=await get('/api/portal/orgs');
-    const o=(oRes.data&&oRes.data.orgs||[]).find(x=>x.id===orgId);
-    if(o){openConv(orgId,o.name);return;}
+    let name=(oRes.data&&oRes.data.orgs||[]).find(x=>x.id===orgId)?.name;
+    if(!name){
+      // The orgs list is capped (200) — a notification deeplink into an
+      // older org must still land: resolve the name via the inbox's own
+      // conversation list (uncapped, and deeplinks always target a conv).
+      const iRes=await get('/api/portal/inbox');
+      name=(iRes.data&&iRes.data.conversations||[]).find(c=>c.orgId===orgId)?.orgName;
+    }
+    if(name){openConv(orgId,name);return;}
   }
   if(bootView==='settings'){vSettings((mount&&mount.dataset.kzcSection)||'');return;}
   (VIEWS[bootView]||VIEWS[v]||vOverview)();

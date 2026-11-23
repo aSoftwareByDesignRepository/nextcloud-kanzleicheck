@@ -736,7 +736,8 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 		// orgId served one org's data to a multi-org member for 60 s.
 		$key = $identity->getId() . ':' . $orgId . ':approvals';
 		if (($hit = $cache->get($key)) !== null) return new JSONResponse($hit);
-		$status = $this->approvals($orgId)->getData()['data'] ?? [];
+		$resp = $this->approvals($orgId)->getData();
+		$status = is_array($resp) ? ($resp['data'] ?? []) : [];
 		$payload = ['status' => $status,
 			'serverNow' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format(\DateTimeInterface::ATOM)];
 		$cache->set($key, ['success' => true, 'data' => $payload], 60);

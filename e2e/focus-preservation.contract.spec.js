@@ -34,7 +34,14 @@ const SURGERY_CONTAINER = `a.closest('ul, ol, tbody, [role="list"], [role="group
 
 /** Detach the container holding the focused element and swap in a clone. */
 const REBUILD = `(() => {
-	const a = document.activeElement;
+	const focused = document.activeElement;
+	// after a genuine leave, activeElement is body/html — fall back to the
+	// contract's focus TARGET (its first match is the node that was focused),
+	// otherwise parentElement surgery would replace <html> itself.
+	const a = (focused && focused !== document.body && focused !== document.documentElement)
+		? focused
+		: document.querySelector('${TARGET}');
+	if (!a) return false;
 	const container = ${SURGERY_CONTAINER};
 	const clone = container.cloneNode(true);
 	container.replaceWith(clone);
@@ -63,8 +70,10 @@ test.describe('FOCUS_PRESERVATION_CONTRACT', () => {
 		await assertLeaveThenWipeDoesNotSteal(page, {
 			target: TARGET,
 			leave: async () => {
-				// Trusted gesture on neutral NC chrome (top-left header area).
-				await page.mouse.click(10, 8);
+				// Trusted gesture on inert in-app text — moves focus to <body>
+				// WITHOUT navigating (a coordinate click in the header zone can
+				// land on the logo home-link and tear the page down mid-probe).
+				await page.locator('#kzc-page-title').click();
 				await page.waitForTimeout(150);
 			},
 			rebuild: () => page.evaluate(REBUILD),

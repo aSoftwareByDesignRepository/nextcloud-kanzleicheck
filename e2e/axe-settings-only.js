@@ -1,5 +1,5 @@
 const { chromium } = require('@playwright/test');
-const { AxeBuilder } = require('/home/alex/Development/nextcloud-dev/nextcloud/apps/bookingcheck/node_modules/@axe-core/playwright');
+const { AxeBuilder } = require('@axe-core/playwright');
 const { login, creds } = require('../tests/e2e/helpers/auth.js');
 (async () => {
   const b = await chromium.launch();

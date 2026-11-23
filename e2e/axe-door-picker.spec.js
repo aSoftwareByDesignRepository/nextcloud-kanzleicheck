@@ -1,5 +1,5 @@
 const {test,expect}=require('@playwright/test');
-const {AxeBuilder}=require('/home/alex/Development/nextcloud-dev/nextcloud/apps/bookingcheck/node_modules/@axe-core/playwright');
+const {AxeBuilder}=require('@axe-core/playwright');
 const {login,hasCreds,creds}=require('../tests/e2e/helpers/auth.js');
 const APP='/index.php/apps/kanzleicheck';
 test('axe door pickers + resp-staff dialog',async({page})=>{

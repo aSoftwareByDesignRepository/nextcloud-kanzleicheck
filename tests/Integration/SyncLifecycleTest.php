@@ -26,6 +26,9 @@ class SyncLifecycleTest extends TestCase
 	private static int $orgId = 0;
 	private static int $identityId = 0;
 	private static string $origAdmins = '';
+	private static string $origDoorRestricted = '';
+	private static int $rootFileId = 0;
+	private static bool $createdRootShare = false;
 
 	public static function setUpBeforeClass(): void
 	{
@@ -41,7 +44,7 @@ class SyncLifecycleTest extends TestCase
 			self::$skip = ['reason' => 'no NC_ADMIN_* creds in tests/e2e/.env'];
 			return;
 		}
-		self::$base = rtrim($b ?? getenv('KZC_BASE') ?: 'http://localhost:8081', '/');
+		self::$base = rtrim(getenv('KZC_BASE') ?: ($b ?? 'http://localhost:8081'), '/');
 		self::$auth = 'Basic ' . base64_encode("$u:$p");
 		$r = self::http('GET', '/apps/kanzleicheck/api/portal/orgs');
 		if (!in_array($r['status'], [200], true)) {
@@ -65,16 +68,39 @@ class SyncLifecycleTest extends TestCase
 		}
 		$raw = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
 		$json = json_decode((string)$raw, true);
 		return ['status' => $status, 'json' => is_array($json) ? $json : null, 'raw' => (string)$raw];
 	}
 
+	/**
+	 * PDO against the dev DB; override with KZC_DB_DSN / KZC_DB_HOST /
+	 * KZC_DB_NAME / KZC_DB_USER / KZC_DB_PASSWORD for host-side runs.
+	 * Writes to oc_appconfig must outlive the AppConfig APCu blob
+	 * (LOCAL_CACHE_TTL = 3 s in OC\AppConfig) before the next HTTP call,
+	 * or the web workers keep serving the stale snapshot.
+	 */
 	private static function db(string $sql): string
 	{
-		$out = [];
-		exec('cd /home/alex/Development/nextcloud-dev/nextcloud && docker exec nextcloud-mariadb mariadb -unextcloud -pnextcloud_password nextcloud -N -e ' . escapeshellarg($sql) . ' 2>/dev/null', $out);
-		return trim(implode("\n", $out));
+		static $pdo = null;
+		$pdo ??= new \PDO(
+			getenv('KZC_DB_DSN') ?: 'mysql:host=' . (getenv('KZC_DB_HOST') ?: 'mariadb')
+				. ';dbname=' . (getenv('KZC_DB_NAME') ?: 'nextcloud'),
+			getenv('KZC_DB_USER') ?: 'nextcloud',
+			getenv('KZC_DB_PASSWORD') ?: 'nextcloud_password',
+			[\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
+		);
+		if (str_starts_with(strtoupper(ltrim($sql)), 'SELECT')) {
+			$row = $pdo->query($sql)->fetch(\PDO::FETCH_NUM);
+			if ($row === false) {
+				return '';
+			}
+			return implode("\t", array_map(fn($v) => $v === null ? 'NULL' : (string)$v, $row));
+		}
+		$pdo->exec($sql);
+		if (str_contains($sql, 'oc_appconfig')) {
+			usleep(3_500_000);
+		}
+		return '';
 	}
 
 	private function need(): void
@@ -95,11 +121,19 @@ class SyncLifecycleTest extends TestCase
 				self::db("DELETE FROM oc_share WHERE id=" . (int)$sid);
 			}
 		}
+		if (self::$createdRootShare && self::$rootFileId > 0) {
+			self::db("DELETE FROM oc_share WHERE share_with='kzc_atlas_e2e' AND item_source=" . self::$rootFileId);
+		}
 		self::db("DELETE FROM oc_kzc_sync WHERE org_id=" . self::$orgId . ";
 DELETE FROM oc_kzc_member WHERE org_id=" . self::$orgId . ";
 DELETE FROM oc_kzc_identity WHERE email='sync@t.invalid';
-DELETE FROM oc_kzc_org WHERE ref='SYNC-1';
-UPDATE oc_appconfig SET configvalue='" . self::$origAdmins . "' WHERE appid='kanzleicheck' AND configkey='app_admins';");
+DELETE FROM oc_kzc_org WHERE ref='SYNC-1';");
+		self::db(self::$origAdmins === ''
+			? "DELETE FROM oc_appconfig WHERE appid='kanzleicheck' AND configkey='app_admins'"
+			: "INSERT INTO oc_appconfig (appid,configkey,configvalue) VALUES ('kanzleicheck','app_admins','" . addslashes(self::$origAdmins) . "') ON DUPLICATE KEY UPDATE configvalue='" . addslashes(self::$origAdmins) . "'");
+		self::db(self::$origDoorRestricted === ''
+			? "DELETE FROM oc_appconfig WHERE appid='kanzleicheck' AND configkey='door_restricted'"
+			: "INSERT INTO oc_appconfig (appid,configkey,configvalue) VALUES ('kanzleicheck','door_restricted','" . addslashes(self::$origDoorRestricted) . "') ON DUPLICATE KEY UPDATE configvalue='" . addslashes(self::$origDoorRestricted) . "'");
 	}
 
 	public function testSeedOrgIdentityAndAdminPromotion(): void
@@ -108,7 +142,11 @@ UPDATE oc_appconfig SET configvalue='" . self::$origAdmins . "' WHERE appid='kan
 		self::$origAdmins = self::db("SELECT configvalue FROM oc_appconfig WHERE appid='kanzleicheck' AND configkey='app_admins'");
 		$admins = json_decode(self::$origAdmins, true) ?: [];
 		$admins = array_values(array_unique(array_merge($admins, ['kzc_atlas_e2e'])));
-		self::db("UPDATE oc_appconfig SET configvalue='" . addslashes(json_encode($admins)) . "' WHERE appid='kanzleicheck' AND configkey='app_admins'");
+		self::db("INSERT INTO oc_appconfig (appid,configkey,configvalue) VALUES ('kanzleicheck','app_admins','" . addslashes(json_encode($admins)) . "') ON DUPLICATE KEY UPDATE configvalue='" . addslashes(json_encode($admins)) . "'");
+		// door must be restricted for the suggest/bind/enable flow (D-B12);
+		// capture the original value so tearDown can restore it
+		self::$origDoorRestricted = self::db("SELECT configvalue FROM oc_appconfig WHERE appid='kanzleicheck' AND configkey='door_restricted'");
+		self::db("INSERT INTO oc_appconfig (appid,configkey,configvalue) VALUES ('kanzleicheck','door_restricted','1') ON DUPLICATE KEY UPDATE configvalue='1'");
 		self::db("DELETE FROM oc_kzc_member WHERE identity_id IN (SELECT id FROM oc_kzc_identity WHERE email='sync@t.invalid');
 DELETE FROM oc_kzc_identity WHERE email='sync@t.invalid';
 DELETE FROM oc_kzc_org WHERE ref='SYNC-1';
@@ -117,6 +155,20 @@ DELETE FROM oc_share WHERE share_with='kzc_atlas_nonstaff' AND uid_initiator='kz
 INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('Sync Mandat','SYNC-1','company','active',0,'system:test',NOW(),NOW());
 INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('sync@t.invalid','Sync Client','active',NOW());
 INSERT INTO oc_kzc_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_kzc_identity i, oc_kzc_org o WHERE i.email='sync@t.invalid' AND o.ref='SYNC-1';");
+		// share the configured docs root to the sync actor — ownership stays
+		// with root; share mounts expose owner file ids inside the actor's
+		// view, which is what the docs-root health check resolves against
+		self::$rootFileId = (int)self::db("SELECT f.fileid FROM oc_filecache f JOIN oc_storages s ON f.storage=s.numeric_id WHERE f.path='files/KanzleiCheck' AND s.id='home::root'");
+		if (self::$rootFileId > 0) {
+			// reuse a pre-existing docs-root share (dev fixture); only tear down
+			// a share this seed actually created, never the fixture's own row
+			$have = self::db("SELECT id FROM oc_share WHERE share_with='kzc_atlas_e2e' AND item_source=" . self::$rootFileId . " AND accepted=1 LIMIT 1");
+			if ($have === '' || $have === '0') {
+				self::db("DELETE FROM oc_share WHERE share_with='kzc_atlas_e2e' AND item_source=" . self::$rootFileId);
+				self::db("INSERT INTO oc_share (share_type,share_with,uid_owner,uid_initiator,item_type,item_source,item_target,file_source,file_target,permissions,stime,accepted) VALUES (0,'kzc_atlas_e2e','root','root','folder'," . self::$rootFileId . ",'/KanzleiCheck'," . self::$rootFileId . ",'/KanzleiCheck',31," . time() . ",1)");
+				self::$createdRootShare = true;
+			}
+		}
 		self::$orgId = (int)self::db("SELECT id FROM oc_kzc_org WHERE ref='SYNC-1'");
 		self::$identityId = (int)self::db("SELECT id FROM oc_kzc_identity WHERE email='sync@t.invalid'");
 		$this->assertGreaterThan(0, self::$orgId);
