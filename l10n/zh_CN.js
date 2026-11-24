@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "输入无效",
 	"Invalid key" : "密钥无效",
 	"Invalid value." : "值无效。",
-	"InvoiceCheck customer id (optional)" : "InvoiceCheck 客户 ID（可选）",
 	"Invoices" : "发票",
 	"Issue tracker" : "问题跟踪器",
 	"KanzleiCheck" : "KanzleiCheck",

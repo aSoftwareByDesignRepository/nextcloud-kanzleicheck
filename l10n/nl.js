@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "Ongeldige invoer",
 	"Invalid key" : "Ongeldige sleutel",
 	"Invalid value." : "Ongeldige waarde.",
-	"InvoiceCheck customer id (optional)" : "InvoiceCheck-klantnummer (optioneel)",
 	"Invoices" : "Facturen",
 	"Issue tracker" : "Issuetracker",
 	"KanzleiCheck" : "KanzleiCheck",

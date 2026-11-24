@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "Geçersiz giriş",
 	"Invalid key" : "Geçersiz anahtar",
 	"Invalid value." : "Geçersiz değer.",
-	"InvoiceCheck customer id (optional)" : "InvoiceCheck müşteri no (isteğe bağlı)",
 	"Invoices" : "Faturalar",
 	"Issue tracker" : "Sorun izleyici",
 	"KanzleiCheck" : "KanzleiCheck",

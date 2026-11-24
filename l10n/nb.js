@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "Ugyldig inndata",
 	"Invalid key" : "Ugyldig nøkkel",
 	"Invalid value." : "Ugyldig verdi.",
-	"InvoiceCheck customer id (optional)" : "InvoiceCheck-kundenummer (valgfritt)",
 	"Invoices" : "Fakturaer",
 	"Issue tracker" : "Problemsporing",
 	"KanzleiCheck" : "KanzleiCheck",

@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "Ogiltig inmatning",
 	"Invalid key" : "Ogiltig nyckel",
 	"Invalid value." : "Ogiltigt värde.",
-	"InvoiceCheck customer id (optional)" : "InvoiceCheck-kundnummer (valfritt)",
 	"Invoices" : "Fakturor",
 	"Issue tracker" : "Ärendehantering",
 	"KanzleiCheck" : "KanzleiCheck",

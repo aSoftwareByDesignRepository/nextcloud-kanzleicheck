@@ -263,7 +263,6 @@ OC.L10N.register(
 	"Invalid input" : "Недопустимый ввод",
 	"Invalid key" : "Недействительный ключ",
 	"Invalid value." : "Недопустимое значение.",
-	"InvoiceCheck customer id (optional)" : "ID клиента InvoiceCheck (необязательно)",
 	"Invoices" : "Счета",
 	"Issue tracker" : "Трекер задач",
 	"KanzleiCheck" : "KanzleiCheck",
