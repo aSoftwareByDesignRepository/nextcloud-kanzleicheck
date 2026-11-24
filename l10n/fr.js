@@ -263,6 +263,7 @@ OC.L10N.register(
 	"Invalid input" : "Saisie invalide",
 	"Invalid key" : "Clé invalide",
 	"Invalid value." : "Valeur non valide.",
+	"Invoicing app customer id (optional)" : "Identifiant client de l'application de facturation (facultatif)",
 	"Invoices" : "Factures",
 	"Issue tracker" : "Suivi des problèmes",
 	"KanzleiCheck" : "KanzleiCheck",

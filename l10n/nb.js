@@ -263,6 +263,7 @@ OC.L10N.register(
 	"Invalid input" : "Ugyldig inndata",
 	"Invalid key" : "Ugyldig nøkkel",
 	"Invalid value." : "Ugyldig verdi.",
+	"Invoicing app customer id (optional)" : "Kundenummer i faktureringsappen (valgfritt)",
 	"Invoices" : "Fakturaer",
 	"Issue tracker" : "Problemsporing",
 	"KanzleiCheck" : "KanzleiCheck",

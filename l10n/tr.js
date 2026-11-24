@@ -263,6 +263,7 @@ OC.L10N.register(
 	"Invalid input" : "Geçersiz giriş",
 	"Invalid key" : "Geçersiz anahtar",
 	"Invalid value." : "Geçersiz değer.",
+	"Invoicing app customer id (optional)" : "Faturalama uygulaması müşteri numarası (isteğe bağlı)",
 	"Invoices" : "Faturalar",
 	"Issue tracker" : "Sorun izleyici",
 	"KanzleiCheck" : "KanzleiCheck",
