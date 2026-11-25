@@ -691,9 +691,38 @@ dialog .kzc-btn--primary:active,
 .kzc-col__head h2{font-size:var(--kzc-fs-md,1rem);margin:0;}
 .kzc-col__empty{margin:var(--kzc-space-2,8px) 0 0;font-size:var(--kzc-fs-sm,.875rem);}
 .kzc-card2{background:var(--kzc-bg-card,var(--color-main-background));border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-sm,8px);padding:10px 12px;margin-bottom:var(--kzc-space-2,8px);}
-.kzc-card2__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-2,8px);}
-.kzc-card2__title{font-weight:600;}
+.kzc-card2__head{display:flex;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding-bottom:var(--kzc-space-2,8px);margin-bottom:var(--kzc-space-2,8px);border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));}
+/* Card title is a <button> (opens the detail dialog) — text reset plus the
+ * same !important armor as the head icons vs core's bare-button repaint. */
+.kzc-card2__title{display:block;width:100%;text-align:left;cursor:pointer;}
+#app-content .kzc-card2__title{background:transparent !important;border:0 !important;color:var(--color-main-text) !important;padding:0 !important;margin:0 !important;min-width:0 !important;min-height:0 !important;font-size:inherit !important;font-weight:600 !important;line-height:inherit !important;}
+#app-content .kzc-card2__title:hover,#app-content .kzc-card2__title:focus-visible{color:var(--color-primary-element,#0082c9) !important;text-decoration:underline;}
+#app-content .kzc-card2__title:focus-visible{outline:2px solid var(--color-primary-element,#0082c9) !important;outline-offset:2px;}
 .kzc-cardmeta{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);align-items:center;}
+
+/* Board drag & drop + per-card status select (TicketCheck parity). The
+ * grip is the only drag source; negative margins keep the 44px touch
+ * target tucked into the card corner without inflating the head. The
+ * visibility toggle shares the chrome: eye = client-visible (default,
+ * transparent), eye-off = hidden — then it keeps the handle's hover
+ * fill permanently so the exception state reads at a glance. */
+.kzc-card2__tools{display:inline-flex;align-items:center;gap:var(--kzc-space-1,4px);flex:0 0 auto;}
+.kzc-card2__drag,.kzc-card2__vis{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:var(--kzc-touch,44px);min-height:var(--kzc-touch,44px);margin:calc(var(--kzc-space-2,8px)*-1) calc(var(--kzc-space-2,8px)*-1) 0 0;padding:var(--kzc-space-1,4px);border:1px solid transparent;border-radius:var(--kzc-radius-sm,8px);}
+.kzc-card2__drag{cursor:grab;}
+.kzc-card2__vis{cursor:pointer;margin-right:0;}
+/* NC core repaints bare <button> at 0-1-1 (pale fill + border) — the paint
+ * trio needs the same !important armor as .kzc-toast__close / .kzc-btn. */
+#app-content .kzc-card2__drag,#app-content .kzc-card2__vis{background:transparent !important;border-color:transparent !important;color:var(--color-text-maxcontrast) !important;}
+#app-content .kzc-card2__drag:hover,#app-content .kzc-card2__drag:focus-visible,#app-content .kzc-card2__vis:hover,#app-content .kzc-card2__vis:focus-visible,#app-content .kzc-card2__vis--off{color:var(--color-main-text) !important;border-color:var(--color-border-maxcontrast,var(--kzc-border,#ccc)) !important;background:var(--color-background-hover,transparent) !important;}
+#app-content .kzc-card2__drag:focus-visible,#app-content .kzc-card2__vis:focus-visible{outline:2px solid var(--color-primary-element,#0082c9) !important;outline-offset:2px;}
+/* the wrapper is the flex item so the pack's width:100% on the select
+ * shrink-wraps to content instead of stretching across the card */
+.kzc-card2__statuswrap{display:inline-flex;flex:0 1 auto;min-width:0;max-width:100%;}
+.kzc-card2__statuswrap .kzc-card2__status{font-size:var(--kzc-fs-sm,.875rem);padding:var(--kzc-space-1,4px) var(--kzc-space-2,8px);}
+.kzc-card2--dragging{opacity:.5;}
+.kzc-card2--dragging .kzc-card2__drag{cursor:grabbing;}
+.kzc-card2--saving{opacity:.6;pointer-events:none;}
+.kzc-col--dragover{outline:2px dashed var(--color-primary-element,#0082c9);outline-offset:-2px;background:color-mix(in srgb,var(--color-primary-element,#0082c9) 6%,var(--kzc-bg-soft,var(--color-main-background)));}
 
 /* Header → content gap: pack default --kzc-space-5 (24px), halved to
    --kzc-space-3 (12px) app-side (app.css loads after the common packs). */
@@ -758,6 +787,15 @@ dialog .kzc-row:active,
 	background: color-mix(in srgb, var(--color-main-text) 14%, transparent) !important;
 }
 
+/* Conversation read-state: unread rows carry a bold title + emphasized
+   preview, read rows go regular. The count badge and the row's aria-label
+   ("…, Unread messages: N") carry the same signal — weight is never the
+   only indicator (WCAG 1.4.1 spirit). */
+.kzc-row--read .kzc-row__title,
+.kzc-row--read .kzc-row__sub{font-weight:400;}
+.kzc-row--unread .kzc-row__title{font-weight:700;}
+.kzc-row--unread .kzc-row__sub{font-weight:600;color:var(--color-main-text);}
+
 /* Inline state pills (request/task states — text + colour, never colour-only). */
 .kzc-pill{font-size:var(--kzc-fs-xs,.75rem);padding:2px 8px;border-radius:var(--kzc-radius-pill,10px);background:color-mix(in srgb,var(--color-main-text) 8%,transparent);margin-right:4px;}
 .kzc-pill--overdue,.kzc-pill--urgent{background:var(--kzc-danger-fill,var(--color-element-error));color:var(--kzc-danger-on-fill,var(--color-primary-element-text,#fff));}
@@ -789,8 +827,11 @@ dialog .kzc-row:active,
 .kzc-msg{background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);padding:10px 14px;max-width:75%;align-self:flex-start;}
 .kzc-msg--mine{background:var(--color-primary);color:var(--color-primary-text);align-self:flex-end;}
 .kzc-msg__meta{font-size:var(--kzc-fs-xs,.75rem);opacity:.7;margin-top:4px;}
-.kzc-composer{display:flex;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);max-width:720px;}
-.kzc-composer .kzc-input{flex:1;margin-bottom:0;}
+/* Composer sits right-aligned like own bubbles; the field keeps the same
+   75% cap a message bubble has. flex-basis drives the width — the pack's
+   width:100% on .kzc-textarea would otherwise out-spec a width here. */
+.kzc-composer{display:flex;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);align-items:flex-end;padding:var(--kzc-space-2,8px);background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);}
+.kzc-composer .kzc-textarea{flex:1;margin-bottom:0;}
 
 /* Desktop-Sync binding rows (nc-user-binding). */
 .kzc-sync-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:var(--kzc-space-2,8px) 0;border-bottom:1px solid var(--kzc-border,var(--color-border));}

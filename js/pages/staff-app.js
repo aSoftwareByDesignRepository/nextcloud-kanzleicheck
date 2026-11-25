@@ -41,6 +41,9 @@ const ICONS={
  'activity':'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
  'lock':'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
  'layout-grid':'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+ 'grip-vertical':'<circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/>',
+ 'eye':'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+ 'eye-off':'<path d="M10.733 5.076h.01M14.548 5.076h.01"/><path d="M2 2l20 20"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.076A10.73 10.73 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.527 13.527 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>',
 };
 const icon=n=>'<svg class="kzc-icon" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||ICONS['layout-grid'])+'</svg>';
 const well=(v,n)=>'<span class="kzc-notif-icon-well kzc-notif-icon-well--'+(v||'neutral')+'" aria-hidden="true">'+icon(n)+'</span>';
@@ -216,7 +219,8 @@ async function vOverview(){
   if(q.length){
     const list=h('<div class="kzc-list"></div>').firstElementChild;
     q.slice(0,8).forEach(cv=>{
-      const row=rowEl({icon:'inbox',title:cv.orgName||t('Client'),sub:cv.lastPreview||'',ariaLabel:cv.orgName||t('Client'),meta:cv.unread?[h(badge('info',String(cv.unread)))] : [],onClick:()=>openConv(cv.orgId,cv.orgName)});
+      const row=rowEl({icon:'inbox',title:cv.orgName||t('Client'),sub:cv.lastPreview||'',ariaLabel:(cv.orgName||t('Client'))+(cv.unread?', '+t('Unread messages')+': '+cv.unread:''),meta:cv.unread?[h(badge('info',String(cv.unread)))] : [],onClick:()=>openConv(cv.orgId,cv.orgName)});
+      row.classList.add(cv.unread?'kzc-row--unread':'kzc-row--read');
       list.appendChild(row);
     });
     c.body.appendChild(list);
@@ -241,7 +245,8 @@ async function vInbox(mine){
   const convs=r.data.conversations||[];
   if(!convs.length){list.appendChild(empty('inbox',t('No conversations.'),t('Client messages land here once a portal user writes to you.')));return;}
   convs.forEach(cv=>{
-    const row=rowEl({icon:'inbox',title:cv.orgName,sub:(cv.lastAuthorName?cv.lastAuthorName+': ':'')+(cv.lastPreview||'')+(cv.state==='archived'?' '+t('(archived)'):''),ariaLabel:cv.orgName,meta:cv.unread?[h(badge('info',String(cv.unread)))]:[],onClick:()=>openConv(cv.orgId,cv.orgName)});
+    const row=rowEl({icon:'inbox',title:cv.orgName,sub:(cv.lastAuthorName?cv.lastAuthorName+': ':'')+(cv.lastPreview||'')+(cv.state==='archived'?' '+t('(archived)'):''),ariaLabel:cv.orgName+(cv.unread?', '+t('Unread messages')+': '+cv.unread:''),meta:cv.unread?[h(badge('info',String(cv.unread)))]:[],onClick:()=>openConv(cv.orgId,cv.orgName)});
+    row.classList.add(cv.unread?'kzc-row--unread':'kzc-row--read');
     list.appendChild(row);
   });
 }
@@ -255,18 +260,21 @@ async function vInbox(mine){
      immediately — the superseded response is dropped on arrival anyway.
    - the painted-org check (o!==CONV_ORG) drops cross-org responses before
      they can paint or corrupt CONV_LAST (stale_response_render_clobber). */
-let CONV_ORG=null,CONV_LAST=0,CONV_TIMER=null,CONV_BUSY=0,CONV_WANT=false,CONV_GEN=0;
+let CONV_ORG=null,CONV_LAST=0,CONV_TIMER=null,CONV_BUSY=0,CONV_WANT=false,CONV_GEN=0,CONV_MARKED=0;
 async function openConv(orgId,name){
   VIEW_SEQ++;
   if(CONV_TIMER){clearTimeout(CONV_TIMER);CONV_TIMER=null;}
-  CONV_ORG=orgId;CONV_LAST=0;
+  CONV_ORG=orgId;CONV_LAST=0;CONV_MARKED=0;
   const gen=++CONV_GEN;
   const body=chrome('inbox',t('Chat')+' — '+name);
   const c=card(name,t('Client conversation — new replies poll every 15 seconds.'));
   c.actions.appendChild(backBtn(t('All messages'),'inbox'));
   c.body.appendChild(h('<div id="kzc-msgs" class="kzc-msgs"></div>'));
-  c.body.appendChild(h('<form id="kzc-cf" class="kzc-composer"><label class="kzc-sr-only" for="kzc-cm">'+esc(t('Write a reply…'))+'</label><input id="kzc-cm" class="kzc-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a reply…'))+'"><button class="kzc-btn kzc-btn--primary">'+esc(t('Send'))+'</button></form>'));
+  c.body.appendChild(h('<form id="kzc-cf" class="kzc-composer"><label class="kzc-sr-only" for="kzc-cm">'+esc(t('Write a reply…'))+'</label><textarea id="kzc-cm" class="kzc-textarea" rows="3" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a reply…'))+'"></textarea><button class="kzc-btn kzc-btn--primary">'+esc(t('Send'))+'</button></form>'));
   body.appendChild(c.card);
+  /* textarea: Enter sends (input parity), Shift+Enter = newline, IME
+     composition Enter must not send (isComposing — CJK input). */
+  c.body.querySelector('#kzc-cm').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();e.target.form.requestSubmit();}});
   c.body.querySelector('#kzc-cf').addEventListener('submit',async e=>{
     e.preventDefault();const inp=document.getElementById('kzc-cm'),v=inp.value.trim();if(!v)return;
     const r=await post('/api/portal/orgs/'+orgId+'/messages',{body:v,clientUuid:crypto.randomUUID()});
@@ -299,10 +307,20 @@ async function pullConv(gen){
     if(r.data.messages.length)box.scrollTop=box.scrollHeight;
     if(r.data.state==='archived'){document.getElementById('kzc-cf')?.remove();status(t('Conversation archived (read only).'));}
   }
+  /* Unread badge: advance the server read marker to the highest PAINTED id
+     (CONV_LAST only grows inside the paint loop). CONV_MARKED retries any
+     failed POST on the next cycle instead of leaving the badge stale until
+     another client message arrives. */
+  if(CONV_LAST>CONV_MARKED){
+    const mark=CONV_LAST;
+    post('/api/portal/orgs/'+o+'/read',{lastReadId:mark}).then(rr=>{if(rr&&rr.success&&o===CONV_ORG&&mark>CONV_MARKED)CONV_MARKED=mark;}).catch(()=>{});
+  }
   CONV_TIMER=setTimeout(()=>{CONV_TIMER=null;pullConv(gen);},15000);
 }
 
 /* ── Task board ── */
+let BOARD_MOVE_IN_FLIGHT=false; // one CAS move at a time — drop/select during a write is ignored
+let BOARD_DRAG=null;            // card element mid-drag (may outlive its column if the board re-renders)
 async function vBoard(){
   const seq=++VIEW_SEQ;
   const r=await get('/api/portal/board');
@@ -326,33 +344,166 @@ async function vBoard(){
   const wrap=h('<div class="kzc-board"></div>').firstElementChild;
   Object.entries(cols).forEach(([key,col])=>{
     const c=h('<div class="kzc-col"><div class="kzc-col__head"><h2></h2><span class="kzc-col__count"></span></div></div>').firstElementChild;
+    c.dataset.status=key;
     c.querySelector('h2').textContent=col.label;
     c.querySelector('.kzc-col__count').appendChild(h(badge('neutral',String(col.cards.length))));
-    col.cards.forEach(cd=>c.appendChild(taskCard(cd)));
+    col.cards.forEach(cd=>c.appendChild(taskCard(cd,key,cols)));
     if(!col.cards.length)c.appendChild(h('<p class="kzc-muted kzc-col__empty">'+esc(t('Nothing here.'))+'</p>'));
     wrap.appendChild(c);
   });
+  wireBoardDnd(wrap);
   body.appendChild(wrap);
 }
-function taskCard(it){
-  const c=h('<div class="kzc-card2"><div class="kzc-card2__head"><b class="kzc-card2__title"></b></div><div class="kzc-muted kzc-card2__org"></div><div class="kzc-cardmeta"></div></div>');
-  c.querySelector('.kzc-card2__title').textContent=it.title;
+function taskCard(it,status,cols){
+  const c=h('<div class="kzc-card2" data-task-id="" data-status="" data-revision=""><div class="kzc-card2__head"><span class="kzc-card2__statuswrap"></span><span class="kzc-card2__tools"><button type="button" class="kzc-card2__vis" data-kzc-visibility-toggle></button><button type="button" class="kzc-card2__drag" draggable="true"></button></span></div><button type="button" class="kzc-card2__title"></button><div class="kzc-muted kzc-card2__org"></div><div class="kzc-cardmeta"></div></div>').firstElementChild;
+  c.dataset.taskId=it.id;c.dataset.status=status;c.dataset.revision=it.revision;
+  const titleBtn=c.querySelector('.kzc-card2__title');
+  titleBtn.textContent=it.title;
+  titleBtn.title=t('Open details');
+  titleBtn.addEventListener('click',()=>openTaskDetail(it.id));
   c.querySelector('.kzc-card2__org').textContent=it.orgName;
+  const handle=c.querySelector('.kzc-card2__drag');
+  handle.innerHTML=icon('grip-vertical');
+  handle.setAttribute('aria-label',t('Move')+': '+it.title);
+  handle.title=t('Drag to another column or use the status selector.');
+  const vis=c.querySelector('.kzc-card2__vis');
+  const visOn=it.visibility==='status';
+  vis.innerHTML=icon(visOn?'eye':'eye-off');
+  const visLabel=visOn?t('Visible to clients'):t('Hidden from clients');
+  vis.setAttribute('aria-label',visLabel+': '+it.title);
+  vis.setAttribute('aria-pressed',visOn?'true':'false');
+  vis.title=visLabel;
+  if(!visOn)vis.classList.add('kzc-card2__vis--off');
+  vis.addEventListener('click',async()=>{
+    vis.disabled=true;
+    const r=await put('/api/portal/tasks/'+it.id,{portalVisibility:visOn?'none':'status',revision:+c.dataset.revision||0});
+    if(r.success)vBoard();else{vis.disabled=false;if(r.error==='CONFLICT')vBoard();else err(r.message||t('Error'));}
+  });
   const meta=c.querySelector('.kzc-cardmeta');
   const pv={low:'neutral',normal:'info',high:'warning',urgent:'danger'}[it.priority]||'neutral';
   meta.appendChild(h(badge(pv,it.priorityLabel||it.priority)));
   if(it.dueDate)meta.appendChild(h(badge(it.overdue?'danger':'neutral',it.dueDate+(it.overdue?' '+t('(overdue)'):''))));
-  const move=btn(t('Move…'),async()=>{
-    const f=await ask(t('Move to…'),null,t('Move'),[{name:'status',label:t('Status'),type:'select',options:[['new',t('New')],['in_progress',t('In progress')],['waiting',t('Waiting')],['done',t('Done')]]}]);
-    if(!f)return;
-    const r=await put('/api/portal/tasks/'+it.id+'/move',{status:f.status,revision:it.revision});
-    if(r.success)vBoard();else if(r.error==='CONFLICT'){warnT(t('Changed in the meantime — reloaded.'));vBoard();}else err(r.message||t('Error'));
-  },{sm:true});meta.appendChild(move);
-  const vis=btn(it.visibility==='status'?t('In portal: on'):t('In portal: off'),async()=>{
-    const r=await put('/api/portal/tasks/'+it.id,{portalVisibility:it.visibility==='status'?'none':'status',revision:it.revision});
-    if(r.success)vBoard();else if(r.error==='CONFLICT')vBoard();else err(r.message||t('Error'));
-  },{sm:true});meta.appendChild(vis);
+  const sel=h('<select class="kzc-input kzc-card2__status" data-kzc-status-select>'+Object.entries(cols).map(([k,cl])=>'<option value="'+esc(k)+'"'+(k===status?' selected':'')+'>'+esc(cl.label)+'</option>').join('')+'</select>').firstElementChild;
+  sel.setAttribute('aria-label',t('Status')+': '+it.title);
+  sel.addEventListener('change',()=>boardMove(c,sel.value,sel));
+  handle.addEventListener('click',()=>sel.focus()); // activating the grip without dragging hands keyboard users the select
+  c.querySelector('.kzc-card2__statuswrap').appendChild(sel);
   return c;
+}
+/* Card move — the single write path shared by drag-drop and the status
+ * select. Server stays the source of truth: the card only moves after the
+ * CAS write succeeds; the board then re-renders so counts and empty-column
+ * labels stay honest. CONFLICT (a colleague touched the task) reloads
+ * instead of silently diverging — same semantics the Move… dialog had. */
+async function boardMove(card,newStatus,focusEl){
+  const taskId=+card.dataset.taskId||0,prev=card.dataset.status||'';
+  const sel=card.querySelector('[data-kzc-status-select]');
+  if(!taskId||!newStatus||newStatus===prev||BOARD_MOVE_IN_FLIGHT){if(sel)sel.value=prev;return;}
+  BOARD_MOVE_IN_FLIGHT=true;
+  card.classList.add('kzc-card2--saving');card.setAttribute('aria-busy','true');
+  if(sel)sel.disabled=true;
+  const r=await put('/api/portal/tasks/'+taskId+'/move',{status:newStatus,revision:+card.dataset.revision||0});
+  if(r.success){ok(t('Saved.'));await vBoard();}
+  else if(r.error==='CONFLICT'){warnT(t('Changed in the meantime — reloaded.'));await vBoard();}
+  else{err(r.message||t('Error'));if(sel){sel.value=prev;sel.disabled=false;}card.classList.remove('kzc-card2--saving');card.removeAttribute('aria-busy');if(focusEl)focusEl.focus();}
+  BOARD_MOVE_IN_FLIGHT=false;
+  if(r.success||r.error==='CONFLICT')document.querySelector('[data-task-id="'+taskId+'"] [data-kzc-status-select]')?.focus();
+}
+/* Task detail dialog — the board payload stays lean (no note/assignee), so
+ * the dialog fetches the full row on open; that fetch also hands back a
+ * fresh CAS revision. CONFLICT on save refetches + repopulates instead of
+ * clobbering the colleague's write; NOT_FOUND means the task is gone →
+ * close + reload. Field errors render via the shared pack (name= hooks). */
+async function openTaskDetail(taskId){
+  const r=await get('/api/portal/tasks/'+taskId);
+  if(!r.success||!r.data||!r.data.task){
+    if(r.error==='NOT_FOUND'){err(t('This task no longer exists.'));vBoard();return;}
+    err(r.message||t('Error'));return;
+  }
+  const body='<p class="kzc-muted" data-kzc-td-meta></p>'
+    +'<div class="kzc-field"><label class="kzc-label" for="td-title">'+esc(t('Title'))+'</label><input id="td-title" name="title" class="kzc-input" type="text" required maxlength="190"></div>'
+    +'<div class="kzc-field"><label class="kzc-label" for="td-note">'+esc(t('Note'))+'</label><textarea id="td-note" name="note" class="kzc-input" rows="4" maxlength="5000"></textarea></div>'
+    +'<div class="kzc-field"><label class="kzc-label" for="td-priority">'+esc(t('Priority'))+'</label><select id="td-priority" name="priority" class="kzc-input">'+[['low',t('Low')],['normal',t('Normal')],['high',t('High')],['urgent',t('Urgent')]].map(o=>'<option value="'+o[0]+'">'+esc(o[1])+'</option>').join('')+'</select></div>'
+    +'<div class="kzc-field"><label class="kzc-label" for="td-due">'+esc(t('Due'))+'</label><input id="td-due" name="dueDate" class="kzc-input" type="date"></div>'
+    +'<div class="kzc-field"><label class="kzc-label" for="td-assignee">'+esc(t('Assignee'))+'</label><input id="td-assignee" name="assignee" class="kzc-input" type="text" maxlength="64"></div>'
+    +'<p class="kzc-muted" data-kzc-td-audit></p>';
+  const dlg=dlgShell(t('Task'),body,t('Save'));
+  let rev=0;
+  const fmt=iso=>iso?new Date(iso).toLocaleString():'—';
+  function fill(d){
+    dlg.querySelector('#td-title').value=d.title||'';
+    dlg.querySelector('#td-note').value=d.note||'';
+    dlg.querySelector('#td-priority').value=d.priority||'normal';
+    dlg.querySelector('#td-due').value=d.dueDate||'';
+    dlg.querySelector('#td-assignee').value=d.assignee||'';
+    dlg.querySelector('[data-kzc-td-meta]').textContent=(d.orgName?d.orgName+' — ':'')+(d.statusLabel||d.status)+(d.overdue?' '+t('(overdue)'):'');
+    const bits=[t('Created')+': '+fmt(d.createdAt)+(d.createdBy?' ('+d.createdBy+')':''),t('Updated')+': '+fmt(d.updatedAt)];
+    if(d.doneAt)bits.push(t('Done')+': '+fmt(d.doneAt));
+    bits.push(d.visibility==='status'?t('Visible to clients'):t('Hidden from clients'));
+    dlg.querySelector('[data-kzc-td-audit]').textContent=bits.join(' · ');
+    rev=+d.revision||0;
+  }
+  fill(r.data.task);
+  const okBtn=dlg.querySelector('.kzc-btn--primary');
+  okBtn.addEventListener('click',async e=>{
+    e.preventDefault(); // method="dialog" would close before the CAS write lands
+    const title=dlg.querySelector('#td-title').value.trim();
+    if(!title){window.CheckFieldErrors&&CheckFieldErrors.markValidationFields({title:t('Required')});return;}
+    okBtn.disabled=true;
+    const rr=await put('/api/portal/tasks/'+taskId,{
+      title:title,
+      note:dlg.querySelector('#td-note').value||null,
+      priority:dlg.querySelector('#td-priority').value,
+      dueDate:dlg.querySelector('#td-due').value||null,
+      assignee:dlg.querySelector('#td-assignee').value.trim(), // '' clears — isset() skips null server-side
+      revision:rev,
+    });
+    if(rr.success){ok(t('Saved.'));dlg.close('saved');vBoard();return;}
+    if(rr.error==='CONFLICT'){
+      warnT(t('Changed in the meantime — reloaded.'));
+      const fresh=await get('/api/portal/tasks/'+taskId);
+      if(fresh.success&&fresh.data&&fresh.data.task){fill(fresh.data.task);okBtn.disabled=false;return;} // stays open on fresh data
+      dlg.close('');vBoard();return; // task vanished mid-edit
+    }
+    if(rr.fields&&window.CheckFieldErrors)CheckFieldErrors.markValidationFields(rr.fields);
+    err(rr.message||t('Error'));okBtn.disabled=false;
+  });
+  // Enter inside a field implicitly submits method="dialog" and would close
+  // the dialog without saving — reroute to the same CAS write as Save.
+  dlg.querySelector('form').addEventListener('submit',e=>{e.preventDefault();okBtn.click();});
+  dlg.addEventListener('close',()=>dlg.remove());
+  document.body.appendChild(dlg);dlg.showModal();
+}
+/* Drag-and-drop wiring — the grip handle is the only drag source, so card
+ * text stays selectable and the other controls clickable. Keyboard/AT
+ * equivalent: the per-card status select (no pointer-only actions). */
+function wireBoardDnd(wrap){
+  const cols=[...wrap.querySelectorAll('.kzc-col')];
+  const clearInd=()=>cols.forEach(c=>c.classList.remove('kzc-col--dragover'));
+  const reset=()=>{if(BOARD_DRAG)BOARD_DRAG.classList.remove('kzc-card2--dragging');wrap.classList.remove('kzc-board--dragging');clearInd();BOARD_DRAG=null;};
+  wrap.addEventListener('dragstart',e=>{
+    const handle=e.target&&e.target.closest?e.target.closest('.kzc-card2__drag'):null;
+    const card=handle?handle.closest('.kzc-card2[data-task-id]'):null;
+    if(!handle||!card||BOARD_MOVE_IN_FLIGHT){e.preventDefault();return;}
+    BOARD_DRAG=card;card.classList.add('kzc-card2--dragging');wrap.classList.add('kzc-board--dragging');
+    if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',card.dataset.taskId||'');} // Firefox requires setData to start a drag
+  });
+  wrap.addEventListener('dragend',reset);
+  cols.forEach(col=>{
+    col.addEventListener('dragover',e=>{
+      if(!BOARD_DRAG||BOARD_MOVE_IN_FLIGHT)return;
+      e.preventDefault();
+      if(e.dataTransfer)e.dataTransfer.dropEffect='move';
+      clearInd();
+      if(BOARD_DRAG.closest('.kzc-col')!==col)col.classList.add('kzc-col--dragover');
+    });
+    col.addEventListener('dragleave',e=>{if(!col.contains(e.relatedTarget))col.classList.remove('kzc-col--dragover');});
+    col.addEventListener('drop',e=>{
+      e.preventDefault();clearInd();
+      const card=BOARD_DRAG;reset();
+      if(card&&!BOARD_MOVE_IN_FLIGHT)boardMove(card,col.dataset.status||'',null);
+    });
+  });
 }
 
 /* ── Requests ── */
