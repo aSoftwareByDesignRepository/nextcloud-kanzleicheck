@@ -87,7 +87,8 @@ class TaskMapper extends QBMapper
 		} elseif ($due === 'none') {
 			$qb->andWhere($qb->expr()->isNull('due_date'));
 		}
-		$qb->orderBy('due_date', 'ASC')->addOrderBy('id', 'ASC')
+		$qb->orderBy($qb->createFunction('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END'), 'ASC')
+			->addOrderBy('due_date', 'ASC')->addOrderBy('id', 'ASC')
 			->setMaxResults(max(1, min(500, $limit)));
 		return $this->findEntities($qb);
 	}

@@ -184,6 +184,20 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		return $this->ok(['message' => ['id' => (int)$m->getId()]], 201);
 	}
 
+	/** Mirror of portalApi#markRead / companion#markRead — staff unread
+	 *  badges only clear when the read marker advances (monotonic, per uid). */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function markRead(int $orgId): JSONResponse
+	{
+		$this->org($orgId);
+		$conv = $this->convs->findByOrg($orgId);
+		$last = $this->strictId($this->request->getParam('lastReadId', 0)) ?? 0;
+		if ($conv !== null && $last > 0) {
+			$this->chat->markRead((int)$conv->getId(), $this->staffUid, $last);
+		}
+		return new JSONResponse(null, 204);
+	}
+
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function orgs(): JSONResponse
 	{
@@ -227,6 +241,40 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 			$cols[$t->getStatus()]['cards'][] = ['id' => (int)$t->getId(), 'title' => $t->getTitle(), 'orgId' => (int)$t->getOrgId(), 'orgName' => $orgNames[(int)$t->getOrgId()] ?? '', 'priority' => $t->getPriority(), 'dueDate' => $t->getDueDate()?->format('Y-m-d'), 'overdue' => $t->getDueDate() !== null && $t->getStatus() !== 'done' && $t->getDueDate() < $today, 'revision' => (int)$t->getRevision(), 'visibility' => $t->getPortalVisibility()];
 		}
 		return $this->ok(['columns' => $cols, 'counts' => array_map(fn($c) => count($c['cards']), $cols)]);
+	}
+
+	/** Task detail for the board card dialog — the board payload stays lean
+	 * (500 cards, no note/assignee), the dialog fetches the full row and a
+	 * fresh CAS revision on open. Uniform 404 on unknown ids. */
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function task(int $id): JSONResponse
+	{
+		$task = $this->taskMapper->find($id);
+		if ($task === null) {
+			throw new NotFoundException();
+		}
+		$p = $this->presets->get($this->settings->get('preset'));
+		$org = $this->orgs->find((int)$task->getOrgId());
+		$today = new \DateTimeImmutable('today');
+		return $this->ok(['task' => [
+			'id' => (int)$task->getId(),
+			'title' => $task->getTitle(),
+			'note' => $task->getNote(),
+			'status' => $task->getStatus(),
+			'statusLabel' => $p['board'][$task->getStatus()] ?? $task->getStatus(),
+			'priority' => $task->getPriority(),
+			'dueDate' => $task->getDueDate()?->format('Y-m-d'),
+			'overdue' => $task->getDueDate() !== null && $task->getStatus() !== 'done' && $task->getDueDate() < $today,
+			'assignee' => $task->getAssignee(),
+			'visibility' => $task->getPortalVisibility(),
+			'revision' => (int)$task->getRevision(),
+			'orgId' => (int)$task->getOrgId(),
+			'orgName' => $org?->getName() ?? '',
+			'createdBy' => $task->getCreatedBy(),
+			'createdAt' => $task->getCreatedAt()->format(\DateTimeInterface::ATOM),
+			'updatedAt' => $task->getUpdatedAt()->format(\DateTimeInterface::ATOM),
+			'doneAt' => $task->getDoneAt()?->format(\DateTimeInterface::ATOM),
+		]]);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]

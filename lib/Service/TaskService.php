@@ -86,7 +86,7 @@ class TaskService
 			if ($t === null) {
 				throw new NotFoundException();
 			}
-			if ((int)$t->getRevision() !== $expectedRevision) {
+			if ($t->getRevision() !== $expectedRevision) {
 				throw new ConflictException('CONFLICT');
 			}
 			if (isset($fields['title'])) {
@@ -115,8 +115,9 @@ class TaskService
 				$t->setPortalVisibility($fields['portalVisibility']);
 			}
 			if (isset($fields['status']) && in_array($fields['status'], self::STATUSES, true) && $fields['status'] !== $t->getStatus()) {
+				$from = $t->getStatus();
 				$this->applyStatus($t, $fields['status']);
-				$this->audit->log($actor, 'task.status', 'task', $id, ['from' => $t->getStatus(), 'to' => $fields['status']]);
+				$this->audit->log($actor, 'task.status', 'task', $id, ['from' => $from, 'to' => $fields['status']]);
 			}
 			$t->setRevision($expectedRevision + 1);
 			$t->setUpdatedAt(new \DateTimeImmutable());
