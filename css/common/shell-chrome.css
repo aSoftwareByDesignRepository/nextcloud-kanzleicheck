@@ -355,6 +355,14 @@
 	text-align: left;
 	width: 100%;
 	max-width: none;
+	/* The wrapper is a flex item of the scrollport's column above. Default
+	   flex-shrink:1 + NC core's explicit min-height:100% let it shrink to
+	   exactly one viewport when content is taller — the bottom padding then
+	   sits inside the shrunken box while main overflows past it, painting
+	   pages flush to the scrollport edge (shell_wrapper_shrink_bottom_gap).
+	   flex:0 0 auto keeps the item at max(content, min-height:100%) so the
+	   space-7 bottom padding is real on every page. */
+	flex: 0 0 auto;
 	margin: 0;
 	padding: var(--kzc-space-5) var(--kzc-space-5) var(--kzc-space-7);
 	/* Notched phones: keep CTAs clear of home indicator (NC mobile) */

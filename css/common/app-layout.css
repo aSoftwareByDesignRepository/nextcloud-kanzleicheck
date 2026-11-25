@@ -138,7 +138,7 @@
   flex-direction: column;
 }
 
-/* Shell padding/max-width: #app-content-wrapper.kzc-shell in app.css + page-patterns.css */
+/* Shell padding/max-width: #app-content-wrapper.kzc-shell in shell-chrome.css + page-patterns.css */
 #content.app-kanzleicheck #app-content-wrapper {
   width: 100%;
   min-width: 0;

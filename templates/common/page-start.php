@@ -28,6 +28,8 @@ $locale = (string)($clientHints['locale'] ?? $htmlLang);
 $timezone = (string)($clientHints['timezone'] ?? 'UTC');
 $settingsSection = (string)($_['settingsSection'] ?? '');
 $urlsJson = htmlspecialchars(json_encode($urls, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+$glossary = (array)($_['glossary'] ?? []);
+$glossaryJson = htmlspecialchars(json_encode($glossary, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
 $homeUrl = (string)($urls['home'] ?? '#');
 
 include __DIR__ . '/navigation.php';
@@ -38,7 +40,8 @@ include __DIR__ . '/navigation.php';
 	data-kzc-page="<?php p($pageId); ?>"
 	data-kzc-timezone="<?php p($timezone); ?>"
 	data-kzc-settings-section="<?php p($settingsSection); ?>"
-	data-kzc-urls="<?php print_unescaped($urlsJson); ?>">
+	data-kzc-urls="<?php print_unescaped($urlsJson); ?>"
+	data-kzc-glossary="<?php print_unescaped($glossaryJson); ?>">
 	<a class="kzc-skip-link" href="#kzc-main-content"><?php p($l->t('Skip to main content')); ?></a>
 	<div id="kzc-live-region" class="kzc-sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 	<div id="kzc-alert-region" class="kzc-sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>

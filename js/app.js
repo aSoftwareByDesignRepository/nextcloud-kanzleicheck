@@ -64,7 +64,8 @@
 	/* ---------- API ---------- */
 
 	function ApiError(payload, status) {
-		this.error = (payload && payload.error) || 'SERVER_ERROR';
+		this.code = (payload && (payload.error_code || payload.error)) || 'SERVER_ERROR';
+		this.error = this.code;
 		this.message = (payload && payload.message) || t('Unexpected error');
 		this.fields = (payload && payload.fields) || {};
 		this.status = status || 0;
@@ -111,10 +112,12 @@
 		// '/api' matches contractcheck, '/api/v1' privacycheck).
 		return fetch(appBase() + (boot.apiBase || '/api') + path, init).then(function (res) {
 			return res.json().catch(function () { return {}; }).then(function (body) {
-				if (!res.ok || body.success === false) {
+				if (!res.ok || body.success === false || body.ok === false) {
 					throw new ApiError(body, res.status);
 				}
-				return body.data;
+				// Envelope tolerance: {success,data} is the canonical shape;
+				// flat {ok:true,<key>:…} payloads hand the whole body through.
+				return body.data !== undefined ? body.data : body;
 			});
 		});
 	}
@@ -181,7 +184,14 @@
 		if (e && e.fields && Object.keys(e.fields).length && window.CheckFieldErrors) {
 			CheckFieldErrors.markValidationFields(e.fields);
 		}
-		toast('error', (e && e.message) ? e.message : t('Something went wrong.'));
+		// §9.2 error-copy contract: when the app ships an error-copy pack
+		// (KZCErrorCopy.describe(code) → {sentence, recovery}), known codes
+		// render the contracted localized sentence, not the raw message.
+		var copy = (e && window.KZCErrorCopy) ? window.KZCErrorCopy.describe(e.code) : null;
+		var msg = copy
+			? copy.sentence + ' ' + copy.recovery
+			: ((e && e.message) ? e.message : t('Something went wrong.'));
+		toast('error', msg);
 	}
 
 	/**
