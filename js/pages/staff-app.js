@@ -672,7 +672,7 @@ async function openOrg(id){
       {name:'name',label:t('Name'),required:true,value:o.name},
       {name:'ref',label:t('Reference'),value:o.ref||''},
       {name:'bookUrl',label:t('Booking link (/pub/o/slug, optional)'),value:o.bookUrl||''},
-      {name:'pcCustId',label:t('InvoiceCheck customer id (optional)'),value:o.pcCustId||''},
+      {name:'pcCustId',label:t('Invoicing app customer id (optional)'),value:o.pcCustId||''},
     ]);
     if(!f)return;
     const rr=await put('/api/portal/orgs/'+id,{name:f.name,ref:f.ref||null,bookUrl:f.bookUrl||null,pcCustId:f.pcCustId!==''?+f.pcCustId:null});
@@ -807,7 +807,7 @@ async function openOrg(id){
     rr.success?ok(t('Sent.')):err(rr.message||t('Error'));
   },{sm:true,icon:'plus'}));
   body.appendChild(qc.card);
-  // invoices (InvoiceCheck facade)
+  // invoices (the invoicing app facade)
   if(r.data.invoiceAvailable){
     const vc=card(t('Invoices'),null);
     const inv=(r.data.invoices)||[];

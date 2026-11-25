@@ -1,0 +1,4 @@
+{
+	"kzc-app-mount": "SPA mount marker on the #kzc-staff root div; canvas chrome via #app-content.kzc-app, kernel mounts by id",
+	"kzc-transfer-report": "dialog body wrapper emitted by the synced config-transfer pack; chrome via kzc-dialog, verdict via kzc-transfer-report__verdict"
+}

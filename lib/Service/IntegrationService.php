@@ -9,7 +9,7 @@ use OCP\App\IAppManager;
 /**
  * Sibling integrations — facade-only, read-only, fail-safe (NN-P05/NN-P21).
  *
- * InvoiceCheck is consumed exclusively through its owned facade
+ * the invoicing app is consumed exclusively through its owned facade
  * `OCA\InvoiceCheck\Facade\CrmInvoiceReadFacade::listByPcCustomer()`
  * (FC-IC-READ, the only sanctioned sibling import per G-18). The class is
  * resolved lazily from the sibling's own DI container — never by touching
