@@ -634,6 +634,18 @@ OC.L10N.register(
 	"Your answers save automatically." : "Dine svar gemmes automatisk.",
 	"Your contact person" : "Din kontaktperson",
 	"Your provider" : "Din udbyder",
-	"Your sign-in is linked to more than one organisation." : "Dit login er knyttet til mere end én organisation."
+	"Your sign-in is linked to more than one organisation." : "Dit login er knyttet til mere end én organisation.",
+	"Mobile seats" : "Mobile pladser",
+	"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only." : "Medarbejdere, der må logge ind med KanzleiCheck-appen. Kun navngivne Nextcloud-brugere.",
+	"Seats used:" : "Tildelte pladser:",
+	"over limit" : "over grænsen",
+	"Assigned:" : "Tildelt:",
+	"No seats assigned." : "Ingen pladser tildelt.",
+	"Assign a seat so staff can use the companion app." : "Tildel en plads, så medarbejdere kan bruge companion-appen.",
+	"Remove seat" : "Fjern plads",
+	"This person can no longer sign in with the app. Continue?" : "Denne person kan ikke længere logge ind med appen. Fortsæt?",
+	"Assign seat" : "Tildel plads",
+	"Pick a user first." : "Vælg først en bruger.",
+	"Seat assigned." : "Plads tildelt."
 	}
 );

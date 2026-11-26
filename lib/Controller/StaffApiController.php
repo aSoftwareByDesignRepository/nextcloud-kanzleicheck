@@ -342,6 +342,34 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		return $this->ok(['applied' => true, 'portalClients' => (int)$s->getPortalClients(), 'mobileSeats' => (int)$s->getMobileSeats()]);
 	}
 
+	// ── mobile seats (companion staff role, P6-08) ───────────────────
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function seats(): JSONResponse
+	{
+		return $this->ok([
+			'seats' => $this->license->seatsList(),
+			'mobileSeats' => (int)($this->license->state()?->getMobileSeats() ?? 0),
+			'licenseStatus' => $this->license->status(),
+		]);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function assignSeat(): JSONResponse
+	{
+		$this->requireAdmin();
+		$seat = $this->license->assignSeat((string)$this->request->getParam('uid', ''), $this->staffUid);
+		return $this->ok(['seat' => ['id' => (int)$seat->getId(), 'uid' => $seat->getUserId()]], 201);
+	}
+
+	#[NoAdminRequired] #[NoCSRFRequired]
+	public function revokeSeat(int $id): JSONResponse
+	{
+		$this->requireAdmin();
+		$this->license->revokeSeat($id, $this->staffUid);
+		return new JSONResponse(null, 204);
+	}
+
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function importCsv(): JSONResponse
 	{

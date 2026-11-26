@@ -100,6 +100,8 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 		private readonly PresetCatalog $presets,
 		private readonly \OCP\ICacheFactory $cacheFactory,
 		private readonly \OCP\App\IAppManager $appManager,
+		private readonly \OCP\IUserSession $userSession,
+		private readonly \OCA\KanzleiCheck\Service\AccessDoorService $door,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -176,7 +178,10 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	public function bootstrap(): JSONResponse
 	{
 		$orgs = [];
+		$role = 'unknown';
+		$seat = null;
 		if ($this->companionIdentity !== null) {
+			$role = 'client';
 			foreach ($this->identities->orgIdsFor((int)$this->companionIdentity->getId()) as $oid) {
 				$org = $this->orgs->find($oid);
 				if ($org === null || $org->getState() !== 'active') {
@@ -184,14 +189,25 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 				}
 				$orgs[] = ['id' => $oid, 'name' => $org->getName(), 'appEnabled' => (bool)$org->getAppOn()];
 			}
+		} else {
+			// Staff role (D-05): an NC session/user (app-password companion auth
+			// or browser session) admitted by the door. The seat state is
+			// reported, never enforced here — enforcement lives in
+			// CompanionSeatMiddleware so bootstrap can paint the gate screen.
+			$uid = $this->userSession->getUser()?->getUID();
+			if ($uid !== null && $uid !== '' && $this->door->isStaff($uid)) {
+				$role = 'staff';
+				$g = $this->license->gateState($uid);
+				$seat = ['assigned' => $g['seatAssigned'], 'withinLimit' => $g['seatWithinLimit'], 'mobileSeats' => $g['mobileSeats']];
+			}
 		}
 		$status = $this->license->status();
 		return $this->ok([
-			'role' => $this->companionIdentity !== null ? 'client' : 'unknown',
+			'role' => $role,
 			'capabilities' => ['portal' => true, 'kanzleicheck.companion.min' => 1],
 			'pushAvailable' => false,
 			'portal' => ['enabled' => $status !== 'expired', 'licenseStatus' => $status, 'orgs' => $orgs],
-			'licensing' => ['status' => $status, 'product' => 'kanzleicheck'],
+			'licensing' => ['status' => $status, 'product' => 'kanzleicheck', 'seat' => $seat],
 			'server' => ['appVersion' => $this->appManager->getAppVersion(\OCA\KanzleiCheck\AppInfo\Application::APP_ID), 'companionMin' => 1],
 		]);
 	}

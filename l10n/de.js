@@ -634,6 +634,18 @@ OC.L10N.register(
 	"Your answers save automatically." : "Ihre Antworten werden automatisch gespeichert.",
 	"Your contact person" : "Ihr Ansprechpartner",
 	"Your provider" : "Ihr Anbieter",
-	"Your sign-in is linked to more than one organisation." : "Ihre Anmeldung ist mit mehr als einer Organisation verknüpft."
+	"Your sign-in is linked to more than one organisation." : "Ihre Anmeldung ist mit mehr als einer Organisation verknüpft.",
+	"Mobile seats" : "Mobile Seats",
+	"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only." : "Mitarbeitende, die sich mit der KanzleiCheck-App anmelden dürfen. Nur benannte Nextcloud-Benutzer.",
+	"Seats used:" : "Vergabene Seats:",
+	"over limit" : "über Limit",
+	"Assigned:" : "Zugewiesen:",
+	"No seats assigned." : "Keine Seats vergeben.",
+	"Assign a seat so staff can use the companion app." : "Weisen Sie einen Seat zu, damit Mitarbeitende die Begleit-App nutzen können.",
+	"Remove seat" : "Seat entfernen",
+	"This person can no longer sign in with the app. Continue?" : "Diese Person kann sich dann nicht mehr mit der App anmelden. Fortfahren?",
+	"Assign seat" : "Seat zuweisen",
+	"Pick a user first." : "Wählen Sie zuerst einen Benutzer.",
+	"Seat assigned." : "Seat zugewiesen."
 	}
 );

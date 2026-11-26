@@ -634,6 +634,18 @@ OC.L10N.register(
 	"Your answers save automatically." : "Your answers save automatically.",
 	"Your contact person" : "Your contact person",
 	"Your provider" : "Your provider",
-	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation."
+	"Your sign-in is linked to more than one organisation." : "Your sign-in is linked to more than one organisation.",
+	"Mobile seats" : "Mobile seats",
+	"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only." : "Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only.",
+	"Seats used:" : "Seats used:",
+	"over limit" : "over limit",
+	"Assigned:" : "Assigned:",
+	"No seats assigned." : "No seats assigned.",
+	"Assign a seat so staff can use the companion app." : "Assign a seat so staff can use the companion app.",
+	"Remove seat" : "Remove seat",
+	"This person can no longer sign in with the app. Continue?" : "This person can no longer sign in with the app. Continue?",
+	"Assign seat" : "Assign seat",
+	"Pick a user first." : "Pick a user first.",
+	"Seat assigned." : "Seat assigned."
 	}
 );

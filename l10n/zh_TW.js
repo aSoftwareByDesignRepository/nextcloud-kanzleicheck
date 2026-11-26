@@ -634,6 +634,18 @@ OC.L10N.register(
 	"Your answers save automatically." : "您的回答將自動儲存。",
 	"Your contact person" : "您的聯絡人",
 	"Your provider" : "您的提供商",
-	"Your sign-in is linked to more than one organisation." : "您的登入帳號關聯了多個組織。"
+	"Your sign-in is linked to more than one organisation." : "您的登入帳號關聯了多個組織。",
+	"Mobile seats" : "行動版席位",
+	"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only." : "可使用 KanzleiCheck 應用程式登入的員工。僅限指定的 Nextcloud 使用者。",
+	"Seats used:" : "已指派席位：",
+	"over limit" : "超出限額",
+	"Assigned:" : "指派於：",
+	"No seats assigned." : "未指派席位。",
+	"Assign a seat so staff can use the companion app." : "指派席位後員工才能使用配套應用程式。",
+	"Remove seat" : "移除席位",
+	"This person can no longer sign in with the app. Continue?" : "此人將無法再使用該應用程式登入。繼續？",
+	"Assign seat" : "指派席位",
+	"Pick a user first." : "請先選擇使用者。",
+	"Seat assigned." : "席位已指派。"
 	}
 );

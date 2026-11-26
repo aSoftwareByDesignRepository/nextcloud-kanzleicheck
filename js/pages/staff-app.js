@@ -1051,6 +1051,39 @@ async function vSettings(section){
         rr.success?ok(t('Applied.')):err(rr.message||t('Invalid key'));if(rr.success)vSettings(sec);
       },{variant:'primary'}));
       body.appendChild(c.card);
+      // Named mobile seats (P6-08): staff who may sign in with the companion
+      // app. Assignment is admin-only; each change writes an audit row (AC-5).
+      const sr=await get('/api/portal/seats');
+      if(seq!==VIEW_SEQ)return;
+      if(sr.success&&sr.data){
+        const sc=card(t('Mobile seats'),t('Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only.'));
+        const used=sr.data.seats.filter(x=>x.withinLimit).length;
+        sc.body.appendChild(h('<p class="kzc-muted">'+esc(t('Seats used:'))+' '+used+'/'+sr.data.mobileSeats+'</p>'));
+        const list=h('<div class="kzc-list"></div>').firstElementChild;
+        if(!sr.data.seats.length){sc.body.appendChild(empty('users',t('No seats assigned.'),t('Assign a seat so staff can use the companion app.')));}
+        sr.data.seats.forEach(srow=>{
+          const row=h('<div class="kzc-card2"><div class="kzc-card2__head"><b class="kzc-card2__title"></b>'+(srow.withinLimit?badge('success',t('active')):badge('warning',t('over limit')))+'</div><div class="kzc-muted"></div><div class="kzc-actions"></div></div>').firstElementChild;
+          row.querySelector('.kzc-card2__title').textContent=srow.displayName+' ('+srow.uid+')';
+          row.querySelector('.kzc-muted').textContent=(srow.assignedAt?t('Assigned:')+' '+new Date(srow.assignedAt).toLocaleDateString():'')+(srow.assignedBy?' · '+srow.assignedBy:'');
+          row.querySelector('.kzc-actions').appendChild(btn(t('Remove'),async()=>{
+            if(!(await confirmDlg(t('Remove seat'),t('This person can no longer sign in with the app. Continue?'))))return;
+            const rr=await del('/api/portal/seats/'+srow.id);
+            rr.success?vSettings(sec):err(rr.message||t('Error'));
+          },{variant:'danger',sm:true}));
+          list.appendChild(row);
+        });
+        sc.body.appendChild(list);
+        sc.body.appendChild(h(pickerField('seat-q',t('Assign seat'),t('Search users…'))));
+        const pk=dirPicker(sc.body.querySelector('#seat-q').closest('.kzc-picker'),[],'/api/portal/users/search');
+        sc.body.appendChild(h('<div class="kzc-actions" id="seat-add"></div>'));
+        sc.body.querySelector('#seat-add').appendChild(btn(t('Assign seat'),async()=>{
+          const uid=(pk.getSelected()[0]||{}).id;
+          if(!uid){err(t('Pick a user first.'));return;}
+          const rr=await post('/api/portal/seats',{uid});
+          rr.success?ok(t('Seat assigned.')):err(rr.message||t('Error'));if(rr.success)vSettings(sec);
+        },{variant:'primary'}));
+        body.appendChild(sc.card);
+      }
     }
   }else if(sec==='diagnostics'){
     const pc=card(t('Runtime'),t('Background polling interval.'));

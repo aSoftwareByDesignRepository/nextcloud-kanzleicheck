@@ -666,6 +666,18 @@
 		"Your answers save automatically.": "Uw antwoorden worden automatisch opgeslagen.",
 		"Your contact person": "Uw contactpersoon",
 		"Your provider": "Uw aanbieder",
-		"Your sign-in is linked to more than one organisation.": "Je aanmelding is gekoppeld aan meer dan één organisatie."
+		"Your sign-in is linked to more than one organisation.": "Je aanmelding is gekoppeld aan meer dan één organisatie.",
+		"Mobile seats": "Mobiele seats",
+		"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only.": "Medewerkers die mogen inloggen met de KanzleiCheck-app. Alleen aangewezen Nextcloud-gebruikers.",
+		"Seats used:": "Toegewezen seats:",
+		"over limit": "boven limiet",
+		"Assigned:": "Toegewezen:",
+		"No seats assigned.": "Geen seats toegewezen.",
+		"Assign a seat so staff can use the companion app.": "Wijs een seat toe zodat medewerkers de companion-app kunnen gebruiken.",
+		"Remove seat": "Seat verwijderen",
+		"This person can no longer sign in with the app. Continue?": "Deze persoon kan niet meer inloggen met de app. Doorgaan?",
+		"Assign seat": "Seat toewijzen",
+		"Pick a user first.": "Kies eerst een gebruiker.",
+		"Seat assigned.": "Seat toegewezen."
 	}
 }

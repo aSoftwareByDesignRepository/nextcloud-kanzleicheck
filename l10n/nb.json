@@ -666,6 +666,18 @@
 		"Your answers save automatically.": "Svarene dine lagres automatisk.",
 		"Your contact person": "Din kontaktperson",
 		"Your provider": "Din leverandør",
-		"Your sign-in is linked to more than one organisation.": "Påloggingen din er knyttet til mer enn én organisasjon."
+		"Your sign-in is linked to more than one organisation.": "Påloggingen din er knyttet til mer enn én organisasjon.",
+		"Mobile seats": "Mobile seter",
+		"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only.": "Ansatte som kan logge inn med KanzleiCheck-appen. Kun navngitte Nextcloud-brukere.",
+		"Seats used:": "Tildelte seter:",
+		"over limit": "over grensen",
+		"Assigned:": "Tildelt:",
+		"No seats assigned.": "Ingen seter tildelt.",
+		"Assign a seat so staff can use the companion app.": "Tildel et sete slik at ansatte kan bruke companion-appen.",
+		"Remove seat": "Fjern sete",
+		"This person can no longer sign in with the app. Continue?": "Denne personen kan ikke lenger logge inn med appen. Fortsette?",
+		"Assign seat": "Tildel sete",
+		"Pick a user first.": "Velg en bruker først.",
+		"Seat assigned.": "Sete tildelt."
 	}
 }

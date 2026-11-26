@@ -634,6 +634,18 @@ OC.L10N.register(
 	"Your answers save automatically." : "Yanıtlarınız otomatik olarak kaydedilir.",
 	"Your contact person" : "İrtibat kişiniz",
 	"Your provider" : "Sağlayıcınız",
-	"Your sign-in is linked to more than one organisation." : "Oturum açma bilgileriniz birden fazla kuruma bağlı."
+	"Your sign-in is linked to more than one organisation." : "Oturum açma bilgileriniz birden fazla kuruma bağlı.",
+	"Mobile seats" : "Mobil koltuklar",
+	"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only." : "KanzleiCheck uygulamasıyla giriş yapabilen personel. Yalnızca adı belirtilmiş Nextcloud kullanıcıları.",
+	"Seats used:" : "Atanan koltuklar:",
+	"over limit" : "limit aşıldı",
+	"Assigned:" : "Atandı:",
+	"No seats assigned." : "Atanmış koltuk yok.",
+	"Assign a seat so staff can use the companion app." : "Personelin yardımcı uygulamayı kullanabilmesi için bir koltuk atayın.",
+	"Remove seat" : "Koltuğu kaldır",
+	"This person can no longer sign in with the app. Continue?" : "Bu kişi artık uygulamayla giriş yapamayacak. Devam edilsin mi?",
+	"Assign seat" : "Koltuk ata",
+	"Pick a user first." : "Önce bir kullanıcı seçin.",
+	"Seat assigned." : "Koltuk atandı."
 	}
 );

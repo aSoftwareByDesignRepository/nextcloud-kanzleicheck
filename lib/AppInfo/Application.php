@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OCA\KanzleiCheck\AppInfo;
 
 use OCA\KanzleiCheck\Middleware\ApiExceptionMiddleware;
+use OCA\KanzleiCheck\Middleware\CompanionSeatMiddleware;
 use OCA\KanzleiCheck\Middleware\DeviceAuthMiddleware;
 use OCA\KanzleiCheck\Middleware\PortalSessionMiddleware;
 use OCA\KanzleiCheck\Middleware\RateLimitMiddleware;
@@ -46,6 +47,8 @@ class Application extends App implements IBootstrap
 		// afterException iterates in reverse — generic envelope registers FIRST.
 		$context->registerMiddleware(ApiExceptionMiddleware::class);
 		$context->registerMiddleware(StaffAccessMiddleware::class);
+		// seat gate after the door: non-staff gets 403, never a payment oracle
+		$context->registerMiddleware(CompanionSeatMiddleware::class);
 		$context->registerMiddleware(DeviceAuthMiddleware::class);
 		$context->registerMiddleware(PortalSessionMiddleware::class);
 		$context->registerMiddleware(RateLimitMiddleware::class);

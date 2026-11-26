@@ -666,6 +666,18 @@
 		"Your answers save automatically.": "Le Sue risposte si salvano automaticamente.",
 		"Your contact person": "Il Suo referente",
 		"Your provider": "Il Suo fornitore",
-		"Your sign-in is linked to more than one organisation.": "Il Suo accesso è collegato a più di un'organizzazione."
+		"Your sign-in is linked to more than one organisation.": "Il Suo accesso è collegato a più di un'organizzazione.",
+		"Mobile seats": "Posti mobile",
+		"Staff who may sign in with the KanzleiCheck app. Named Nextcloud users only.": "Dipendenti che possono accedere con l’app KanzleiCheck. Solo utenti Nextcloud nominati.",
+		"Seats used:": "Posti assegnati:",
+		"over limit": "oltre il limite",
+		"Assigned:": "Assegnato:",
+		"No seats assigned.": "Nessun posto assegnato.",
+		"Assign a seat so staff can use the companion app.": "Assegna un posto affinché i dipendenti possano usare l’app companion.",
+		"Remove seat": "Rimuovi posto",
+		"This person can no longer sign in with the app. Continue?": "Questa persona non potrà più accedere con l’app. Continuare?",
+		"Assign seat": "Assegna posto",
+		"Pick a user first.": "Seleziona prima un utente.",
+		"Seat assigned.": "Posto assegnato."
 	}
 }
