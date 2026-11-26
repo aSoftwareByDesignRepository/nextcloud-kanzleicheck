@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "appId": "kanzleicheck",
+  "companionDir": "mobile/kanzleicheck",
+  "contracts": [
+    {
+      "id": "staff-message-body",
+      "param": "body",
+      "description": "Staff inbox replies require a non-empty body; clientUuid carries send-dedupe on every client.",
+      "errorCodes": ["VALIDATION_FAILED"],
+      "server": [
+        { "file": "lib/Controller/StaffApiController.php", "needles": ["getParam('body'", "getParam('clientUuid'"] }
+      ],
+      "web": [
+        { "file": "js/pages/staff-app.js", "needles": ["{body:v,clientUuid:crypto.randomUUID()}"] }
+      ],
+      "mobile": [
+        { "file": "src/api/staff.ts", "needles": ["body", "clientUuid"] }
+      ]
+    },
+    {
+      "id": "staff-read-marker",
+      "param": "lastReadId",
+      "description": "Read markers advance monotonically via lastReadId on every staff client.",
+      "errorCodes": [],
+      "server": [
+        { "file": "lib/Controller/StaffApiController.php", "needles": ["getParam('lastReadId'"] }
+      ],
+      "web": [
+        { "file": "js/pages/staff-app.js", "needles": ["{lastReadId:mark}"] }
+      ],
+      "mobile": [
+        { "file": "src/api/staff.ts", "needles": ["lastReadId"] }
+      ]
+    },
+    {
+      "id": "staff-upload-review",
+      "param": "state",
+      "description": "Upload review requires a target state (eingesehen/abgelegt); reack re-acknowledges modified-after-upload (UPLOAD_MODIFIED 409).",
+      "errorCodes": ["VALIDATION_FAILED", "UPLOAD_MODIFIED"],
+      "server": [
+        { "file": "lib/Controller/StaffApiController.php", "needles": ["getParam('state'", "reack"] },
+        { "file": "lib/Service/UploadService.php", "needles": ["UPLOAD_MODIFIED", "'eingesehen'", "'abgelegt'"] }
+      ],
+      "web": [
+        { "file": "js/pages/staff-app.js", "needles": ["{state:'eingesehen'}", "{state:'abgelegt'}"] }
+      ],
+      "mobile": [
+        { "file": "src/api/staff.ts", "needles": ["state", "reack"] },
+        { "file": "src/screens/StaffQueueScreen.tsx", "needles": ["'eingesehen'", "'abgelegt'", "UPLOAD_MODIFIED"] }
+      ]
+    },
+    {
+      "id": "seat-assign-uid",
+      "param": "uid",
+      "description": "Mobile-seat assignment requires a named NC user uid (app-admin only — the companion cannot assign seats).",
+      "errorCodes": ["VALIDATION_FAILED", "SEAT_LIMIT", "LICENSE_REQUIRED"],
+      "server": [
+        { "file": "lib/Service/LicenseService.php", "needles": ["assignSeat", "userExists", "isStaff", "SEAT_LIMIT"] }
+      ],
+      "web": [
+        { "file": "js/pages/staff-app.js", "needles": ["post('/api/portal/seats',{uid})"] }
+      ],
+      "mobile": null
+    }
+  ]
+}
