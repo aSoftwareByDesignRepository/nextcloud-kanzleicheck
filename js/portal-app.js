@@ -252,7 +252,9 @@ let LAST=0;
 async function viewChat(){
   VIEW_SEQ++;LAST=0;
   const gen=++POLL_GEN,org=ORG;
-  el.innerHTML='<h1>'+esc(t('Chat'))+'</h1><div id="kzc-msgs" class="kzc-msgs"></div><form id="kzc-cf" class="kzc-composer"><input id="kzc-cm" class="kzc-input" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a message…'))+'"><button class="kzc-btn kzc-btn--primary">'+esc(t('Send'))+'</button></form><div id="kzc-live" role="status" aria-live="polite" class="kzc-status"></div>';
+  el.innerHTML='<h1>'+esc(t('Chat'))+'</h1><div id="kzc-msgs" class="kzc-msgs"></div><form id="kzc-cf" class="kzc-composer"><label class="kzc-sr-only" for="kzc-cm">'+esc(t('Write a message…'))+'</label><textarea id="kzc-cm" class="kzc-textarea" rows="3" maxlength="4000" required autocomplete="off" placeholder="'+esc(t('Write a message…'))+'"></textarea><button class="kzc-btn kzc-btn--primary">'+esc(t('Send'))+'</button></form><div id="kzc-live" role="status" aria-live="polite" class="kzc-status"></div>';
+  /* textarea: Enter sends, Shift+Enter = newline, IME Enter must not send. */
+  document.getElementById('kzc-cm').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();e.target.form.requestSubmit();}});
   document.getElementById('kzc-cf').addEventListener('submit',async e=>{
     e.preventDefault();
     const inp=document.getElementById('kzc-cm'),body=inp.value.trim();

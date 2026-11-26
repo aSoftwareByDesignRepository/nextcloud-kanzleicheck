@@ -703,10 +703,39 @@ dialog .kzc-btn--primary:active,
 .kzc-col__head{display:flex;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);margin:0 0 var(--kzc-space-2,8px);}
 .kzc-col__head h2{font-size:var(--kzc-fs-md,1rem);margin:0;}
 .kzc-col__empty{margin:var(--kzc-space-2,8px) 0 0;font-size:var(--kzc-fs-sm,.875rem);}
-.kzc-card2{background:var(--kzc-bg-card,var(--color-main-background));border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-sm,8px);padding:10px 12px;margin-bottom:var(--kzc-space-2,8px);}
-.kzc-card2__head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-2,8px);}
-.kzc-card2__title{font-weight:600;}
+.kzc-card2{background:var(--kzc-bg-card,var(--color-main-background));border:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:var(--kzc-radius-sm,8px);padding:var(--kzc-space-3,12px);margin-bottom:var(--kzc-space-2,8px);}
+.kzc-card2__head{display:flex;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding-bottom:var(--kzc-space-2,8px);margin-bottom:var(--kzc-space-2,8px);border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));}
+/* Card title is a <button> (opens the detail dialog) — text reset plus the
+ * same !important armor as the head icons vs core's bare-button repaint. */
+.kzc-card2__title{display:block;width:100%;text-align:left;cursor:pointer;}
+#app-content .kzc-card2__title{background:transparent !important;border:0 !important;color:var(--color-main-text) !important;padding:0 !important;margin:0 !important;min-width:0 !important;min-height:0 !important;font-size:inherit !important;font-weight:600 !important;line-height:inherit !important;}
+#app-content .kzc-card2__title:hover,#app-content .kzc-card2__title:focus-visible{color:var(--color-primary-element,#0082c9) !important;text-decoration:underline;}
+#app-content .kzc-card2__title:focus-visible{outline:2px solid var(--color-primary-element,#0082c9) !important;outline-offset:2px;}
 .kzc-cardmeta{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);align-items:center;}
+
+/* Board drag & drop + per-card status select (TicketCheck parity). The
+ * grip is the only drag source; negative margins keep the 44px touch
+ * target tucked into the card corner without inflating the head. The
+ * visibility toggle shares the chrome: eye = client-visible (default,
+ * transparent), eye-off = hidden — then it keeps the handle's hover
+ * fill permanently so the exception state reads at a glance. */
+.kzc-card2__tools{display:inline-flex;align-items:center;gap:var(--kzc-space-1,4px);flex:0 0 auto;}
+.kzc-card2__drag,.kzc-card2__vis{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:var(--kzc-touch,44px);min-height:var(--kzc-touch,44px);margin:calc(var(--kzc-space-2,8px)*-1) calc(var(--kzc-space-2,8px)*-1) 0 0;padding:var(--kzc-space-1,4px);border:1px solid transparent;border-radius:var(--kzc-radius-sm,8px);}
+.kzc-card2__drag{cursor:grab;}
+.kzc-card2__vis{cursor:pointer;margin-right:0;}
+/* NC core repaints bare <button> at 0-1-1 (pale fill + border) — the paint
+ * trio needs the same !important armor as .kzc-toast__close / .kzc-btn. */
+#app-content .kzc-card2__drag,#app-content .kzc-card2__vis{background:transparent !important;border-color:transparent !important;color:var(--color-text-maxcontrast) !important;}
+#app-content .kzc-card2__drag:hover,#app-content .kzc-card2__drag:focus-visible,#app-content .kzc-card2__vis:hover,#app-content .kzc-card2__vis:focus-visible,#app-content .kzc-card2__vis--off{color:var(--color-main-text) !important;border-color:var(--color-border-maxcontrast,var(--kzc-border,#ccc)) !important;background:var(--color-background-hover,transparent) !important;}
+#app-content .kzc-card2__drag:focus-visible,#app-content .kzc-card2__vis:focus-visible{outline:2px solid var(--color-primary-element,#0082c9) !important;outline-offset:2px;}
+/* the wrapper is the flex item so the pack's width:100% on the select
+ * shrink-wraps to content instead of stretching across the card */
+.kzc-card2__statuswrap{display:inline-flex;flex:0 1 auto;min-width:0;max-width:100%;}
+.kzc-card2__statuswrap .kzc-card2__status{font-size:var(--kzc-fs-sm,.875rem);padding:var(--kzc-space-1,4px) var(--kzc-space-2,8px);}
+.kzc-card2--dragging{opacity:.5;}
+.kzc-card2--dragging .kzc-card2__drag{cursor:grabbing;}
+.kzc-card2--saving{opacity:.6;pointer-events:none;}
+.kzc-col--dragover{outline:2px dashed var(--color-primary-element,#0082c9);outline-offset:-2px;background:color-mix(in srgb,var(--color-primary-element,#0082c9) 6%,var(--kzc-bg-soft,var(--color-main-background)));}
 
 /* Header → content gap: pack default --kzc-space-5 (24px), halved to
    --kzc-space-3 (12px) app-side (app.css loads after the common packs). */
@@ -726,17 +755,17 @@ dialog .kzc-btn--primary:active,
    Divider list: flat rows on the canvas, separated by thin border lines —
    no per-entry fill (design-system divider recipe like .kzc-list-cards). */
 .kzc-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));}
-.kzc-row{display:flex;align-items:center;gap:var(--kzc-space-3,12px);width:100%;text-align:left;padding:10px 14px;border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:0;background:transparent;cursor:pointer;min-height:44px;}
+.kzc-row{display:flex;align-items:center;gap:var(--kzc-space-3,12px);width:100%;text-align:left;padding:var(--kzc-space-3,12px) var(--kzc-space-4,16px);border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:0;background:transparent;cursor:pointer;min-height:44px;}
 .kzc-row:hover{background:var(--kzc-bg-hover,var(--color-background-hover));}
 .kzc-row:focus-visible{outline:3px solid color-mix(in srgb,var(--color-primary-element,#0082c9) 60%,transparent);outline-offset:2px;}
 .kzc-row__icon{flex:0 0 auto;}
-.kzc-row__main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.kzc-row__main{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--kzc-space-1,4px);}
 .kzc-row__title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .kzc-row__sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--kzc-fs-sm,.875rem);}
 .kzc-row__meta{flex:0 0 auto;display:flex;align-items:center;gap:var(--kzc-space-2,8px);}
 .kzc-row__chevron{color:var(--kzc-muted,var(--color-text-maxcontrast));display:inline-flex;}
 /* Flat rows (member/dev lists inside .kzc-list containers) — divider list, block div. */
-.kzc-dev{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:10px 14px;border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:0;background:transparent;}
+.kzc-dev{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:var(--kzc-space-3,12px) var(--kzc-space-4,16px);border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 12%,transparent));border-radius:0;background:transparent;}
 .kzc-dev__label{flex:1;min-width:0;overflow-wrap:anywhere;display:inline-flex;align-items:center;gap:var(--kzc-space-2,8px);}
 .kzc-dev .kzc-actions{margin-top:0;flex:0 0 auto;}
 
@@ -756,7 +785,7 @@ dialog .kzc-row,
 	border-bottom: 1px solid var(--kzc-border, color-mix(in srgb, var(--color-main-text) 12%, transparent)) !important;
 	border-radius: 0;
 	color: var(--kzc-text, var(--color-main-text)) !important;
-	padding: 10px 14px;
+	padding: var(--kzc-space-3, 12px) var(--kzc-space-4, 16px);
 	width: 100%;
 }
 .kzc-app .kzc-row:hover,
@@ -781,16 +810,20 @@ dialog .kzc-row:active,
 	background: color-mix(in srgb, var(--color-main-text) 14%, transparent) !important;
 }
 
-/* Inline state pills (request/task states — text + colour, never colour-only). */
-.kzc-pill{font-size:var(--kzc-fs-xs,.75rem);padding:2px 8px;border-radius:var(--kzc-radius-pill,10px);background:color-mix(in srgb,var(--color-main-text) 8%,transparent);margin-right:4px;}
-.kzc-pill--overdue,.kzc-pill--urgent{background:var(--kzc-danger-fill,var(--color-element-error));color:var(--kzc-danger-on-fill,var(--color-primary-element-text,#fff));}
-.kzc-pill--high{background:color-mix(in srgb,var(--kzc-danger-fill,var(--color-element-error)) 22%,var(--color-main-background));color:var(--kzc-danger-ink,var(--color-main-text));}
+/* Conversation read-state: unread rows carry a bold title + emphasized
+   preview, read rows go regular. The count badge and the row's aria-label
+   ("…, Unread messages: N") carry the same signal — weight is never the
+   only indicator (WCAG 1.4.1 spirit). */
+.kzc-row--read .kzc-row__title,
+.kzc-row--read .kzc-row__sub{font-weight:400;}
+.kzc-row--unread .kzc-row__title{font-weight:700;}
+.kzc-row--unread .kzc-row__sub{font-weight:600;color:var(--color-main-text);}
 
 /* Request cards + expandable item rows. */
 .kzc-req__titleline{display:flex;align-items:center;gap:var(--kzc-space-2,8px);flex-wrap:wrap;}
 .kzc-items-detail{margin-top:var(--kzc-space-2,8px);}
 .kzc-itemlist{display:flex;flex-direction:column;gap:0;margin-top:var(--kzc-space-3,12px);border-top:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 10%,transparent));}
-.kzc-itemrow{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-3,12px);padding:10px 12px;border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 10%,transparent));border-radius:0;background:transparent;}
+.kzc-itemrow{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--kzc-space-3,12px);padding:var(--kzc-space-3,12px);border:0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 10%,transparent));border-radius:0;background:transparent;}
 .kzc-itemrow__main{flex:1;min-width:0;}
 .kzc-itemfiles{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-1,4px);}
 .kzc-file{font-size:var(--kzc-fs-sm,.875rem);}
@@ -801,19 +834,22 @@ dialog .kzc-row:active,
 .kzc-coach__summary::-webkit-details-marker{display:none;}
 .kzc-coach__summary::after{content:'';margin-inline-start:auto;border:solid var(--kzc-muted,var(--color-text-maxcontrast));border-width:0 2px 2px 0;display:inline-block;padding:3px;transform:rotate(45deg);}
 .kzc-coach[open] .kzc-coach__summary::after{transform:rotate(-135deg);}
-.kzc-coach__list{margin:0;padding-inline-start:var(--kzc-space-5,20px);}
+.kzc-coach__list{margin:0;padding-inline-start:var(--kzc-space-5,24px);}
 
 /* Key/value detail rows (org detail, form answers). */
-.kzc-kvrow{display:flex;gap:var(--kzc-space-3,12px);padding:6px 0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 8%,transparent));}
+.kzc-kvrow{display:flex;gap:var(--kzc-space-3,12px);padding:var(--kzc-space-2,8px) 0;border-bottom:1px solid var(--kzc-border,color-mix(in srgb,var(--color-main-text) 8%,transparent));}
 .kzc-kvrow>span{min-width:140px;color:var(--color-text-maxcontrast);}
 
 /* Chat thread (US-P07). */
 .kzc-msgs{display:flex;flex-direction:column;gap:var(--kzc-space-2,8px);max-height:50vh;overflow-y:auto;padding:var(--kzc-space-2,8px) 0;}
-.kzc-msg{background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);padding:10px 14px;max-width:75%;align-self:flex-start;}
+.kzc-msg{background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);padding:var(--kzc-space-3,12px) var(--kzc-space-4,16px);max-width:75%;align-self:flex-start;}
 .kzc-msg--mine{background:var(--color-primary);color:var(--color-primary-text);align-self:flex-end;}
-.kzc-msg__meta{font-size:var(--kzc-fs-xs,.75rem);opacity:.7;margin-top:4px;}
-.kzc-composer{display:flex;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);max-width:720px;}
-.kzc-composer .kzc-input{flex:1;margin-bottom:0;}
+.kzc-msg__meta{font-size:var(--kzc-fs-xs,.75rem);opacity:.7;margin-top:var(--kzc-space-1,4px);}
+/* Composer sits right-aligned like own bubbles; the field keeps the same
+   75% cap a message bubble has. flex-basis drives the width — the pack's
+   width:100% on .kzc-textarea would otherwise out-spec a width here. */
+.kzc-composer{display:flex;gap:var(--kzc-space-2,8px);margin-top:var(--kzc-space-2,8px);align-items:flex-end;padding:var(--kzc-space-2,8px);background:color-mix(in srgb,var(--color-main-text) 6%,var(--color-main-background));border-radius:var(--kzc-radius-md,12px);}
+.kzc-composer .kzc-textarea{flex:1;margin-bottom:0;}
 
 /* Desktop-Sync binding rows (nc-user-binding). */
 .kzc-sync-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--kzc-space-2,8px);padding:var(--kzc-space-2,8px) 0;border-bottom:1px solid var(--kzc-border,var(--color-border));}
@@ -821,7 +857,7 @@ dialog .kzc-row:active,
 
 /* Offboard partial-revoke warning banner (kzc-c3): block-level warn surface
  * prepended to #kzc-body after a sync_revoke_failed partial offboard. */
-.kzc-warnbar{display:flex;max-width:720px;margin:var(--kzc-space-3,12px) 0;padding:6px 12px;font-size:var(--kzc-fs-sm,.9rem);}
+.kzc-warnbar{display:flex;max-width:720px;margin:var(--kzc-space-3,12px) 0;padding:var(--kzc-space-2,8px) var(--kzc-space-3,12px);font-size:var(--kzc-fs-sm,.9rem);}
 
 /* Toast close armor — the toast stack mounts on document.body (outside
  * #app-content.kzc-app), so the pack's .kzc-toast__close rule can lose to
@@ -829,23 +865,21 @@ dialog .kzc-row:active,
  * padding / margin). Pin every repainted property !important
  * (overlay_toast_button_armor_gap; donor shape: whistlecheck .wc-toasts). */
 .kzc-toasts button.kzc-toast__close,
-#kzc-toasts button.kzc-toast__close{width:auto !important;margin:0 !important;margin-inline-start:auto !important;padding:8px !important;background:transparent !important;border:0 !important;min-width:44px;min-height:44px;}
+#kzc-toasts button.kzc-toast__close{width:auto !important;margin:0 !important;margin-inline-start:auto !important;padding:var(--kzc-space-2,8px) !important;background:transparent !important;border:0 !important;min-width:44px;min-height:44px;}
 
 @media (max-width:480px){
-	.kzc-kvrow{flex-direction:column;gap:2px;}
+	.kzc-kvrow{flex-direction:column;gap:var(--kzc-space-1,4px);}
 }
 
 /* Settings chip bar (parts/settings-nav.php): sidebar already lists the
  * sections on desktop — the bar only exists so phones/tablets (<1024px,
- * collapsed #app-navigation) can still reach sibling settings pages. */
-.kzc-settings-nav{display:flex;flex-wrap:wrap;gap:var(--kzc-space-2,8px);margin:0 0 var(--kzc-space-5,24px);padding:0 0 var(--kzc-space-3,12px);border-bottom:1px solid var(--kzc-border,var(--color-border));}
+ * collapsed #app-navigation) can still reach sibling settings pages.
+ * Design-system chip-bar contract: one nowrap row with horizontal scroll —
+ * wrapping rows and phone-stacked columns bury the page's own content. */
+.kzc-settings-nav{display:flex;flex-wrap:nowrap;gap:var(--kzc-space-2,8px);max-width:100%;margin:0 0 var(--kzc-space-5,24px);padding:0 0 var(--kzc-space-3,12px);border-bottom:1px solid var(--kzc-border,var(--color-border));overflow-x:auto;-webkit-overflow-scrolling:touch;}
 @media (min-width:1025px){.kzc-settings-nav{display:none;}}
-.kzc-app .kzc-settings-nav__link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:var(--kzc-space-2,8px) var(--kzc-space-3,12px);border:1px solid var(--kzc-border,var(--color-border));border-radius:var(--kzc-radius-sm,8px);background:var(--color-main-background,#fff);color:var(--color-main-text,#222);text-decoration:none;font-weight:600;font-size:var(--kzc-fs-sm,.875rem);line-height:1.2;white-space:normal;overflow-wrap:anywhere;text-align:center;}
+.kzc-app .kzc-settings-nav__link{display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:var(--kzc-space-2,8px) var(--kzc-space-3,12px);border:1px solid var(--kzc-border,var(--color-border));border-radius:var(--kzc-radius-sm,8px);background:var(--color-main-background,#fff);color:var(--color-main-text,#222);text-decoration:none;font-weight:600;font-size:var(--kzc-fs-sm,.875rem);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
 .kzc-app .kzc-settings-nav__link:hover{border-color:var(--color-primary-element,#0082c9);background:var(--kzc-bg-stripe,var(--color-background-hover));}
 .kzc-app .kzc-settings-nav__link:focus-visible{outline:3px solid color-mix(in srgb,var(--color-primary-element,#0082c9) 60%,transparent);outline-offset:2px;}
 .kzc-app .kzc-settings-nav__link.is-active,
 .kzc-app .kzc-settings-nav__link[aria-current="page"]{border-color:var(--color-primary-element,#0082c9);background:var(--kzc-tint-info,color-mix(in srgb,var(--color-primary-element,#0082c9) 10%,var(--color-main-background,#fff)));font-weight:700;}
-@media (max-width:639.98px){
-	.kzc-settings-nav{flex-direction:column;}
-	.kzc-app .kzc-settings-nav__link{width:100%;justify-content:flex-start;}
-}

@@ -1,6 +1,6 @@
 /* Auto-adapted from arbeitszeitcheck/css/common/tokens.css for the Check-family shell. Do not invent divergent layout rules here. */
 /*
- * Kanzleicheck design tokens (--kzc-*).
+ * KanzleiCheck design tokens (--kzc-*).
  * Colors derive from Nextcloud theme variables; no raw hex in feature CSS.
  * Spacing/typography on :root; theme colors on body + themed app surfaces
  * (NC sets --color-* on body [data-theme-*]).
@@ -69,7 +69,7 @@
 
 	/*
 	 * QR / barcode canvas must stay light for scannability in every theme.
-	 * This is the only intentional non-theme surface in Kanzleicheck feature CSS.
+	 * This is the only intentional non-theme surface in KanzleiCheck feature CSS.
 	 */
 	--kzc-qr-canvas: #ffffff;
 }

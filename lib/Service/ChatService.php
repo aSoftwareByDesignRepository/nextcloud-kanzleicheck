@@ -130,9 +130,16 @@ class ChatService
 
 	public function markRead(int $convId, string $actor, int $lastReadId): void
 	{
-		if ($lastReadId > 0) {
-			$this->reads->advance($convId, $actor, $lastReadId);
+		if ($lastReadId <= 0) {
+			return;
 		}
+		// Clamp to the latest existing message: a cursor ahead of every real
+		// id would stay in front of all future messages and hide them forever.
+		$latest = $this->messages->listPage($convId, 1);
+		if ($latest === []) {
+			return;
+		}
+		$this->reads->advance($convId, $actor, min($lastReadId, $latest[0]->getId()));
 	}
 
 	public function unreadCount(int $convId, string $actor): int

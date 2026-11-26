@@ -1,7 +1,8 @@
 /* Auto-adapted from arbeitszeitcheck/css/common/page-patterns.css for the Check-family shell. Do not invent divergent layout rules here. */
 /**
  * Shared page layout patterns (stack, grid, filters, empty states).
- * Shell width modifiers live here; #app-content-wrapper.kzc-shell in app.css sets base padding.
+ * Shell width modifiers live here; #app-content-wrapper.kzc-shell in
+ * shell-chrome.css sets base padding.
  */
 
 /* ── Shell width ───────────────────────────────────────────── */
@@ -18,7 +19,11 @@
 #app-content.kzc-app #app-content-wrapper.kzc-shell--minimal {
 	max-width: 40rem;
 	margin-inline: auto;
-	padding: var(--kzc-space-6) var(--kzc-space-5);
+	/* Compact top/sides, but the space-7 bottom + safe-area contract is the
+	   same as the default shell — shrinking it here re-creates the flush
+	   bottom edge the shell padding exists to prevent. */
+	padding: var(--kzc-space-6) var(--kzc-space-5)
+		max(var(--kzc-space-7), env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Page stack (vertical rhythm inside main) ───────────────── */
