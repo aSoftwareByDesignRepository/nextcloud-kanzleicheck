@@ -82,7 +82,6 @@ class MailToTextTest extends TestCase
 	private function invokeLeaves(IntakeMailService $svc, object $structure): array
 	{
 		$m = new \ReflectionMethod(IntakeMailService::class, 'textLeaves');
-		$m->setAccessible(true);
 		return $m->invoke($svc, $structure, '');
 	}
 }
