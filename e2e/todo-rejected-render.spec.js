@@ -6,12 +6,14 @@
  * ref node is NOT a direct child of the fragment → NotFoundError, so the
  * entire list died with a page error and nothing rendered.
  *
- * Self-provisioning: staff rejects a delivered request item via the staff
- * API, then the client portal renders the To-do stack. The fixture row is
- * resolved dynamically (rerun prefers the row this spec already rejected —
- * ids/names/emails are never hardcoded to a machine's seed). If no item is
- * delivered, an open one is promoted — reviewItem() gates on state only.
- * Teardown re-delivers nothing — fixture stays 'rejected'.
+ * Self-provisioning with an owned fixture: a unique org + identity +
+ * membership + request + delivered item is seeded per run, staff rejects
+ * the item via the staff API, then the client portal renders the To-do
+ * stack. A deterministic `LIMIT 1` pick over shared fixture rows collided
+ * across concurrent farm runs — both runs landed on the same item AND the
+ * same client identity, so OTP sends and the otp-hygiene DELETE raced the
+ * sibling's login. Unique refs/emails remove the shared state entirely.
+ * Teardown deletes the whole chain — nothing stays 'rejected'.
  */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
@@ -26,10 +28,26 @@ const COMPOSE_ROOT = path.resolve(__dirname, '../../..');
 const authed = hasCreds();
 fs.mkdirSync(OUT, { recursive: true });
 
+// Unique per run — two concurrent suites on the shared dev DB must not
+// share fixture rows (farm runs overlap; OTP login is per-identity).
+const TAG = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const REF = 'TODO-REJ-E2E-1-' + TAG;
+const ORG_NAME = 'Todo Rejected E2E ' + TAG;
+const CLIENT_EMAIL = `todo-rej-${TAG}@t.invalid`;
+const ITEM_LABEL = 'Beleg ' + TAG;
+const REQ_TITLE = 'Unterlagen ' + TAG;
+let orgId = 0;
+let identityId = 0;
+let reqId = 0;
+let itemId = 0;
+
 function db(sql) {
 	const r = spawnSync('docker', ['compose', 'exec', '-T', 'mariadb', 'mariadb',
 		'-unextcloud', '-pnextcloud_password', 'nextcloud', '-N', '-e', sql],
 	{ cwd: COMPOSE_ROOT, encoding: 'utf8', timeout: 60_000 });
+	if (r.status !== 0) {
+		throw new Error(`db() failed rc=${r.status}: ${(r.stderr || '').trim()}`);
+	}
 	return (r.stdout || '').trim();
 }
 
@@ -46,38 +64,50 @@ async function readOtp(email, tries = 30) {
 }
 
 test.describe('client To-do with rejected item (intake fix)', () => {
+	test.beforeAll(() => {
+		// Unique chain: org + client identity + membership + open request +
+		// delivered item. reviewItem() gates on item state only, so seeding
+		// 'delivered' is equivalent to promoting an 'open' row.
+		db(`DELETE FROM oc_kzc_req_item WHERE req_id IN (SELECT id FROM oc_kzc_req WHERE org_id IN (SELECT id FROM oc_kzc_org WHERE ref='${REF}'));
+DELETE FROM oc_kzc_req WHERE org_id IN (SELECT id FROM oc_kzc_org WHERE ref='${REF}');
+DELETE FROM oc_kzc_member WHERE org_id IN (SELECT id FROM oc_kzc_org WHERE ref='${REF}');
+DELETE FROM oc_kzc_org WHERE ref='${REF}';
+DELETE FROM oc_kzc_identity WHERE email='${CLIENT_EMAIL}';
+DELETE FROM oc_kzc_otp WHERE email='${CLIENT_EMAIL}';
+INSERT INTO oc_kzc_org (name,ref,kind,state,app_on,created_by,created_at,updated_at) VALUES ('${ORG_NAME}','${REF}','company','active',1,'system:test',NOW(),NOW());
+INSERT INTO oc_kzc_identity (email,display_name,status,created_at) VALUES ('${CLIENT_EMAIL}','Todo Rej E2E ${TAG}','active',NOW());
+INSERT INTO oc_kzc_member (identity_id,org_id,role,created_at,created_by) SELECT i.id,o.id,'member',NOW(),'system:test' FROM oc_kzc_identity i, oc_kzc_org o WHERE i.email='${CLIENT_EMAIL}' AND o.ref='${REF}';
+INSERT INTO oc_kzc_req (org_id,title,state,created_by,created_at) SELECT id,'${REQ_TITLE}','open','system:test',NOW() FROM oc_kzc_org WHERE ref='${REF}';
+INSERT INTO oc_kzc_req_item (req_id,position,label,kind,state) SELECT id,0,'${ITEM_LABEL}','upload','delivered' FROM oc_kzc_req WHERE org_id IN (SELECT id FROM oc_kzc_org WHERE ref='${REF}');`);
+		orgId = parseInt(db(`SELECT id FROM oc_kzc_org WHERE ref='${REF}'`), 10);
+		identityId = parseInt(db(`SELECT id FROM oc_kzc_identity WHERE email='${CLIENT_EMAIL}'`), 10);
+		reqId = parseInt(db(`SELECT id FROM oc_kzc_req WHERE org_id=${orgId}`), 10);
+		itemId = parseInt(db(`SELECT id FROM oc_kzc_req_item WHERE req_id=${reqId}`), 10);
+		test.skip(!(orgId > 0 && identityId > 0 && reqId > 0 && itemId > 0), 'seed failed');
+	});
+
+	test.afterAll(() => {
+		if (itemId > 0) db(`DELETE FROM oc_kzc_req_item WHERE id=${itemId}`);
+		if (reqId > 0) db(`DELETE FROM oc_kzc_req WHERE id=${reqId}`);
+		if (orgId > 0) {
+			db(`DELETE FROM oc_kzc_member WHERE org_id=${orgId};
+DELETE FROM oc_kzc_org WHERE id=${orgId};`);
+		}
+		if (identityId > 0) {
+			db(`DELETE FROM oc_kzc_otp WHERE email='${CLIENT_EMAIL}';
+DELETE FROM oc_kzc_identity WHERE id=${identityId};`);
+		}
+	});
+
 	test('cards render + reject reason visible + zero page errors', async ({ page, request }) => {
 		test.skip(!authed, 'no creds');
 		const { username, password } = creds();
+		const clientEmail = CLIENT_EMAIL;
+		const orgName = ORG_NAME;
 
-		// Provision: resolve a deliverable item bound to an active member of an
-		// app-enabled org — prefer the row a previous run already rejected so a
-		// rerun is idempotent. Promote an open row to 'delivered' when needed.
+		// Staff rejects the seeded delivered item — fresh fixture, so the
+		// review must land (409 tolerates a worker-restart double-fire).
 		const REASON = 'intake-probe: scan illegible';
-		const FX_SQL =
-			'SELECT ri.id, ri.req_id, o.name, i.email, ri.state FROM oc_kzc_req_item ri ' +
-			'JOIN oc_kzc_req r ON r.id=ri.req_id ' +
-			'JOIN oc_kzc_org o ON o.id=r.org_id ' +
-			"JOIN oc_kzc_member m ON m.org_id=r.org_id AND m.role='member' " +
-			"JOIN oc_kzc_identity i ON i.id=m.identity_id AND i.status='active' " +
-			`WHERE o.state='active' AND o.app_on=1 ` +
-			`AND (ri.reject_reason='${REASON}' OR ri.state='delivered') ` +
-			`ORDER BY (ri.reject_reason='${REASON}') DESC, ri.id LIMIT 1;`;
-		let fx = db(FX_SQL);
-		if (!fx) {
-			db("UPDATE oc_kzc_req_item SET state='delivered' WHERE id = (" +
-				'SELECT id FROM (SELECT ri.id FROM oc_kzc_req_item ri ' +
-				'JOIN oc_kzc_req r ON r.id=ri.req_id ' +
-				'JOIN oc_kzc_org o ON o.id=r.org_id ' +
-				"JOIN oc_kzc_member m ON m.org_id=r.org_id AND m.role='member' " +
-				"JOIN oc_kzc_identity i ON i.id=m.identity_id AND i.status='active' " +
-				"WHERE ri.state='open' AND o.state='active' AND o.app_on=1 " +
-				'ORDER BY ri.id LIMIT 1) pick);');
-			fx = db(FX_SQL);
-		}
-		const [itemId, reqId, orgName, clientEmail] = fx.split('\t').map((s) => s.trim());
-		expect(itemId, 'no deliverable fixture item resolved').toMatch(/^\d+$/);
-
 		const review = await request.put(
 			`${APP}/api/portal/requests/${reqId}/items/${itemId}/review`,
 			{
