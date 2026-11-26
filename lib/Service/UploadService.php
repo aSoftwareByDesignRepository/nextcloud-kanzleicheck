@@ -120,10 +120,12 @@ class UploadService
 			$u = $this->uploads->insert($u);
 		} catch (\Throwable $e) {
 			// file landed but the row did not — never leave an untracked
-			// upload in the user's Eingang
+			// upload in the user's Eingang; a failed cleanup is a real
+			// orphan and must surface as its own failure, never silent
 			try {
 				$node->delete();
-			} catch (\Throwable) {
+			} catch (\Throwable $cleanup) {
+				throw new ApiException(500, 'UPLOAD_CLEANUP_FAILED', 'upload row failed to persist and the orphaned file could not be removed');
 			}
 			throw $e;
 		}
