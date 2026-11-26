@@ -6,34 +6,34 @@
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
 	<id>kanzleicheck</id>
 	<name>KanzleiCheck</name>
-	<summary>Client portal for Nextcloud — passwordless client access, chat, documents, requests and approvals</summary>
-	<summary lang="de">Mandantenportal für Nextcloud — passwortloser Kundenzugang, Chat, Dokumente, Anfragen und Freigaben</summary>
+	<summary>Client portal for Nextcloud: passwordless client access, chat, documents, requests and approvals</summary>
+	<summary lang="de">Mandantenportal für Nextcloud: passwortloser Kundenzugang, Chat, Dokumente, Anfragen und Freigaben</summary>
 	<description><![CDATA[
 # KanzleiCheck
 
 A client portal that lives entirely inside your Nextcloud: external clients log in
-passwordless with an e-mail code — no Nextcloud accounts, no user slots, no passwords.
+passwordless with an e-mail code: no Nextcloud accounts, no user slots, no passwords.
 Chat, documents, document requests with deadlines and reminders, code-confirmed
-approvals, questionnaires, third-party upload links, and a task board — for tax
+approvals, questionnaires, third-party upload links, and a task board, for tax
 offices, agencies, property managers, IT service providers and any team that serves
 external clients.
 
 ## Highlights
 
-- **Passwordless client login** — e-mail + 6-digit code or magic link; device
+- **Passwordless client login**: e-mail + 6-digit code or magic link; device
   pairing with biometric unlock in the companion app
-- **One conversation per client** — shared inbox for your team, per-org scoping,
+- **One conversation per client**: shared inbox for your team, per-org scoping,
   nothing leaks between clients
-- **Documents** — per-client Eingang/Dokumente folders in your Files, chunked
+- **Documents**: per-client Eingang/Dokumente folders in your Files, chunked
   uploads, duplicate detection
-- **Document requests** — checklists, deadlines, automatic reminders, recurring
+- **Document requests**: checklists, deadlines, automatic reminders, recurring
   templates per industry preset
-- **Approvals** — code-confirmed, hash-bound approval records with print proofs
+- **Approvals**: code-confirmed, hash-bound approval records with print proofs
   (not an eIDAS signature)
-- **Privacy first** — all data stays on your server; no third-party services in
+- **Privacy first**: all data stays on your server; no third-party services in
   the data path
-- **Accessibility** — WCAG 2.1 AA target; responsive from 320 px
-- **Bilingual** — German and English
+- **Accessibility**: WCAG 2.1 AA target; responsive from 320 px
+- **Bilingual**: German and English
 
 ## Requirements
 
@@ -46,28 +46,28 @@ external clients.
 # KanzleiCheck
 
 Ein Mandantenportal komplett in Ihrer Nextcloud: Externe Kunden melden sich
-passwortlos per E-Mail-Code an — keine Nextcloud-Konten, keine Benutzer-Slots,
+passwortlos per E-Mail-Code an: keine Nextcloud-Konten, keine Benutzer-Slots,
 keine Passwörter. Chat, Dokumente, Dokumenten-Anfragen mit Fristen und
 Erinnerungen, codebestätigte Freigaben, Fragebögen, Upload-Links für Dritte und
-ein Aufgabenboard — für Kanzleien, Agenturen, Hausverwaltungen, IT-Dienstleister
+ein Aufgabenboard, für Kanzleien, Agenturen, Hausverwaltungen, IT-Dienstleister
 und jedes Team, das externe Kunden betreut.
 
 ## Funktionen
 
-- **Passwortloser Kundenlogin** — E-Mail + 6-stelliger Code oder Magic-Link;
+- **Passwortloser Kundenlogin**: E-Mail + 6-stelliger Code oder Magic-Link;
   Gerätekopplung mit biometrischer Entsperrung in der Companion-App
-- **Eine Konversation pro Kunde** — gemeinsamer Posteingang für Ihr Team,
+- **Eine Konversation pro Kunde**: gemeinsamer Posteingang für Ihr Team,
   strikte Trennung pro Organisation
-- **Dokumente** — Eingang/Dokumente-Ordner pro Kunde in Ihren Dateien,
+- **Dokumente**: Eingang/Dokumente-Ordner pro Kunde in Ihren Dateien,
   Chunk-Uploads, Duplikaterkennung
-- **Dokumenten-Anfragen** — Checklisten, Fristen, automatische Erinnerungen,
+- **Dokumenten-Anfragen**: Checklisten, Fristen, automatische Erinnerungen,
   wiederkehrende Vorlagen je Branchen-Preset
-- **Freigaben** — codebestätigt, hash-gebunden, mit Drucknachweis
+- **Freigaben**: codebestätigt, hash-gebunden, mit Drucknachweis
   (keine eIDAS-Signatur)
-- **Datenschutz** — alle Daten bleiben auf Ihrem Server; keine Drittdienste
+- **Datenschutz**: alle Daten bleiben auf Ihrem Server; keine Drittdienste
   im Datenpfad
-- **Barrierefreiheit** — WCAG 2.1 AA; responsiv ab 320 px
-- **Zweisprachig** — Deutsch und Englisch
+- **Barrierefreiheit**: WCAG 2.1 AA; responsiv ab 320 px
+- **Zweisprachig**: Deutsch und Englisch
 
 ## Voraussetzungen
 

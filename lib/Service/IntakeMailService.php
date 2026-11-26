@@ -11,6 +11,7 @@ namespace OCA\KanzleiCheck\Service;
 
 use OCA\KanzleiCheck\Db\IntakeHoldMapper;
 use OCA\KanzleiCheck\Db\OrgMapper;
+use OCA\KanzleiCheck\Support\MailToText;
 
 /**
  * Inbound mail intake (US-P24). The IMAP fetch is deliberately thin and
@@ -21,6 +22,11 @@ use OCA\KanzleiCheck\Db\OrgMapper;
  */
 class IntakeMailService
 {
+	/** ext-imap part-type ids as literals — keeps part walking unit-testable
+	 *  in environments without the imap extension (constants are the same
+	 *  numeric values as TYPETEXT / TYPEMULTIPART). */
+	private const PART_TEXT = 0;
+	private const PART_MULTIPART = 1;
 	public function __construct(
 		private readonly IntakeService $intake,
 		private readonly IntakeHoldMapper $holds,
@@ -230,9 +236,89 @@ class IntakeMailService
 
 	private function extractBody(\IMAP\Connection $conn, int $uid): string
 	{
-		$body = imap_body($conn, $uid, FT_UID) ?: '';
-		$body = trim(strip_tags(html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
-		return $body;
+		// imap_body() returns the WHOLE MIME payload for multipart mail —
+		// boundaries, part headers and base64 would land in chat raw
+		// (same "unreadable" bug as ticketcheck#11). Walk the structure and
+		// pick the best readable text leaf instead.
+		$structure = @imap_fetchstructure($conn, $uid, FT_UID);
+		if (!is_object($structure)) {
+			return '';
+		}
+		$plain = null;
+		$html = null;
+		foreach ($this->textLeaves($structure) as [$partNo, $part]) {
+			$sub = strtoupper((string)($part->subtype ?? ''));
+			if ($sub === 'PLAIN' && $plain === null) {
+				$plain = [$partNo, $part];
+			} elseif ($sub === 'HTML' && $html === null) {
+				$html = [$partNo, $part];
+			}
+		}
+		$picked = $plain ?? $html;
+		if ($picked === null) {
+			return '';
+		}
+		[$partNo, $part] = $picked;
+		$raw = imap_fetchbody($conn, $uid, $partNo === '' ? '1' : (string)$partNo, FT_UID) ?: '';
+		$text = MailToText::decodePart($raw, (int)($part->encoding ?? 0), $this->partCharset($part));
+		if ($picked === $html || MailToText::looksLikeHtml($text)) {
+			return MailToText::htmlToText($text);
+		}
+		return trim($text);
+	}
+
+	/**
+	 * TEXT leaf parts (non-attachment) with IMAP section numbers.
+	 * The root itself is a leaf for non-multipart messages → partNo ''.
+	 *
+	 * @return list<array{0:string,1:object}>
+	 */
+	private function textLeaves(object $node, string $prefix = ''): array
+	{
+		$out = [];
+		$parts = $node->parts ?? null;
+		if (!is_array($parts) || $parts === []) {
+			if ((int)($node->type ?? 0) === self::PART_TEXT && !$this->isAttachmentPart($node)) {
+				$out[] = [$prefix, $node];
+			}
+			return $out;
+		}
+		foreach (array_values($parts) as $i => $p) {
+			if (!is_object($p)) {
+				continue;
+			}
+			$no = $prefix === '' ? (string)($i + 1) : $prefix . '.' . ($i + 1);
+			if ((int)($p->type ?? 0) === self::PART_MULTIPART) {
+				$out = array_merge($out, $this->textLeaves($p, $no));
+			} elseif ((int)($p->type ?? 0) === self::PART_TEXT && !$this->isAttachmentPart($p)) {
+				$out[] = [$no, $p];
+			}
+		}
+		return $out;
+	}
+
+	private function isAttachmentPart(object $part): bool
+	{
+		if (!empty($part->ifdisposition) && strcasecmp((string)($part->disposition ?? ''), 'attachment') === 0) {
+			return true;
+		}
+		foreach (array_merge((array)($part->dparameters ?? []), (array)($part->parameters ?? [])) as $p) {
+			if (in_array(strtolower((string)($p->attribute ?? '')), ['filename', 'name'], true)
+				&& trim((string)($p->value ?? '')) !== '') {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function partCharset(object $part): string
+	{
+		foreach ((array)($part->parameters ?? []) as $p) {
+			if (strtolower((string)($p->attribute ?? '')) === 'charset') {
+				return (string)($p->value ?? '');
+			}
+		}
+		return '';
 	}
 
 	private function orgOf(int $orgId): ?\OCA\KanzleiCheck\Db\Org
