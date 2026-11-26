@@ -86,10 +86,14 @@ class ChunkUploadService
 		if ($size === false || $size === 0 || $size > self::MAX_CHUNK) {
 			throw new ApiException(400, 'VALIDATION_FAILED', 'chunk size invalid');
 		}
-		if ((int)$row['received_bytes'] + $size > (int)$row['total_bytes']) {
+		$dir = $this->dir();
+		// Disk is the ledger authority — a re-sent chunk replaces its part,
+		// it must never double-count (the row ledger is rewritten from the
+		// real parts below, so a stale/inflated row self-heals).
+		[$have, $haveCount] = $this->partBytes($dir, $uploadId, $index);
+		if ($have + $size > (int)$row['total_bytes']) {
 			throw new ApiException(413, 'FILE_TOO_LARGE', 'chunks exceed declared size');
 		}
-		$dir = $this->dir();
 		$part = self::safeId($uploadId) . '.part' . $index;
 		if ($dir->fileExists($part)) {
 			$dir->getFile($part)->delete(); // re-sent chunk replaces
@@ -103,7 +107,7 @@ class ChunkUploadService
 		stream_copy_to_stream($in, $out);
 		fclose($in);
 		fclose($out);
-		$this->chunks->addChunk($uploadId, $size);
+		$this->chunks->reconcileReceived($uploadId, $have + $size, $haveCount + 1);
 		return $size;
 	}
 
@@ -124,11 +128,14 @@ class ChunkUploadService
 		if (!$this->chunks->claimAssembly($uploadId)) {
 			throw new ApiException(409, 'VALIDATION_FAILED', 'assembly in progress');
 		}
-		if ((int)$row['received_bytes'] !== (int)$row['total_bytes']) {
+		$dir = $this->dir();
+		// Byte-truth from disk, not the ledger row — a ledger inflated by
+		// re-sent chunks must not brick a byte-complete upload.
+		[$have] = $this->partBytes($dir, $uploadId);
+		if ($have !== (int)$row['total_bytes']) {
 			$this->chunks->setState($uploadId, 'receiving');
 			throw new ApiException(400, 'VALIDATION_FAILED', 'incomplete upload');
 		}
-		$dir = $this->dir();
 		$tmp = tempnam(sys_get_temp_dir(), 'kzc_');
 		$out = fopen($tmp, 'w');
 		if (!is_resource($out)) {
@@ -158,6 +165,25 @@ class ChunkUploadService
 			throw new ApiException(400, 'VALIDATION_FAILED', 'chunk set incomplete');
 		}
 		return ['tmp' => $tmp, 'row' => $row];
+	}
+
+	/** Sum [bytes, count] of existing .partN files, optionally skipping one index. */
+	private function partBytes(ISimpleFolder $dir, string $uploadId, int $excludeIndex = -1): array
+	{
+		$bytes = 0;
+		$count = 0;
+		for ($i = 0; $i < self::MAX_CHUNKS; $i++) {
+			if ($i === $excludeIndex) {
+				continue;
+			}
+			$part = self::safeId($uploadId) . '.part' . $i;
+			if (!$dir->fileExists($part)) {
+				continue;
+			}
+			$bytes += $dir->getFile($part)->getSize();
+			$count++;
+		}
+		return [$bytes, $count];
 	}
 
 /** Cleanup after a successful store. */

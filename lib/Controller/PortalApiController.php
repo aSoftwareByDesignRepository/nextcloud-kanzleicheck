@@ -148,8 +148,8 @@ class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contra
 	{
 		$this->org($orgId);
 		$m = $this->chat->post($orgId, $this->actor(), 'client',
-			(string)$this->request->getParam('body', ''),
-			(string)$this->request->getParam('clientUuid', '') ?: null,
+			$this->strParam('body', ''),
+			$this->strParam('clientUuid', '') ?: null,
 			$this->strictId($this->request->getParam('uploadId')));
 		$this->notifyStaffNewMessage($orgId);
 		return $this->ok(['message' => ['id' => (int)$m->getId()]], 201);
@@ -233,9 +233,9 @@ class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contra
 	{
 		$orgId = $this->orgOfApproval($id);
 		$a = $this->approvals->decide($this->actor(), $this->portalIdentity->getEmail(), $id, $orgId,
-			(string)$this->request->getParam('decision', ''),
-			$this->request->getParam('code') !== null ? (string)$this->request->getParam('code') : null,
-			$this->request->getParam('reason') !== null ? (string)$this->request->getParam('reason') : null);
+			$this->strParam('decision', ''),
+			$this->request->getParam('code') !== null ? $this->strParam('code') : null,
+			$this->request->getParam('reason') !== null ? $this->strParam('reason') : null);
 		return $this->ok(['state' => $a->getState()]);
 	}
 
@@ -385,7 +385,7 @@ class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contra
 		}
 		$uploadSvc = new \OCA\KanzleiCheck\Service\UploadService($this->uploads, $this->settings, $this->docs);
 		$uploadSvc->validateFile($file['tmp_name'], (string)$file['name'], $uploadSvc->maxBytes());
-		$note = $this->request->getParam('note') !== null ? (string)$this->request->getParam('note') : null;
+		$note = $this->request->getParam('note') !== null ? $this->strParam('note') : null;
 		$reqItemId = $this->strictId($this->request->getParam('reqItemId'));
 		$res = $uploadSvc->store($eingang, $orgId, $this->actor(), $file['tmp_name'], (string)$file['name'], 'portal', $note);
 		if ($reqItemId !== null && $this->request->getParam('reqId') !== null) {
@@ -403,11 +403,11 @@ class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contra
 	public function chunkStart(int $orgId): JSONResponse
 	{
 		$this->org($orgId);
-		$uploadId = (string)$this->request->getParam('uploadId', '');
+		$uploadId = $this->strParam('uploadId', '');
 		$chunks = $this->chunkSvc();
 		$chunks->start($uploadId, $orgId, $this->actor(),
-			(string)$this->request->getParam('fileName', 'upload'),
-			(int)$this->request->getParam('totalBytes', 0));
+			$this->strParam('fileName', 'upload'),
+			$this->intParam('totalBytes', 0));
 		return $this->ok(['uploadId' => $uploadId], 201);
 	}
 
@@ -548,9 +548,9 @@ class PortalApiController extends Controller implements \OCA\KanzleiCheck\Contra
 		$this->org((int)$form->getOrgId());
 		$svc = \OCP\Server::get(\OCA\KanzleiCheck\Service\FormService::class);
 		$r = $svc->saveAnswer($this->actor(), $formId, (int)$form->getOrgId(),
-			(string)$this->request->getParam('field', ''),
-			(string)$this->request->getParam('value', ''),
-			(int)$this->request->getParam('revision', 0));
+			$this->strParam('field', ''),
+			$this->strParam('value', ''),
+			$this->intParam('revision', 0));
 		return $this->ok($r);
 	}
 

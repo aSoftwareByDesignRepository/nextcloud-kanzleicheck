@@ -13,6 +13,7 @@ use OCA\KanzleiCheck\Db\Identity;
 use OCA\KanzleiCheck\Db\IdentityMapper;
 use OCA\KanzleiCheck\Db\Member;
 use OCA\KanzleiCheck\Db\MemberMapper;
+use OCA\KanzleiCheck\Exception\ApiException;
 use OCA\KanzleiCheck\Exception\ValidationException;
 use OCP\DB\Exception as DbException;
 use OCP\IDBConnection;
@@ -29,7 +30,8 @@ class IdentityService
 	public function __construct(
 		private readonly IdentityMapper $identities,
 		private readonly MemberMapper $members,
-		) {
+		private readonly IDBConnection $db,
+	) {
 	}
 
 	public static function normalizeEmail(string $email): string
@@ -72,9 +74,7 @@ class IdentityService
 
 	public function addMembership(int $identityId, int $orgId, string $actor, string $role = 'member'): Member
 	{
-		if ($this->members->countByIdentity($identityId) >= self::MAX_MEMBERSHIPS) {
-			throw new ValidationException('VALIDATION_FAILED', ['org' => 'membership_limit']);
-		}
+		// Idempotent first: re-adding an existing pair never hits the cap.
 		$existing = $this->members->findByIdentityAndOrg($identityId, $orgId);
 		if ($existing !== null) {
 			return $existing;
@@ -85,11 +85,27 @@ class IdentityService
 		$m->setRole(in_array($role, ['member', 'readonly'], true) ? $role : 'member');
 		$m->setCreatedAt(new \DateTimeImmutable());
 		$m->setCreatedBy($actor);
+		$this->db->beginTransaction();
 		try {
-			return $this->members->insert($m);
-		} catch (DbException $e) {
+			// Cap race (§9.9 pattern): FOR UPDATE on the identity row
+			// serializes adds — a count outside the txn overshoots.
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('id')->from('kzc_identity')
+				->where($qb->expr()->eq('id', $qb->createNamedParameter($identityId)))
+				->forUpdate();
+			if ($qb->executeQuery()->fetchOne() === false) {
+				throw new ApiException(404, 'NOT_FOUND', 'identity gone');
+			}
+			if ($this->members->countByIdentity($identityId) >= self::MAX_MEMBERSHIPS) {
+				throw new ValidationException('VALIDATION_FAILED', ['org' => 'membership_limit']);
+			}
+			$out = $this->members->insert($m);
+			$this->db->commit();
+			return $out;
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
 			// idem race: concurrent add on the same (identity, org) — return the winner
-			if ($e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
+			if ($e instanceof DbException && $e->getReason() === DbException::REASON_UNIQUE_CONSTRAINT_VIOLATION
 				&& ($winner = $this->members->findByIdentityAndOrg($identityId, $orgId)) !== null) {
 				return $winner;
 			}

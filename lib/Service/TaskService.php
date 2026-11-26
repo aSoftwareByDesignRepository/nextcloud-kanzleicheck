@@ -46,14 +46,14 @@ class TaskService
 
 	public function create(string $actor, int $orgId, array $fields): Task
 	{
-		$title = trim((string)($fields['title'] ?? ''));
+		$title = trim(self::strictStr($fields['title'] ?? '', 'title'));
 		if ($title === '' || mb_strlen($title) > 190) {
 			throw new ValidationException('VALIDATION_FAILED', ['title' => 'required']);
 		}
 		$status = in_array($fields['status'] ?? '', self::STATUSES, true) ? $fields['status'] : 'new';
 		$priority = in_array($fields['priority'] ?? '', self::PRIORITIES, true) ? $fields['priority'] : 'normal';
 		$vis = in_array($fields['portalVisibility'] ?? '', self::VISIBILITIES, true) ? $fields['portalVisibility'] : 'status';
-		$note = isset($fields['note']) ? mb_substr((string)$fields['note'], 0, 5000) : null;
+		$note = isset($fields['note']) ? mb_substr(self::strictStr($fields['note'], 'note'), 0, 5000) : null;
 		$due = $this->parseDate($fields['dueDate'] ?? null);
 		$now = new \DateTimeImmutable();
 		$t = new Task();
@@ -66,7 +66,7 @@ class TaskService
 		$t->setPortalVisibility($vis);
 		$t->setRevision(1);
 		$t->setCreatedBy($actor);
-		$t->setAssignee(isset($fields['assignee']) ? mb_substr((string)$fields['assignee'], 0, 64) : null);
+		$t->setAssignee(isset($fields['assignee']) ? mb_substr(self::strictStr($fields['assignee'], 'assignee'), 0, 64) : null);
 		$t->setCreatedAt($now);
 		$t->setUpdatedAt($now);
 		if ($status === 'done') {
@@ -90,14 +90,14 @@ class TaskService
 				throw new ConflictException('CONFLICT');
 			}
 			if (isset($fields['title'])) {
-				$title = trim((string)$fields['title']);
+				$title = trim(self::strictStr($fields['title'], 'title'));
 				if ($title === '' || mb_strlen($title) > 190) {
 					throw new ValidationException('VALIDATION_FAILED', ['title' => 'required']);
 				}
 				$t->setTitle($title);
 			}
 			if (array_key_exists('note', $fields)) {
-				$t->setNote($fields['note'] === null ? null : mb_substr((string)$fields['note'], 0, 5000));
+				$t->setNote($fields['note'] === null ? null : mb_substr(self::strictStr($fields['note'], 'note'), 0, 5000));
 			}
 			if (isset($fields['priority']) && in_array($fields['priority'], self::PRIORITIES, true)) {
 				$t->setPriority($fields['priority']);
@@ -106,7 +106,7 @@ class TaskService
 				$t->setDueDate($this->parseDate($fields['dueDate']));
 			}
 			if (isset($fields['assignee'])) {
-				$t->setAssignee($fields['assignee'] === null || $fields['assignee'] === '' ? null : mb_substr((string)$fields['assignee'], 0, 64));
+				$t->setAssignee($fields['assignee'] === null || $fields['assignee'] === '' ? null : mb_substr(self::strictStr($fields['assignee'], 'assignee'), 0, 64));
 			}
 			if (isset($fields['portalVisibility']) && in_array($fields['portalVisibility'], self::VISIBILITIES, true)) {
 				if ($fields['portalVisibility'] !== $t->getPortalVisibility()) {
@@ -148,6 +148,15 @@ class TaskService
 		} elseif ($status !== 'done' && $wasDone) {
 			$t->setDoneAt(null);
 		}
+	}
+
+	/** Request-boundary scalar (api-security §2): string only — "Array" never lands. */
+	private static function strictStr(mixed $v, string $field): string
+	{
+		if (!is_string($v)) {
+			throw new ValidationException('VALIDATION_FAILED', [$field => 'invalid']);
+		}
+		return $v;
 	}
 
 	private function parseDate(mixed $raw): ?\DateTimeImmutable

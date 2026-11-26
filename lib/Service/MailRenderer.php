@@ -19,16 +19,22 @@ namespace OCA\KanzleiCheck\Service;
  */
 class MailRenderer
 {
+	/** Mail param: scalars only — an array must never render as "Array". */
+	private static function pstr(mixed $v, string $default = ''): string
+	{
+		return is_scalar($v) ? (string)$v : $default;
+	}
+
 	/** @return array{subject:string,text:string} */
 	public static function render(string $kind, array $params, string $locale): array
 	{
 		$de = str_starts_with(strtolower($locale), 'de');
-		$provider = trim((string)($params['provider'] ?? '')) ?: ($de ? 'Ihr Anbieter' : 'your provider');
-		$portalUrl = (string)($params['portalUrl'] ?? '');
+		$provider = trim(self::pstr($params['provider'] ?? '')) ?: ($de ? 'Ihr Anbieter' : 'your provider');
+		$portalUrl = self::pstr($params['portalUrl'] ?? '');
 		$lines = static fn(array $l): string => implode("\n", $l) . "\n";
 		switch ($kind) {
 			case 'otp':
-				$code = (string)($params['code'] ?? '');
+				$code = self::pstr($params['code'] ?? '');
 				return [
 					'subject' => $de ? "$provider: Ihr Anmeldecode" : "$provider: your sign-in code",
 					'text' => $lines($de ? [
@@ -54,7 +60,7 @@ class MailRenderer
 					]),
 				];
 			case 'approve':
-				$code = (string)($params['code'] ?? '');
+				$code = self::pstr($params['code'] ?? '');
 				return [
 					'subject' => $de ? "$provider: Bestätigungscode für eine Freigabe" : "$provider: confirmation code for an approval",
 					'text' => $lines($de ? [
@@ -85,7 +91,7 @@ class MailRenderer
 					]),
 				];
 			case 'remind':
-				$deadline = (string)($params['deadline'] ?? '');
+				$deadline = self::pstr($params['deadline'] ?? '');
 				return [
 					'subject' => $de ? "$provider: Es fehlen noch Unterlagen" : "$provider: documents still missing",
 					'text' => $lines($de ? [
@@ -99,9 +105,9 @@ class MailRenderer
 					]),
 				];
 			case 'device':
-				$deviceName = (string)($params['deviceName'] ?? '');
-				$platform = (string)($params['platform'] ?? '');
-				$time = (string)($params['time'] ?? '');
+				$deviceName = self::pstr($params['deviceName'] ?? '');
+				$platform = self::pstr($params['platform'] ?? '');
+				$time = self::pstr($params['time'] ?? '');
 				return [
 					'subject' => $de ? "$provider: Neues Gerät angemeldet" : "$provider: new device paired",
 					'text' => $lines($de ? [
@@ -120,7 +126,7 @@ class MailRenderer
 				];
 			case 'notice':
 			default:
-				$what = (string)($params['what'] ?? 'update');
+				$what = self::pstr($params['what'] ?? 'update');
 				$labels = [
 					'message' => $de ? 'eine neue Nachricht' : 'a new message',
 					'document' => $de ? 'ein neues Dokument' : 'a new document',

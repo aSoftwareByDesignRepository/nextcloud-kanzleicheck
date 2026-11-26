@@ -179,7 +179,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function sendMessage(int $orgId): JSONResponse
 	{
 		$this->org($orgId);
-		$m = $this->chat->post($orgId, $this->staffUid, 'staff', (string)$this->request->getParam('body', ''), (string)$this->request->getParam('clientUuid', '') ?: null, $this->strictId($this->request->getParam('uploadId')));
+		$m = $this->chat->post($orgId, $this->staffUid, 'staff', $this->strParam('body', ''), $this->strParam('clientUuid', '') ?: null, $this->strictId($this->request->getParam('uploadId')));
 		$this->notify->clientMail($orgId, 'message');
 		return $this->ok(['message' => ['id' => (int)$m->getId()]], 201);
 	}
@@ -201,14 +201,14 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function orgs(): JSONResponse
 	{
-		$out = array_map(fn($o) => ['id' => (int)$o->getId(), 'name' => $o->getName(), 'ref' => $o->getRef(), 'kind' => $o->getKind(), 'state' => $o->getState(), 'appOn' => (bool)$o->getAppOn()], $this->orgs->search((string)$this->request->getParam('q', '')));
+		$out = array_map(fn($o) => ['id' => (int)$o->getId(), 'name' => $o->getName(), 'ref' => $o->getRef(), 'kind' => $o->getKind(), 'state' => $o->getState(), 'appOn' => (bool)$o->getAppOn()], $this->orgs->search($this->strParam('q', '')));
 		return $this->ok(['orgs' => $out]);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function createOrg(): JSONResponse
 	{
-		$o = $this->orgService->create($this->staffUid, (string)$this->request->getParam('name', ''), $this->request->getParam('ref') !== null ? (string)$this->request->getParam('ref') : null, (string)$this->request->getParam('kind', 'company'));
+		$o = $this->orgService->create($this->staffUid, $this->strParam('name', ''), $this->request->getParam('ref') !== null ? $this->strParam('ref') : null, $this->strParam('kind', 'company'));
 		return $this->ok(['org' => ['id' => (int)$o->getId()]], 201);
 	}
 
@@ -287,14 +287,14 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function updateTask(int $id): JSONResponse
 	{
-		$t = $this->tasks->update($this->staffUid, $id, $this->request->getParams(), (int)$this->request->getParam('revision', 0));
+		$t = $this->tasks->update($this->staffUid, $id, $this->request->getParams(), $this->intParam('revision', 0));
 		return $this->ok(['task' => ['id' => (int)$t->getId(), 'revision' => (int)$t->getRevision()]]);
 	}
 
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function moveTask(int $id): JSONResponse
 	{
-		$t = $this->tasks->move($this->staffUid, $id, (string)$this->request->getParam('status', ''), (int)$this->request->getParam('revision', 0));
+		$t = $this->tasks->move($this->staffUid, $id, $this->strParam('status', ''), $this->intParam('revision', 0));
 		return $this->ok(['task' => ['id' => (int)$t->getId(), 'revision' => (int)$t->getRevision()]]);
 	}
 
@@ -310,7 +310,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		$reqMapper = new \OCA\KanzleiCheck\Db\DocRequestMapper($this->db());
 		$itemMapper = new \OCA\KanzleiCheck\Db\ReqItemMapper($this->db());
 		foreach ($orgs as $oid) {
-			foreach ($reqMapper->findByOrg($oid, (string)$this->request->getParam('state', '')) as $r) {
+			foreach ($reqMapper->findByOrg($oid, $this->strParam('state', '')) as $r) {
 				$counts = $itemMapper->countsByReq([(int)$r->getId()]);
 				$out[] = ['id' => (int)$r->getId(), 'orgId' => $oid, 'title' => $r->getTitle(), 'state' => $r->getState(), 'deadline' => $r->getDeadline()?->format('Y-m-d'), 'overdue' => $this->requests->overdue($r), 'items' => $counts[(int)$r->getId()] ?? ['total' => 0, 'accepted' => 0]];
 			}
@@ -338,7 +338,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function applyLicense(): JSONResponse
 	{
 		$this->requireAdmin();
-		$s = $this->license->apply((string)$this->request->getParam('key', ''), $this->staffUid);
+		$s = $this->license->apply($this->strParam('key', ''), $this->staffUid);
 		return $this->ok(['applied' => true, 'portalClients' => (int)$s->getPortalClients(), 'mobileSeats' => (int)$s->getMobileSeats()]);
 	}
 
@@ -359,7 +359,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function assignSeat(): JSONResponse
 	{
 		$this->requireAdmin();
-		$seat = $this->license->assignSeat((string)$this->request->getParam('uid', ''), $this->staffUid);
+		$seat = $this->license->assignSeat($this->strParam('uid', ''), $this->staffUid);
 		return $this->ok(['seat' => ['id' => (int)$seat->getId(), 'uid' => $seat->getUserId()]], 201);
 	}
 
@@ -375,7 +375,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function importCsv(): JSONResponse
 	{
 		$this->requireAdmin();
-		$csv = (string)$this->request->getParam('csv', '');
+		$csv = $this->strParam('csv', '');
 		$dry = $this->request->getParam('dryRun', '1') !== '0';
 		$rows = ImportService::parse($csv);
 		$sync = $this->syncBindings();
@@ -539,7 +539,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function identities(): JSONResponse
 	{
-		$q = (string)$this->request->getParam('q', '');
+		$q = $this->strParam('q', '');
 		$out = array_map(fn($i) => ['id' => (int)$i->getId(), 'email' => $i->getEmail(), 'displayName' => $i->getDisplayName(), 'status' => $i->getStatus()], $this->identityMapper->search($q));
 		return $this->ok(['identities' => $out]);
 	}
@@ -569,8 +569,8 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function addMember(int $id): JSONResponse
 	{
 		$this->org($id);
-		$email = (string)$this->request->getParam('email', '');
-		$name = (string)$this->request->getParam('displayName', '');
+		$email = $this->strParam('email', '');
+		$name = $this->strParam('displayName', '');
 		$identity = $this->identities->upsert($email, $name !== '' ? $name : $email);
 		$this->identities->addMembership((int)$identity->getId(), $id, $this->staffUid);
 		return $this->ok(['member' => ['identityId' => (int)$identity->getId()]], 201);
@@ -625,7 +625,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		if ($identityId === null) {
 			throw new ValidationException('VALIDATION_FAILED', ['identityId' => 'required']);
 		}
-		$b = $this->syncBindings()->enable($this->staffUid, $id, $identityId, (string)$this->request->getParam('perms', 'rw'));
+		$b = $this->syncBindings()->enable($this->staffUid, $id, $identityId, $this->strParam('perms', 'rw'));
 		return $this->ok(['binding' => $this->bindingJson($b)], 201);
 	}
 
@@ -635,7 +635,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		$this->requireAdmin();
 		$i = $this->syncBindings()->attach(
 			$this->staffUid, $id,
-			(string)$this->request->getParam('ncUid', ''),
+			$this->strParam('ncUid', ''),
 			$this->boolParam('acceptMismatch'),
 			$this->boolParam('acceptShared'),
 		);
@@ -670,7 +670,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function syncPerms(int $bid): JSONResponse
 	{
 		$this->requireAdmin();
-		$b = $this->syncBindings()->setPerms($this->staffUid, $bid, (string)$this->request->getParam('perms', ''));
+		$b = $this->syncBindings()->setPerms($this->staffUid, $bid, $this->strParam('perms', ''));
 		return $this->ok(['binding' => $this->bindingJson($b)]);
 	}
 
@@ -694,7 +694,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function searchUsers(): JSONResponse
 	{
-		$q = trim((string)$this->request->getParam('q', ''));
+		$q = trim($this->strParam('q', ''));
 		$out = [];
 		if ($q !== '') {
 			// search() only matches the user id on some backends — merge with the
@@ -731,7 +731,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function searchGroups(): JSONResponse
 	{
-		$q = trim((string)$this->request->getParam('q', ''));
+		$q = trim($this->strParam('q', ''));
 		$out = [];
 		if ($q !== '') {
 			foreach ((array)$this->groupManager->search($q, 20, 0) as $g) {
@@ -758,18 +758,14 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		return ['bindingId' => (int)$b->getId(), 'identityId' => (int)$b->getIdentityId(), 'orgId' => (int)$b->getOrgId(), 'perms' => $b->getPerms(), 'state' => $b->getState()];
 	}
 
-	private function boolParam(string $key): bool
-	{
-		$v = $this->request->getParam($key);
-		return $v === true || $v === '1' || $v === 'true';
-	}
+	// boolParam() comes from ApiTrait — rejects non-scalars with a field pin.
 
 	// ── uploads queue ────────────────────────────────────────────────
 
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function uploads(): JSONResponse
 	{
-		$state = (string)$this->request->getParam('state', 'neu');
+		$state = $this->strParam('state', 'neu');
 		$orgId = $this->strictId($this->request->getParam('orgId'));
 		$rows = $this->uploads->findByState($state, 500, $orgId);
 		$orgNames = [];
@@ -788,7 +784,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function reviewUpload(int $id): JSONResponse
 	{
-		$u = $this->uploadService->review($id, $this->staffUid, (string)$this->request->getParam('state', ''), $this->boolParam('reack'));
+		$u = $this->uploadService->review($id, $this->staffUid, $this->strParam('state', ''), $this->boolParam('reack'));
 		return $this->ok(['upload' => ['id' => (int)$u->getId(), 'state' => $u->getState(), 'integrity' => $u->getIntegrity()]]);
 	}
 
@@ -800,11 +796,11 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		$this->org($orgId);
 		$res = $this->ulinks->create(
 			$this->staffUid, $orgId,
-			(string)$this->request->getParam('label', ''),
-			(int)$this->request->getParam('expiryDays', 7),
-			(int)$this->request->getParam('maxFiles', 20),
-			(int)$this->request->getParam('maxBytes', 100 * 1024 * 1024),
-			$this->request->getParam('showOrg') === true || $this->request->getParam('showOrg') === '1',
+			$this->strParam('label', ''),
+			$this->intParam('expiryDays', 7),
+			$this->intParam('maxFiles', 20),
+			$this->intParam('maxBytes', 100 * 1024 * 1024),
+			$this->boolParam('showOrg'),
 		);
 		return $this->ok(['link' => ['id' => (int)$res['link']->getId(), 'url' => $this->urls->linkToRouteAbsolute('kanzleicheck.ulink.page', ['token' => $res['token']])]], 201);
 	}
@@ -837,7 +833,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		if ($h === null || $h->getState() !== 'held') {
 			throw new NotFoundException();
 		}
-		$action = (string)$this->request->getParam('action', '');
+		$action = $this->strParam('action', '');
 		$holdSvc = \OCP\Server::get(\OCA\KanzleiCheck\Service\IntakeHoldService::class);
 		if ($action === 'accept') {
 			$res = $holdSvc->accept($this->staffUid, $id);
@@ -872,8 +868,8 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 		$this->org($orgId);
 		$a = $this->approvals->request($this->staffUid, $orgId,
 			$this->strictId($this->request->getParam('fileId')) ?? 0,
-			$this->request->getParam('deadline') !== null ? (string)$this->request->getParam('deadline') : null,
-			$this->request->getParam('note') !== null ? (string)$this->request->getParam('note') : null,
+			$this->request->getParam('deadline') !== null ? $this->strParam('deadline') : null,
+			$this->request->getParam('note') !== null ? $this->strParam('note') : null,
 			$this->strictId($this->request->getParam('requiredIdentityId')));
 		return $this->ok(['approval' => ['id' => (int)$a->getId()]], 201);
 	}
@@ -906,8 +902,8 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function reviewReqItem(int $id, int $itemId): JSONResponse
 	{
 		$i = $this->requests->reviewItem($this->staffUid, $id, $itemId,
-			$this->request->getParam('accept') === true || $this->request->getParam('accept') === '1' || $this->request->getParam('accept') === 'true',
-			$this->request->getParam('reason') !== null ? (string)$this->request->getParam('reason') : null);
+			$this->boolParam('accept'),
+			$this->request->getParam('reason') !== null ? $this->strParam('reason') : null);
 		return $this->ok(['itemState' => $i->getState()]);
 	}
 
@@ -931,7 +927,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function eraseIdentity(int $id): JSONResponse
 	{
 		$this->requireAdmin();
-		$this->gdpr->erase($this->staffUid, $id, $this->request->getParam('deleteMessages') === true || $this->request->getParam('deleteMessages') === '1');
+		$this->gdpr->erase($this->staffUid, $id, $this->boolParam('deleteMessages'));
 		return new JSONResponse(null, 204);
 	}
 
@@ -954,8 +950,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function setIntake(int $orgId): JSONResponse
 	{
 		$this->org($orgId);
-		$enabled = $this->request->getParam('enabled');
-		$this->intake->setEnabled($this->staffUid, $orgId, $enabled === true || $enabled === '1' || $enabled === 'true');
+		$this->intake->setEnabled($this->staffUid, $orgId, $this->boolParam('enabled'));
 		return $this->ok(['address' => $this->intake->addressFor($orgId)]);
 	}
 
@@ -1056,7 +1051,11 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 			throw new NotFoundException();
 		}
 		$orgIds = $this->request->getParam('orgIds') ?? [];
-		$this->tplOrgMapper()->setOrgs($id, is_array($orgIds) ? array_values(array_map('intval', $orgIds)) : []);
+		if (!is_array($orgIds)) {
+			throw new ValidationException('VALIDATION_FAILED', ['orgIds' => 'invalid']);
+		}
+		$this->tplOrgMapper()->setOrgs($id, array_values(array_filter(array_map(
+			fn ($v) => $this->strictId($v), $orgIds))));
 		return new JSONResponse(null, 204);
 	}
 
@@ -1132,7 +1131,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	{
 		$this->requireAdmin();
 		$t = $this->formService->createTemplate($this->staffUid,
-			(string)$this->request->getParam('name', ''),
+			$this->strParam('name', ''),
 			is_array($this->request->getParam('fields')) ? $this->request->getParam('fields') : []);
 		return $this->ok(['template' => ['id' => (int)$t->getId()]], 201);
 	}
@@ -1141,7 +1140,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function forms(): JSONResponse
 	{
 		$orgId = $this->strictId($this->request->getParam('orgId'));
-		$state = (string)$this->request->getParam('state', '');
+		$state = $this->strParam('state', '');
 		if ($orgId !== null) {
 			$this->org($orgId);
 			$rows = $this->forms->findByOrg($orgId, $state);
@@ -1228,7 +1227,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	public function setIdentityStatus(int $id): JSONResponse
 	{
 		$this->requireAdmin();
-		$status = (string)$this->request->getParam('status', '');
+		$status = $this->strParam('status', '');
 		if (!in_array($status, ['active', 'disabled'], true)) {
 			throw new ValidationException('VALIDATION_FAILED', ['status' => 'invalid']);
 		}

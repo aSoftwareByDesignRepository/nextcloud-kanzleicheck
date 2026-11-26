@@ -16,8 +16,11 @@ const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 const APP = '/index.php/apps/kanzleicheck';
 const COMPOSE_ROOT = path.resolve(__dirname, '../..');
 const authed = hasCreds();
-const REF = 'DND-E2E-1';
-const ORG_NAME = 'DnD Board Mandat';
+// Unique per run — two concurrent suites on the shared dev DB must not
+// delete each other's fixture rows via the same ref (farm runs overlap).
+const TAG = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const REF = 'DND-E2E-1-' + TAG;
+const ORG_NAME = 'DnD Board Mandat ' + TAG;
 let orgId = 0;
 let taskId = 0;
 
@@ -25,7 +28,16 @@ function db(sql) {
 	const r = spawnSync('docker', ['compose', 'exec', '-T', 'mariadb', 'mariadb',
 		'-unextcloud', '-pnextcloud_password', 'nextcloud', '-N', '-e', sql],
 	{ cwd: COMPOSE_ROOT, encoding: 'utf8', timeout: 60_000 });
+	// Never swallow exec failures — a silently failed UPDATE reads as a no-op
+	// and makes a later assertion debug the wrong thing entirely.
+	if (r.status !== 0) throw new Error(`db() failed status=${r.status} err=${r.error ? r.error.message : ''} stderr=${(r.stderr || '').trim()} sql=${sql.slice(0, 120)}`);
 	return (r.stdout || '').trim();
+}
+
+/** Worker restarts re-run beforeAll and re-seed the fixture — a dependent test
+ * must establish its own starting column instead of inheriting one. */
+function ensureStatus(status) {
+	db(`UPDATE oc_kzc_task SET status='${status}', done_at=${status === 'done' ? 'NOW()' : 'NULL'} WHERE id=${taskId} AND status<>'${status}'`);
 }
 
 const cardSel = () => `[data-task-id="${taskId}"]`;
@@ -95,6 +107,7 @@ DELETE FROM oc_kzc_task WHERE id=${taskId};`);
 	test('status select moves the card (keyboard path)', async ({ page }) => {
 		test.skip(!authed, 'no creds');
 		await login(page, creds());
+		ensureStatus('done');
 		await openBoard(page);
 
 		await page.locator(colSel('done')).locator(cardSel()).locator('[data-kzc-status-select]').selectOption('waiting');
@@ -106,6 +119,7 @@ DELETE FROM oc_kzc_task WHERE id=${taskId};`);
 	test('stale revision conflicts: warn + reload, no silent divergence', async ({ page }) => {
 		test.skip(!authed, 'no creds');
 		await login(page, creds());
+		ensureStatus('waiting');
 		await openBoard(page);
 		// A colleague moved the card after our render — our revision is stale.
 		db(`UPDATE oc_kzc_task SET revision=revision+1 WHERE id=${taskId}`);
@@ -121,6 +135,7 @@ DELETE FROM oc_kzc_task WHERE id=${taskId};`);
 	test('drop indicator highlights the target; same-column drop is a no-op', async ({ page }) => {
 		test.skip(!authed, 'no creds');
 		await login(page, creds());
+		ensureStatus('waiting');
 		await openBoard(page);
 
 		// dragstart + hover another column → indicator; leave → cleared

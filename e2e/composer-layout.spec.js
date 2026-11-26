@@ -12,8 +12,11 @@ const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
 const APP = '/index.php/apps/kanzleicheck';
 const COMPOSE_ROOT = path.resolve(__dirname, '../..');
 const authed = hasCreds();
-const REF = 'COMPOSER-E2E-1';
-const ORG_NAME = 'Composer Mandat E2E';
+// Unique per run — two concurrent suites on the shared dev DB must not
+// delete each other's fixture rows via the same ref (farm runs overlap).
+const TAG = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const REF = 'COMPOSER-E2E-1-' + TAG;
+const ORG_NAME = 'Composer Mandat E2E ' + TAG;
 let orgId = 0;
 let convId = 0;
 

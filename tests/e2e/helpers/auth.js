@@ -14,4 +14,14 @@ function creds() {
 	return { username: process.env.NC_ADMIN_USER, password: process.env.NC_ADMIN_PASS }
 }
 
-module.exports = { login, hasCreds, creds, BASE }
+async function acquireLangLock() {
+	const mod = await import('./session-cache.mjs')
+	return mod.acquireLangLock()
+}
+
+async function releaseLangLock() {
+	const mod = await import('./session-cache.mjs')
+	return mod.releaseLangLock()
+}
+
+module.exports = { login, hasCreds, creds, BASE, acquireLangLock, releaseLangLock }

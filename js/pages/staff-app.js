@@ -402,12 +402,19 @@ async function boardMove(card,newStatus,focusEl){
   BOARD_MOVE_IN_FLIGHT=true;
   card.classList.add('kzc-card2--saving');card.setAttribute('aria-busy','true');
   if(sel)sel.disabled=true;
-  const r=await put('/api/portal/tasks/'+taskId+'/move',{status:newStatus,revision:+card.dataset.revision||0});
-  if(r.success){ok(t('Saved.'));await vBoard();}
-  else if(r.error==='CONFLICT'){warnT(t('Changed in the meantime — reloaded.'));await vBoard();}
-  else{err(r.message||t('Error'));if(sel){sel.value=prev;sel.disabled=false;}card.classList.remove('kzc-card2--saving');card.removeAttribute('aria-busy');if(focusEl)focusEl.focus();}
-  BOARD_MOVE_IN_FLIGHT=false;
-  if(r.success||r.error==='CONFLICT')document.querySelector('[data-task-id="'+taskId+'"] [data-kzc-status-select]')?.focus();
+  try{
+    const r=await put('/api/portal/tasks/'+taskId+'/move',{status:newStatus,revision:+card.dataset.revision||0});
+    if(r.success){ok(t('Saved.'));await vBoard();}
+    else if(r.error==='CONFLICT'){warnT(t('Changed in the meantime — reloaded.'));await vBoard();}
+    else{err(r.message||t('Error'));if(sel)sel.value=prev;if(focusEl)focusEl.focus();}
+    if(r.success||r.error==='CONFLICT')document.querySelector('[data-task-id="'+taskId+'"] [data-kzc-status-select]')?.focus();
+  }finally{
+    // Always release the in-flight guard and the saving state — a failed
+    // vBoard() reload must not strand a disabled select or wedge the board.
+    BOARD_MOVE_IN_FLIGHT=false;
+    card.classList.remove('kzc-card2--saving');card.removeAttribute('aria-busy');
+    if(sel&&sel.isConnected&&sel.disabled){sel.disabled=false;sel.value=prev;}
+  }
 }
 /* Task detail dialog — the board payload stays lean (no note/assignee), so
  * the dialog fetches the full row on open; that fetch also hands back a

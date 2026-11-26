@@ -15,9 +15,14 @@ if (fs.existsSync(envFile)) {
 	}
 }
 
+// Specs that mutate the shared fixture user's `core lang`. They MUST run after
+// every other spec: while a mutator holds lang=pl/nl/pt_BR on the shared user,
+// all concurrently rendering pages would paint that locale — no lock can fix
+// readers. Project dependency sequences them after the main run instead.
+const LOCALE_MUTATORS = ['e2e/l10n-sweep-rendered.spec.js', 'e2e/transfer-plural-verdict.spec.js'];
+
 module.exports = defineConfig({
 	testDir: '.',
-	testMatch: ['tests/e2e/**/*.spec.js', 'e2e/**/*.spec.js'],
 	timeout: 60_000,
 	expect: { timeout: 10_000 },
 	use: {
@@ -26,4 +31,12 @@ module.exports = defineConfig({
 		screenshot: 'only-on-failure',
 	},
 	reporter: [['list']],
+	projects: [
+		{
+			name: 'main',
+			testMatch: ['tests/e2e/**/*.spec.js', 'e2e/**/*.spec.js'],
+			testIgnore: LOCALE_MUTATORS,
+		},
+		{ name: 'locale-mutators', testMatch: LOCALE_MUTATORS, dependencies: ['main'] },
+	],
 });

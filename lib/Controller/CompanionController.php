@@ -109,10 +109,10 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	#[PublicPage] #[NoCSRFRequired]
 	public function pair(): JSONResponse
 	{
-		$email = IdentityService::normalizeEmail((string)$this->request->getParam('email', ''));
-		$code = trim((string)$this->request->getParam('code', ''));
-		$name = mb_substr(trim((string)$this->request->getParam('deviceName', 'device')), 0, 100);
-		$platform = (string)$this->request->getParam('platform', '');
+		$email = IdentityService::normalizeEmail($this->strParam('email', ''));
+		$code = trim($this->strParam('code', ''));
+		$name = mb_substr(trim($this->strParam('deviceName', 'device')), 0, 100);
+		$platform = $this->strParam('platform', '');
 		$otpId = preg_match('/^\d{6}$/', $code) ? $this->otp->verify($email, OtpService::PURPOSE_LOGIN, $code) : null;
 		$identity = $otpId !== null ? $this->identities->activeByEmail($email) : null;
 		if ($otpId === null || $identity === null) {
@@ -253,8 +253,8 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	{
 		$this->companionOrg($orgId);
 		$m = $this->chat->post($orgId, $this->actor(), 'client',
-			(string)$this->request->getParam('body', ''),
-			(string)$this->request->getParam('clientUuid', '') ?: null,
+			$this->strParam('body', ''),
+			$this->strParam('clientUuid', '') ?: null,
 			$this->strictId($this->request->getParam('uploadId')));
 		foreach ($this->notifyService->staffRecipients($orgId) as $uid) {
 			$this->notifyService->staffNotify($uid, 'portal_message', $orgId, $this->urls->linkToRouteAbsolute('kanzleicheck.page.index') . '?view=inbox&org=' . $orgId);
@@ -386,7 +386,7 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 			throw new ApiException(400, 'VALIDATION_FAILED', 'no file');
 		}
 		$this->uploadService->validateFile($file['tmp_name'], (string)$file['name'], $this->uploadService->maxBytes());
-		$note = $this->request->getParam('note') !== null ? (string)$this->request->getParam('note') : null;
+		$note = $this->request->getParam('note') !== null ? $this->strParam('note') : null;
 		return $this->uploadService->store($eingang, $orgId, $this->actor(), $file['tmp_name'], (string)$file['name'], $source, $note);
 	}
 
@@ -409,13 +409,13 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	public function chunkStart(int $orgId): JSONResponse
 	{
 		$this->companionOrg($orgId);
-		$uploadId = (string)$this->request->getParam('uploadId', '');
+		$uploadId = $this->strParam('uploadId', '');
 		if (!preg_match('/^[a-zA-Z0-9-]{1,64}$/', $uploadId)) {
 			$uploadId = bin2hex(random_bytes(18));
 		}
 		$this->chunkSvc()->start($uploadId, $orgId, $this->actor(),
-			(string)$this->request->getParam('fileName', 'upload'),
-			(int)$this->request->getParam('totalBytes', 0));
+			$this->strParam('fileName', 'upload'),
+			$this->intParam('totalBytes', 0));
 		return $this->ok(['uploadId' => $uploadId], 201);
 	}
 
@@ -485,7 +485,7 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 		$folders = [];
 		if ($dir !== null) {
 			$base = rtrim($dir->getPath(), '/') . '/';
-			$rel = '/' . ltrim((string)$this->request->getParam('path', ''), '/');
+			$rel = '/' . ltrim($this->strParam('path', ''), '/');
 			$target = $dir;
 			if ($rel !== '/' && $rel !== '') {
 				try {
@@ -560,9 +560,9 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	{
 		$orgId = $this->orgOfApproval($id);
 		$a = $this->approvals->decide($this->actor(), $this->identity()->getEmail(), $id, $orgId,
-			(string)$this->request->getParam('decision', ''),
-			$this->request->getParam('code') !== null ? (string)$this->request->getParam('code') : null,
-			$this->request->getParam('reason') !== null ? (string)$this->request->getParam('reason') : null);
+			$this->strParam('decision', ''),
+			$this->request->getParam('code') !== null ? $this->strParam('code') : null,
+			$this->request->getParam('reason') !== null ? $this->strParam('reason') : null);
 		return $this->ok(['state' => $a->getState()]);
 	}
 
@@ -688,9 +688,9 @@ class CompanionController extends Controller implements \OCA\KanzleiCheck\Contra
 	{
 		$orgId = $this->formOrg($formId);
 		$r = $this->formService->saveAnswer($this->actor(), $formId, $orgId,
-			(string)$this->request->getParam('field', ''),
-			(string)$this->request->getParam('value', ''),
-			(int)$this->request->getParam('revision', 0));
+			$this->strParam('field', ''),
+			$this->strParam('value', ''),
+			$this->intParam('revision', 0));
 		return $this->ok($r);
 	}
 

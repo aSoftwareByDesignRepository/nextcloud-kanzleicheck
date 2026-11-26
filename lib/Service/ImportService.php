@@ -40,7 +40,7 @@ class ImportService
 		fwrite($fh, $csv);
 		rewind($fh);
 		$header = null;
-		while (($r = fgetcsv($fh, 0, $delim)) !== false) {
+		while (($r = fgetcsv($fh, 0, $delim, '"', '')) !== false) {
 			if ($header === null) {
 				$header = array_map(static function ($h) {
 					$k = strtolower(trim((string)$h));

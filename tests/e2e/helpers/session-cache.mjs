@@ -16,7 +16,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, rmdirSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -70,4 +70,68 @@ export function clearLoginThrottle() {
 			'mysql -u nextcloud -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "DELETE FROM oc_bruteforce_attempts"'],
 		{ cwd: COMPOSE_ROOT, encoding: 'utf8', timeout: 60_000 },
 	)
+}
+
+/**
+ * Pin the fixture user's UI locale to the suite baseline (en). Locale is
+ * shared mutable fixture state: specs that deliberately flip core/lang
+ * restore it in `finally`, but an aborted run leaves it stuck — the next
+ * run's English-pinned selectors then die on translated chrome (seen live:
+ * admin stuck on `nl`, `h2:has-text("Desktop sync")` never matched
+ * "Desktopsynchronisatie"). Idempotent, ~1s, best-effort (the suite dies
+ * anyway when docker is gone). Specs that need another locale set it
+ * AFTER login() — lang is read per request.
+ */
+const LANG_LOCK = join(CACHE_DIR, 'lang-mutators.lock')
+const LANG_LOCK_STALE_MS = 180_000
+
+function lockStale() {
+	try {
+		return Date.now() - statSync(LANG_LOCK).mtimeMs > LANG_LOCK_STALE_MS
+	} catch {
+		return true // no lock = treat as free
+	}
+}
+
+/**
+ * Serialize every writer of shared `core/lang` fixture state — parallel
+ * workers each flipping the same user's locale interleave and render the
+ * wrong catalog mid-assert (l10n-sweep vs transfer-plural race). Atomic
+ * mkdir lock + stale reclaim for crashed holders.
+ */
+export async function acquireLangLock(timeoutMs = 120_000) {
+	mkdirSync(CACHE_DIR, { recursive: true })
+	const start = Date.now()
+	for (;;) {
+		if (lockStale()) {
+			try { rmdirSync(LANG_LOCK) } catch { /* not present / race */ }
+		}
+		try {
+			mkdirSync(LANG_LOCK)
+			return
+		} catch {
+			if (Date.now() - start > timeoutMs) {
+				throw new Error('lang-mutators lock timeout — a parallel spec is holding it')
+			}
+			await new Promise((r) => setTimeout(r, 250))
+		}
+	}
+}
+
+export function releaseLangLock() {
+	try { rmdirSync(LANG_LOCK) } catch { /* already gone */ }
+}
+
+export async function pinLocale(username, lang = 'en') {
+	await acquireLangLock()
+	try {
+		spawnSync(
+			'docker',
+			['compose', 'exec', '-T', '-u', 'www-data', 'nextcloud',
+				'php', 'occ', 'user:setting', username, 'core', 'lang', lang],
+			{ cwd: COMPOSE_ROOT, encoding: 'utf8', timeout: 60_000 },
+		)
+	} finally {
+		releaseLangLock()
+	}
 }

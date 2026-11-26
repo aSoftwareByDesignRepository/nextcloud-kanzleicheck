@@ -22,9 +22,12 @@ test.describe('inbox deeplink cap fallback', () => {
 		const org = await page.evaluate(async () => {
 			// Must be an org WITH an OPEN conversation — same pick rule as the
 			// craft-web deeplink leg (archived convs lose the composer).
+			// Prefer an already-read conv: opening the top-most row (always the
+			// freshest e2e fixture) marks it read and destroys a sibling spec's
+			// unread-badge assertion mid-flight.
 			const r = await fetch('api/portal/inbox', { headers: { Accept: 'application/json' } }).then((x) => x.json());
 			const convs = (r && r.data && r.data.conversations) || [];
-			const open = convs.find((c) => c.state !== 'archived');
+			const open = convs.find((c) => c.state !== 'archived' && !c.unread) || convs.find((c) => c.state !== 'archived');
 			return open ? { id: open.orgId, name: open.orgName } : null;
 		});
 		test.skip(!org, 'no open conversation fixture');

@@ -63,7 +63,9 @@ class PortalSessionMiddleware extends Middleware
 			throw new UnauthorizedException();
 		}
 		if ($this->request->getMethod() !== 'GET') {
-			$presented = $this->request->getHeader(CsrfService::HEADER) ?: (string)$this->request->getParam('kzc_csrf', '');
+			$body = $this->request->getParam('kzc_csrf', '');
+			$presented = $this->request->getHeader(CsrfService::HEADER)
+				?: (is_string($body) ? $body : '');
 			if (!$this->csrf->validate($token, $presented)) {
 				throw new UnauthorizedException('CSRF');
 			}

@@ -24,6 +24,8 @@ use OCP\Util;
 /** Staff app shell — access door enforced by StaffAccessMiddleware. */
 class PageController extends Controller implements \OCA\KanzleiCheck\Contracts\StaffContextAware
 {
+	use ApiTrait;
+
 	public string $staffUid = '';
 	public bool $staffIsAdmin = false;
 
@@ -77,7 +79,7 @@ class PageController extends Controller implements \OCA\KanzleiCheck\Contracts\S
 	#[NoCSRFRequired]
 	public function index(): TemplateResponse
 	{
-		$view = (string)$this->request->getParam('view', 'overview');
+		$view = $this->strParam('view', 'overview');
 		if (!isset(self::VIEWS[$view]) || ($view === 'people' && !$this->staffIsAdmin)) {
 			$view = 'overview';
 		}

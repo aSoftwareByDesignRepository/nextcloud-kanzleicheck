@@ -157,12 +157,12 @@ class AccessDoorService
 	public function saveDoor(bool $restricted, array $groups, array $users, array $appAdmins): array
 	{
 		foreach ($groups as $gid) {
-			if ($gid === '' || !$this->groupManager->groupExists($gid)) {
+			if ($gid === '' || !$this->groupManager->groupExists((string)$gid)) {
 				return ['ok' => false, 'error' => 'group:' . $gid];
 			}
 		}
 		foreach (array_merge($users, $appAdmins) as $uid) {
-			if ($uid === '' || !$this->userManager->userExists($uid)) {
+			if ($uid === '' || !$this->userManager->userExists((string)$uid)) {
 				return ['ok' => false, 'error' => 'user:' . $uid];
 			}
 		}

@@ -58,7 +58,7 @@ class PortalAuthController extends Controller
 	#[AnonRateLimit(limit: 30, period: 300)]
 	public function send(): JSONResponse
 	{
-		$email = IdentityService::normalizeEmail((string)$this->request->getParam('email', ''));
+		$email = IdentityService::normalizeEmail($this->strParam('email', ''));
 		$ip = $this->request->getRemoteAddress() ?: '';
 		$identity = $email !== '' ? $this->identities->activeByEmail($email) : null;
 		$deliver = $identity !== null && $this->identities->orgIdsFor((int)$identity->getId()) !== [];
@@ -82,8 +82,8 @@ class PortalAuthController extends Controller
 	#[AnonRateLimit(limit: 20, period: 300)]
 	public function verify(): JSONResponse
 	{
-		$email = IdentityService::normalizeEmail((string)$this->request->getParam('email', ''));
-		$code = trim((string)$this->request->getParam('code', ''));
+		$email = IdentityService::normalizeEmail($this->strParam('email', ''));
+		$code = trim($this->strParam('code', ''));
 		$https = $this->request->getServerProtocol() === 'https' || $this->settings->getBool('allow_http_login');
 		if (!preg_match('/^\d{6}$/', $code) || !$https) {
 			return $this->invalidCode();

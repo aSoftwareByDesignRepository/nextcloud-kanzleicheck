@@ -92,14 +92,14 @@ class OrgService
 	{
 		$o = $this->mustGet($id);
 		if (isset($fields['name'])) {
-			$name = trim((string)$fields['name']);
+			$name = trim(self::strictStr($fields['name'], 'name'));
 			if ($name === '' || mb_strlen($name) > 190) {
 				throw new ValidationException('VALIDATION_FAILED', ['name' => 'required']);
 			}
 			$o->setName($name);
 		}
 		if (array_key_exists('ref', $fields)) {
-			$ref = trim((string)($fields['ref'] ?? ''));
+			$ref = trim(self::strictStr($fields['ref'] ?? '', 'ref'));
 			$ref = $ref === '' ? null : mb_substr($ref, 0, 64);
 			if ($ref !== null && ($other = $this->orgs->findByRef($ref)) !== null && (int)$other->getId() !== $id) {
 				throw new ValidationException('VALIDATION_FAILED', ['ref' => 'taken']);
@@ -111,10 +111,13 @@ class OrgService
 		}
 		if (array_key_exists('pcCustId', $fields)) {
 			$v = $fields['pcCustId'];
+			if ($v !== null && $v !== '' && !is_int($v) && !(is_string($v) && preg_match('/^\d+$/', $v))) {
+				throw new ValidationException('VALIDATION_FAILED', ['pcCustId' => 'invalid']);
+			}
 			$o->setPcCustId($v === null || $v === '' ? null : (int)$v);
 		}
 		if (array_key_exists('bookUrl', $fields)) {
-			$o->setBookUrl($this->validateBookingUrl((string)($fields['bookUrl'] ?? '')));
+			$o->setBookUrl($this->validateBookingUrl(self::strictStr($fields['bookUrl'] ?? '', 'bookUrl')));
 		}
 		$o->setUpdatedAt(new \DateTimeImmutable());
 		try {
@@ -127,6 +130,15 @@ class OrgService
 			throw $e;
 		}
 		return $o;
+	}
+
+	/** Request-boundary scalar (api-security §2): string only — "Array" never lands. */
+	private static function strictStr(mixed $v, string $field): string
+	{
+		if (!is_string($v)) {
+			throw new ValidationException('VALIDATION_FAILED', [$field => 'invalid']);
+		}
+		return $v;
 	}
 
 	/**

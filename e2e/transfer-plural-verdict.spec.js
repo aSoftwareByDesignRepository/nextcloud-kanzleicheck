@@ -16,7 +16,7 @@ const { test, expect } = require('@playwright/test');
 const path = require('path');
 const COMPOSE_FILE = path.join(__dirname, '..', '..', '..', 'docker-compose.yml');
 const { execSync } = require('child_process');
-const { login, hasCreds, creds, BASE } = require('../tests/e2e/helpers/auth.js');
+const { login, hasCreds, creds, BASE, acquireLangLock, releaseLangLock } = require('../tests/e2e/helpers/auth.js');
 
 const APP = '/index.php/apps/kanzleicheck';
 const PASS = 'atlas-e2e-passphrase-2026';
@@ -36,6 +36,10 @@ test.describe('transfer preview verdict — plural rendering (pl)', () => {
 		test.setTimeout(240_000); // real Argon2id preview
 		const { username, password } = creds();
 		const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+		// login() pins core/lang=en — the lang lock then serializes OUR
+		// mutation window against other mutator specs and other logins.
+		await login(page, creds());
+		await acquireLangLock();
 		const orig = occ(`user:setting ${FIXTURE_USER} core lang`);
 
 		try {
@@ -48,7 +52,6 @@ test.describe('transfer preview verdict — plural rendering (pl)', () => {
 			const bytes = await exp.body();
 			expect(bytes.length).toBeGreaterThan(200);
 
-			await login(page, creds());
 			await page.goto(`${APP}/settings/transfer`, { waitUntil: 'domcontentloaded' });
 			await expect(page.locator('#kzc-transfer-import-card')).toBeVisible({ timeout: 20000 });
 
@@ -83,6 +86,7 @@ test.describe('transfer preview verdict — plural rendering (pl)', () => {
 			await expect(report).not.toBeVisible();
 		} finally {
 			occ(`user:setting ${FIXTURE_USER} core lang ${orig || 'en'}`);
+			await releaseLangLock();
 		}
 	});
 });

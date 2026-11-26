@@ -49,12 +49,16 @@ class UploadChunkMapper
 		$qb->executeStatement();
 	}
 
-	public function addChunk(string $uploadId, int $bytes): void
+	/**
+	 * Absolute ledger write — the disk state is the authority, not the
+	 * increment (a re-sent chunk must never double-count received_bytes).
+	 */
+	public function reconcileReceived(string $uploadId, int $bytes, int $chunks): void
 	{
 		$qb = $this->db->getQueryBuilder();
 		$qb->update(self::TABLE)
-			->set('received_bytes', $qb->createFunction('received_bytes + ' . (int)$bytes))
-			->set('chunk_count', $qb->createFunction('chunk_count + 1'))
+			->set('received_bytes', $qb->createNamedParameter($bytes))
+			->set('chunk_count', $qb->createNamedParameter($chunks))
 			->set('last_chunk_at', $qb->createNamedParameter(new \DateTime(), 'datetime'))
 			->where($qb->expr()->eq('upload_id', $qb->createNamedParameter($uploadId)))
 			->andWhere($qb->expr()->eq('state', $qb->createNamedParameter('receiving')));

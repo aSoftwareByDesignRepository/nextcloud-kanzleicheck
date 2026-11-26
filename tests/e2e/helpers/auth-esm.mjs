@@ -8,7 +8,7 @@
  * form flow and re-caches; an active throttle page is cleared once via
  * occ-adjacent table reset and retried.
  */
-import { loadSession, saveSession, clearLoginThrottle } from './session-cache.mjs'
+import { loadSession, saveSession, clearLoginThrottle, pinLocale } from './session-cache.mjs'
 
 const BASE = (process.env.NC_BASE_URL || 'http://localhost:8081').replace(/\/$/, '')
 
@@ -56,6 +56,10 @@ async function uiLogin(page, { username, password }) {
 }
 
 export async function login(page, { username, password }) {
+  // deterministic fixture baseline — a locale-mutating spec killed before
+  // its `finally` restore leaves the shared user's lang stuck (leftover
+  // state broke English-pinned selectors on the next run)
+  await pinLocale(username, 'en')
   if (await tryCachedSession(page, username)) {
     return
   }

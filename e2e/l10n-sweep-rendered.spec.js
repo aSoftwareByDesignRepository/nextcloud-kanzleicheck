@@ -18,7 +18,7 @@ const { test, expect } = require('@playwright/test');
 const path = require('path');
 const COMPOSE_FILE = path.join(__dirname, '..', '..', '..', 'docker-compose.yml');
 const { execSync } = require('child_process');
-const { login, hasCreds, creds } = require('../tests/e2e/helpers/auth.js');
+const { login, hasCreds, creds, acquireLangLock, releaseLangLock } = require('../tests/e2e/helpers/auth.js');
 
 const APP = '/index.php/apps/kanzleicheck';
 const authed = hasCreds();
@@ -41,10 +41,13 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 	test.skip(!authed, 'no creds');
 
 	test('nl: upload-link dialog label renders Etiket', async ({ page }) => {
+		// login() pins core/lang=en — the lang lock then serializes OUR
+		// mutation window against other mutator specs and other logins.
+		await login(page, creds());
+		await acquireLangLock();
 		const orig = occ('user:setting kzc_atlas_e2e core lang');
 		try {
 			occ('user:setting kzc_atlas_e2e core lang nl');
-			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 			await expect(page.locator('#app-content.kzc-app')).toBeVisible();
 			await openFirstClient(page);
@@ -63,14 +66,16 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 			await expect(page.locator('dialog.kzc-dialog[open]')).toHaveCount(0);
 		} finally {
 			occ(`user:setting kzc_atlas_e2e core lang ${orig || 'en'}`);
+			await releaseLangLock();
 		}
 	});
 
 	test('pt_BR: client Status row + settings license card render Estado', async ({ page }) => {
+		await login(page, creds());
+		await acquireLangLock();
 		const orig = occ('user:setting kzc_atlas_e2e core lang');
 		try {
 			occ('user:setting kzc_atlas_e2e core lang pt_BR');
-			await login(page, creds());
 			await page.goto(`${APP}/`, { waitUntil: 'domcontentloaded' });
 			await expect(page.locator('#app-content.kzc-app')).toBeVisible();
 			await openFirstClient(page);
@@ -89,6 +94,7 @@ test.describe('l10n healed cells resolve on rendered surfaces', () => {
 			expect(text).not.toContain('Status:');
 		} finally {
 			occ(`user:setting kzc_atlas_e2e core lang ${orig || 'en'}`);
+			await releaseLangLock();
 		}
 	});
 });

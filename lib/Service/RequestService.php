@@ -86,31 +86,40 @@ class RequestService
 	 */
 	public function create(string $actor, int $orgId, array $data): DocRequest
 	{
-		$title = trim((string)($data['title'] ?? ''));
+		$title = trim(self::strictStr($data['title'] ?? '', 'title'));
 		if ($title === '' || mb_strlen($title) > 190) {
 			throw new ValidationException('VALIDATION_FAILED', ['title' => 'required']);
 		}
-		$note = isset($data['note']) ? mb_substr((string)$data['note'], 0, 2000) : null;
+		$note = isset($data['note']) ? mb_substr(self::strictStr($data['note'], 'note'), 0, 2000) : null;
 		$items = $data['items'] ?? [];
 		if (!is_array($items) || count($items) < 1 || count($items) > self::MAX_ITEMS) {
 			throw new ValidationException('VALIDATION_FAILED', ['items' => 'count']);
 		}
 		$deadline = $this->parseDate($data['deadline'] ?? null, true);
-		if ($this->requests->countOpenByOrg($orgId) >= self::MAX_OPEN_PER_ORG) {
-			throw new ApiException(409, 'VALIDATION_FAILED', 'too many open requests');
-		}
-		$policy = trim((string)($data['reminderPolicy'] ?? '-3,0,+3x5')) ?: '-3,0,+3x5';
+		$policy = trim(self::strictStr($data['reminderPolicy'] ?? '-3,0,+3x5', 'reminderPolicy')) ?: '-3,0,+3x5';
 		$this->db->beginTransaction();
 		try {
+			// Cap race (§9.9 pattern): FOR UPDATE on the org row serializes
+			// creates — a count outside the txn overshoots under concurrency.
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('id')->from('kzc_org')
+				->where($qb->expr()->eq('id', $qb->createNamedParameter($orgId)))
+				->forUpdate();
+			if ($qb->executeQuery()->fetchOne() === false) {
+				throw new ApiException(404, 'NOT_FOUND', 'org gone');
+			}
+			if ($this->requests->countOpenByOrg($orgId) >= self::MAX_OPEN_PER_ORG) {
+				throw new ApiException(409, 'VALIDATION_FAILED', 'too many open requests');
+			}
 			$r = new DocRequest();
 			$r->setOrgId($orgId);
 			$r->setTitle($title);
 			$r->setNote($note);
 			$r->setDeadline($deadline);
 			$r->setState('open');
-			$r->setTaskId(isset($data['taskId']) ? (int)$data['taskId'] : null);
-			$r->setTemplateId(isset($data['templateId']) ? (int)$data['templateId'] : null);
-			$r->setPeriodKey($data['periodKey'] ?? null);
+			$r->setTaskId(isset($data['taskId']) ? self::strictInt($data['taskId'], 'taskId') : null);
+			$r->setTemplateId(isset($data['templateId']) ? self::strictInt($data['templateId'], 'templateId') : null);
+			$r->setPeriodKey(isset($data['periodKey']) ? self::strictStr($data['periodKey'], 'periodKey') : null);
 			$r->setReminderPolicy(mb_substr($policy, 0, 64));
 			$r->setRemindersSent(0);
 			$r->setCreatedBy($actor);
@@ -118,7 +127,10 @@ class RequestService
 			$r = $this->requests->insert($r);
 			$pos = 0;
 			foreach ($items as $it) {
-				$label = trim((string)($it['label'] ?? ''));
+				if (!is_array($it)) {
+					throw new ValidationException('VALIDATION_FAILED', ['items' => 'invalid']);
+				}
+				$label = trim(self::strictStr($it['label'] ?? '', 'items.label'));
 				if ($label === '' || mb_strlen($label) > 190) {
 					throw new ValidationException('VALIDATION_FAILED', ['items' => 'label']);
 				}
@@ -127,9 +139,9 @@ class RequestService
 				$i->setReqId((int)$r->getId());
 				$i->setPosition($pos++);
 				$i->setLabel($label);
-				$i->setHint(isset($it['hint']) ? mb_substr((string)$it['hint'], 0, 500) : null);
+				$i->setHint(isset($it['hint']) ? mb_substr(self::strictStr($it['hint'], 'items.hint'), 0, 500) : null);
 				$i->setKind($kind);
-				$i->setFormId($kind === 'form' && isset($it['formId']) ? (int)$it['formId'] : null);
+				$i->setFormId($kind === 'form' && isset($it['formId']) ? self::strictInt($it['formId'], 'items.formId') : null);
 				$i->setState('open');
 				$this->items->insert($i);
 			}
@@ -298,6 +310,27 @@ class RequestService
 			}
 		}
 		return [$offsets, $step, $max];
+	}
+
+	/** Request-boundary scalar (api-security §2): string only — "Array" never lands. */
+	private static function strictStr(mixed $v, string $field): string
+	{
+		if (!is_string($v)) {
+			throw new ValidationException('VALIDATION_FAILED', [$field => 'invalid']);
+		}
+		return $v;
+	}
+
+	/** Request-boundary scalar (api-security §2): int or digit-string only. */
+	private static function strictInt(mixed $v, string $field): int
+	{
+		if (is_int($v)) {
+			return $v;
+		}
+		if (is_string($v) && preg_match('/^-?\d+$/', $v)) {
+			return (int)$v;
+		}
+		throw new ValidationException('VALIDATION_FAILED', [$field => 'invalid']);
 	}
 
 	private function parseDate(mixed $raw, bool $todayOrLater): ?\DateTimeImmutable

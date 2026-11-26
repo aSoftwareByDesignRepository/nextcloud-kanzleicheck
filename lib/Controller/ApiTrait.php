@@ -24,4 +24,55 @@ trait ApiTrait
 		}
 		return null;
 	}
+
+	/**
+	 * Request-boundary scalars (api-security §2): `(int)["x"]` → 1 would
+	 * silently forge a revision/taskId match, `(string)["x"]` → "Array"
+	 * stores junk. Absent → default; anything non-scalar or non-conforming
+	 * → 400 with a field pin.
+	 */
+	protected function intParam(string $name, int $default = 0): int
+	{
+		$raw = $this->request->getParam($name, null);
+		if ($raw === null) {
+			return $default;
+		}
+		if (is_int($raw)) {
+			return $raw;
+		}
+		if (is_string($raw) && preg_match('/^-?\d+$/', $raw)) {
+			return (int)$raw;
+		}
+		throw new \OCA\KanzleiCheck\Exception\ValidationException('VALIDATION_FAILED', [$name => 'invalid']);
+	}
+
+	protected function strParam(string $name, string $default = ''): string
+	{
+		$raw = $this->request->getParam($name, null);
+		if ($raw === null) {
+			return $default;
+		}
+		if (!is_string($raw)) {
+			throw new \OCA\KanzleiCheck\Exception\ValidationException('VALIDATION_FAILED', [$name => 'invalid']);
+		}
+		return $raw;
+	}
+
+	protected function boolParam(string $name, bool $default = false): bool
+	{
+		$raw = $this->request->getParam($name, null);
+		if ($raw === null) {
+			return $default;
+		}
+		if (is_bool($raw)) {
+			return $raw;
+		}
+		if ($raw === 1 || $raw === '1' || $raw === 'true') {
+			return true;
+		}
+		if ($raw === 0 || $raw === '0' || $raw === 'false') {
+			return false;
+		}
+		throw new \OCA\KanzleiCheck\Exception\ValidationException('VALIDATION_FAILED', [$name => 'invalid']);
+	}
 }

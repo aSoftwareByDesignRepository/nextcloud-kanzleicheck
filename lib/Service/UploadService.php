@@ -116,7 +116,17 @@ class UploadService
 		$u->setNote($note !== null ? mb_substr($note, 0, 500) : null);
 		$u->setState('neu');
 		$u->setCreatedAt(new \DateTimeImmutable());
-		$u = $this->uploads->insert($u);
+		try {
+			$u = $this->uploads->insert($u);
+		} catch (\Throwable $e) {
+			// file landed but the row did not — never leave an untracked
+			// upload in the user's Eingang
+			try {
+				$node->delete();
+			} catch (\Throwable) {
+			}
+			throw $e;
+		}
 		return ['upload' => $u, 'duplicate' => $dup];
 	}
 

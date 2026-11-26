@@ -206,9 +206,12 @@ test.describe('craft web', () => {
 			// Must be an org WITH messages and an OPEN conversation — orgs[0]
 			// can be an import-fixture with none (empty #kzc-msgs → hidden),
 			// and an archived conversation has its composer removed on paint.
+			// Prefer an already-read conv: opening the top-most row (always the
+			// freshest e2e fixture) marks it read and destroys a sibling spec's
+			// unread-badge assertion mid-flight.
 			const r = await fetch('api/portal/inbox', { headers: { Accept: 'application/json' } }).then((x) => x.json());
 			const convs = (r && r.data && r.data.conversations) || [];
-			const open = convs.find((c) => c.state !== 'archived');
+			const open = convs.find((c) => c.state !== 'archived' && !c.unread) || convs.find((c) => c.state !== 'archived');
 			return open ? open.orgId : 0;
 		});
 		test.skip(!orgId, 'no conversation fixture');
