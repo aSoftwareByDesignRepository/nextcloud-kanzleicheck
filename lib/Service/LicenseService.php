@@ -239,9 +239,20 @@ class LicenseService
 			$this->db->commit();
 		} catch (ApiException $e) {
 			throw $e;
-		} catch (\Throwable $e) {
+		} catch (\OCP\DB\Exception $e) {
 			$this->db->rollBack();
 			// Concurrent assign of the same uid — the unique index already holds it.
+			if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				$seat = $this->seats->findByUser($uid);
+				if ($seat !== null) {
+					return $seat;
+				}
+			}
+			throw new ApiException(500, 'SEAT_ASSIGN_FAILED', 'could not assign seat');
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
+			// Non-DBAL failure on the write — replay the same post-rollback
+			// lookup: if the row exists a concurrent assign already holds it.
 			$seat = $this->seats->findByUser($uid);
 			if ($seat === null) {
 				throw new ApiException(500, 'SEAT_ASSIGN_FAILED', 'could not assign seat');

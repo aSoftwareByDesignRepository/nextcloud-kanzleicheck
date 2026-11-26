@@ -347,6 +347,7 @@ class StaffApiController extends Controller implements \OCA\KanzleiCheck\Contrac
 	#[NoAdminRequired] #[NoCSRFRequired]
 	public function seats(): JSONResponse
 	{
+		$this->requireAdmin();
 		return $this->ok([
 			'seats' => $this->license->seatsList(),
 			'mobileSeats' => (int)($this->license->state()?->getMobileSeats() ?? 0),
