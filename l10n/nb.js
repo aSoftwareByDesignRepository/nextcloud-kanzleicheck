@@ -107,7 +107,7 @@ OC.L10N.register(
 	"Chat" : "Chat",
 	"Chat will be archived and members lose access. Continue?" : "Chatten arkiveres, og medlemmer mister tilgangen. Fortsette?",
 	"Check" : "Sjekk",
-	"Check Partner" : "Se partner",
+	"Check Partner" : "Check Partner",
 	"Check share permission on the documents folder." : "Kontroller delingstillatelsen på dokumentmappen.",
 	"Choose a passphrase of at least 12 characters." : "Velg en passordfrase på minst 12 tegn.",
 	"Choose an industry preset in Settings." : "Velg et bransjeforhåndsvalg under Innstillinger.",

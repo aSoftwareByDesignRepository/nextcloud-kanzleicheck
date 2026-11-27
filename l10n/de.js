@@ -107,7 +107,7 @@ OC.L10N.register(
 	"Chat" : "Chat",
 	"Chat will be archived and members lose access. Continue?" : "Chat wird archiviert, Mitglieder verlieren Zugang. Fortfahren?",
 	"Check" : "Prüfen",
-	"Check Partner" : "Partner-Check",
+	"Check Partner" : "Check Partner",
 	"Check share permission on the documents folder." : "Freigabeberechtigung auf dem Dokumenten-Ordner prüfen.",
 	"Choose a passphrase of at least 12 characters." : "Wählen Sie eine Passphrase mit mindestens 12 Zeichen.",
 	"Choose an industry preset in Settings." : "Branchen-Vorlage in den Einstellungen wählen.",

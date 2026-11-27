@@ -361,7 +361,7 @@ OC.L10N.register(
 	"off" : "выкл.",
 	"Offboard" : "Отключить",
 	"Official mobile & terminal licenses" : "Официальные лицензии для мобильных устройств и терминалов",
-	"OK" : "Хорошо.",
+	"OK" : "Хорошо",
 	"ok" : "OK",
 	"OK — a longer passphrase is safer." : "Подойдёт, но более длинная парольная фраза надёжнее.",
 	"On hold" : "На паузе",
