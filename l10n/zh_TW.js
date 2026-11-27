@@ -361,7 +361,7 @@ OC.L10N.register(
 	"off" : "關",
 	"Offboard" : "辦理退出",
 	"Official mobile & terminal licenses" : "官方行動端與終端授權",
-	"OK" : "OK",
+	"OK" : "確定",
 	"ok" : "正常",
 	"OK — a longer passphrase is safer." : "可以——更長的密碼更安全。",
 	"On hold" : "暫緩",
