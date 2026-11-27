@@ -206,6 +206,9 @@ button.kzc-stat-tile:hover, button.kzc-stat-tile:focus-visible {
 	flex-wrap: wrap;
 	margin: 0 0 var(--kzc-space-3, 12px);
 }
+/* Inside a gap'd flex panel the head's own margin doubles the spacing —
+   the parent's gap already supplies the rhythm. */
+.kzc-panel > .kzc-list-head { margin-bottom: 0; }
 .kzc-list-head__title { margin: 0; font-size: var(--kzc-fs-lg, 1.125rem); font-weight: 600; }
 .kzc-list-head__count { color: var(--kzc-muted, var(--color-text-maxcontrast)); font-size: var(--kzc-fs-sm, 0.875rem); font-variant-numeric: var(--kzc-tab-num, tabular-nums); }
 .kzc-list-head__actions { margin-inline-start: auto; display: flex; gap: var(--kzc-space-2, 8px); flex-wrap: wrap; }
